@@ -86,7 +86,24 @@ def _health(snapshot: dict[str, Any]) -> tuple[int, float]:
         if not finding.get("ignored") and not finding.get("cause_id"):
             key = f"{finding['rule_id'].split('.')[0]}:{finding['object_id']}"
             note(key, finding.get("impact", "none"))
-    return len(known), round(sum(worst.values()), 1)
+    # The base is grouped like the deduction: an object that only has follow-ups of a cause stands for that cause.
+    followers = {
+        key
+        for key in (
+            *(
+                f"{c['object_type']}:{c['object_id']}"
+                for c in snapshot.get("causes", [])
+                if c.get("parent_id")
+            ),
+            *(
+                f"{f['rule_id'].split('.')[0]}:{f['object_id']}"
+                for f in snapshot["findings"]
+                if not f.get("ignored") and f.get("cause_id")
+            ),
+        )
+        if key in known and key not in worst
+    }
+    return len(known) - len(followers), round(sum(worst.values()), 1)
 
 
 def health_percent(base: int | None, load: float | None) -> float | None:

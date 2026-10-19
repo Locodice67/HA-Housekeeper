@@ -30,13 +30,11 @@ class FindingsMixin {
 
   // The state of the house: the rated objects, minus the weight of each object that has a finding (high 1, medium a half,
   // low a fifth, info nothing). An object counts once, with its worst level; a chain of outages stands for its cause and its
-  // followers do not count. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
+  // followers count neither in the base nor in the deduction. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
   // but keep the ring from reading green.
   health() {
     const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
-    const base = objects.length;
     const known = new Set(objects.map(o => this.objectKey(o)));
-    const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
     // The same number in every view: what it counts is fetched here, not only when the overview opens. The database
     // check stays out of it, because it reads the recorder and only runs once Maintenance is opened.
     this.ensureBackup?.(); this.ensureTrend?.();
@@ -49,6 +47,9 @@ class FindingsMixin {
     };
     for (const c of this.causeList().filter(c => !c.parent_id)) note(`${c.object_type}:${c.object_id}`, c.impact);
     for (const f of this.data.findings.filter(f => !f.ignored && !f.cause_id)) note(this.findingKey(f), f.impact);
+    // The base is grouped like the deduction: an object that only has follow-ups of a cause stands for that cause and is no unit of its own.
+    const followers = new Set([...this.causeList().filter(c => c.parent_id).map(c => `${c.object_type}:${c.object_id}`), ...this.data.findings.filter(f => !f.ignored && f.cause_id).map(f => this.findingKey(f))].filter(key => known.has(key) && !worst.has(key)));
+    const base = objects.length - followers.size, affected = worst.size;
     const levels = [...worst.values()];
     const lines = [...order].reverse().map(level => {
       const n = levels.filter(l => l === level).length;
@@ -56,12 +57,12 @@ class FindingsMixin {
     }).filter(l => l.n);
     const load = Math.round(lines.reduce((sum, l) => sum + l.points, 0) * 10) / 10;
     // Rounded down, so that a house with a finding never reads 100.
-    const percent = base ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
+    const percent = base > 0 ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
     let tone = percent >= HEALTH_GREEN ? "ok" : percent >= HEALTH_YELLOW ? "warn" : "red";
     // A high-impact object or an urgent state topic never reads as green, however small the sum is.
     if (tone === "ok" && (levels.includes("high") || stateRed)) tone = "warn";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
+    return { percent, tone, label, affected, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
   }
 
   findingRowContent(finding, inGroup = false) {

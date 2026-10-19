@@ -269,6 +269,29 @@ def test_the_lead_series_leaves_out_the_follow_ups_of_a_cause(hass) -> None:
     assert (point["open"], point["lead"], point["lead_classes"]) == (3, 2, {"unused": 2})
 
 
+def test_the_state_of_the_house_leaves_the_followers_of_a_cause_out_of_the_base_too(hass) -> None:
+    history = ScanHistory(hass)
+    snapshot = _snapshot(
+        "2026-10-06T08:00:00+00:00",
+        [("entity", "x.a", "active"), ("entity", "x.b", "active"), ("entity", "x.c", "active")],
+    )
+    finding = lambda object_id, **extra: {  # noqa: E731
+        "rule_id": "entity.unavailable",
+        "object_id": object_id,
+        "classification": "unavailable",
+        "impact": "medium",
+        **extra,
+    }
+    snapshot["findings"] = [
+        finding("x.a"),
+        finding("x.b", cause_id="c1"),
+        finding("x.c", cause_id="c1"),
+    ]
+    history.record(snapshot)
+    point = history.series()["points"][0]
+    assert point["health"] == 50.0, "one unit of the base, half of it taken off"
+
+
 def test_a_pinned_scan_point_is_named_compared_kept_beyond_the_retention_and_deleted(hass) -> None:
     from custom_components.ha_housekeeper.history import PIN_LIMIT, PinError
 

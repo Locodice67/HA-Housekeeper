@@ -2715,13 +2715,11 @@ class FindingsMixin {
 
   // The state of the house: the rated objects, minus the weight of each object that has a finding (high 1, medium a half,
   // low a fifth, info nothing). An object counts once, with its worst level; a chain of outages stands for its cause and its
-  // followers do not count. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
+  // followers count neither in the base nor in the deduction. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
   // but keep the ring from reading green.
   health() {
     const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
-    const base = objects.length;
     const known = new Set(objects.map(o => this.objectKey(o)));
-    const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
     // The same number in every view: what it counts is fetched here, not only when the overview opens. The database
     // check stays out of it, because it reads the recorder and only runs once Maintenance is opened.
     this.ensureBackup?.(); this.ensureTrend?.();
@@ -2734,6 +2732,9 @@ class FindingsMixin {
     };
     for (const c of this.causeList().filter(c => !c.parent_id)) note(`${c.object_type}:${c.object_id}`, c.impact);
     for (const f of this.data.findings.filter(f => !f.ignored && !f.cause_id)) note(this.findingKey(f), f.impact);
+    // The base is grouped like the deduction: an object that only has follow-ups of a cause stands for that cause and is no unit of its own.
+    const followers = new Set([...this.causeList().filter(c => c.parent_id).map(c => `${c.object_type}:${c.object_id}`), ...this.data.findings.filter(f => !f.ignored && f.cause_id).map(f => this.findingKey(f))].filter(key => known.has(key) && !worst.has(key)));
+    const base = objects.length - followers.size, affected = worst.size;
     const levels = [...worst.values()];
     const lines = [...order].reverse().map(level => {
       const n = levels.filter(l => l === level).length;
@@ -2741,12 +2742,12 @@ class FindingsMixin {
     }).filter(l => l.n);
     const load = Math.round(lines.reduce((sum, l) => sum + l.points, 0) * 10) / 10;
     // Rounded down, so that a house with a finding never reads 100.
-    const percent = base ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
+    const percent = base > 0 ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
     let tone = percent >= HEALTH_GREEN ? "ok" : percent >= HEALTH_YELLOW ? "warn" : "red";
     // A high-impact object or an urgent state topic never reads as green, however small the sum is.
     if (tone === "ok" && (levels.includes("high") || stateRed)) tone = "warn";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
+    return { percent, tone, label, affected, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
   }
 
   findingRowContent(finding, inGroup = false) {
@@ -11241,7 +11242,7 @@ Object.assign(TEXT.de, {
   undoAskAllHint: "Housekeeper stellt zurück, was dieser Plan geändert hat, soweit es unverändert ist.", undoAllHint: "Housekeeper kann zurückstellen, was dieser Plan geändert hat, solange es unverändert ist.", reportTitle: "Prüfbericht",
   statusUrgentOne: "1 Thema dringend", statusUrgent: "{n} Themen dringend", statusMoreOpen: "{n} weitere offen", statusOpenOne: "1 Thema offen", statusOpen: "{n} Themen offen",
   statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} %", healthWhy: "Wie entsteht die Zahl?",
-  whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "zählt voll", whyWeight_medium: "zählt halb", whyWeight_low: "zählt ein Fünftel", whyWeight_info: "kein Abzug", whyTotal: "In Ordnung", whyShare: "Anteil", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe; die Folgebefunde einer Ursache gehören zu ihr. Die Befundseite zählt Befunde, diese Karte Objekte. Ab {green} % grün, ab {yellow} % gelb, darunter rot; ein Objekt mit hoher Auswirkung oder ein dringendes Zustandsthema (Backup, Datenträger) ist mindestens gelb, nimmt aber nichts ab. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
+  whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "zählt voll", whyWeight_medium: "zählt halb", whyWeight_low: "zählt ein Fünftel", whyWeight_info: "kein Abzug", whyTotal: "In Ordnung", whyShare: "Anteil", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe; Objekte, die nur Folgen einer Ursache sind, stehen für diese und zählen weder im Ausgangswert noch im Abzug. Die Befundseite zählt Befunde, diese Karte Objekte. Ab {green} % grün, ab {yellow} % gelb, darunter rot; ein Objekt mit hoher Auswirkung oder ein dringendes Zustandsthema (Backup, Datenträger) ist mindestens gelb, nimmt aber nichts ab. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
  
   unit_outages_1: "Ausfall", unit_outages_n: "Ausfälle", unit_followup_1: "Plan", unit_followup_n: "Pläne", unit_reminders_1: "Erinnerung", unit_reminders_n: "Erinnerungen", unit_criteria_1: "Ziel", unit_criteria_n: "Ziele", unit_critical_1: "Befund", unit_critical_n: "Befunde", unit_backup_1: "Problem", unit_backup_n: "Probleme", unit_quarantine_1: "Objekt", unit_quarantine_n: "Objekte",
   statusTasks: "{count} Aufgaben warten auf dich", statusTasksJump: "Zur Liste der Aufgaben springen", statusAllGood: "Alles in Ordnung",
@@ -11284,7 +11285,7 @@ Object.assign(TEXT.en, {
   undoAskAllHint: "Housekeeper puts back what this plan changed, as far as it is still unchanged.", undoAllHint: "Housekeeper can put back what this plan changed, as long as it is unchanged.", reportTitle: "Audit report",
   statusUrgentOne: "1 topic urgent", statusUrgent: "{n} topics urgent", statusMoreOpen: "{n} more open", statusOpenOne: "1 topic open", statusOpen: "{n} topics open",
   statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} %", healthWhy: "How is this number made?",
-  whyStart: "Starting value · rated objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "counts fully", whyWeight_medium: "counts half", whyWeight_low: "counts a fifth", whyWeight_info: "nothing off", whyTotal: "In order", whyShare: "Share", whyNote: "Every object counts once, with its worst level; the follow-up findings of a cause belong to it. The findings page counts findings, this card objects. Green from {green} %, yellow from {yellow} %, red below; an object with high impact or an urgent state topic (backup, disk) is at least yellow but takes nothing off. Hidden, known and snoozed findings do not count.",
+  whyStart: "Starting value · rated objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "counts fully", whyWeight_medium: "counts half", whyWeight_low: "counts a fifth", whyWeight_info: "nothing off", whyTotal: "In order", whyShare: "Share", whyNote: "Every object counts once, with its worst level; objects that are only follow-ups of a cause stand for it and count neither in the starting value nor in the deduction. The findings page counts findings, this card objects. Green from {green} %, yellow from {yellow} %, red below; an object with high impact or an urgent state topic (backup, disk) is at least yellow but takes nothing off. Hidden, known and snoozed findings do not count.",
  
   unit_outages_1: "outage", unit_outages_n: "outages", unit_followup_1: "plan", unit_followup_n: "plans", unit_reminders_1: "reminder", unit_reminders_n: "reminders", unit_criteria_1: "goal", unit_criteria_n: "goals", unit_critical_1: "finding", unit_critical_n: "findings", unit_backup_1: "problem", unit_backup_n: "problems", unit_quarantine_1: "object", unit_quarantine_n: "objects",
   statusTasks: "{count} tasks are waiting for you", statusTasksJump: "Jump to the list of tasks", statusAllGood: "All good",

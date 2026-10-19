@@ -625,6 +625,8 @@ test("the status counts affected objects once, only of the base types, and not h
   el.dbHealth = { available: true, findings: [{ level: "problem", kind: "gaps" }] };
   assert.equal(el.health().percent, 99.9, "the database check only runs in Maintenance, so it never moves the number");
   assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("objects in order"));
+  el.data = { ...base, causes: [], findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.state_missing", "sensor.s1", { cause_id: "device:x" }), finding("entity.state_missing", "sensor.s2", { cause_id: "device:x" })] };
+  assert.deepEqual([el.health().affected, el.health().base, el.health().load], [1, 6, 0.5], "objects that only follow a cause leave the base as they leave the deduction");
 });
 
 test("hidden findings are excluded from counts, lists and export unless shown", () => {
