@@ -3349,13 +3349,13 @@ test("the selection row of the findings list names the size of the view at its r
   assert.ok(/1 selected.*viewcount" role="status">3 in this view/s.test(el.findingsView()));
 });
 
-test("a reason tile counts everything under it and names the follow-ups in it", () => {
+test("a reason tile shows the grouped count and names the whole count and the follow-ups below it", () => {
   const { el } = panel("en");
   const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", cause_id: cause });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x"), f("d", "device:x")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
   const html = el.findingsView();
-  assert.ok(html.includes("Unavailable") && /sumvalue">4<\/b><small>of which 2 follow-ups/.test(html));
+  assert.ok(html.includes("Unavailable") && /sumvalue">2<\/b><small>4 in total, of which 2 follow-ups/.test(html));
 });
 
 test("the button for findings after an update counts what the list shows and names the follow-ups beside it", () => {

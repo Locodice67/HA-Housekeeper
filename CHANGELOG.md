@@ -28,6 +28,7 @@
   - In der Kopfzeile der Detailseite sind Integration, Gerät und Bereich verlinkt.
   - Das Zeilenmenü eines Duplikat-Befunds öffnet die funktionierende Entität.
   - Im Reiter „Aktionen“ steht der Schritt, der einen Befund löst, als erster Knopf in dessen Zeile (zum Beispiel „Entfernen planen“ oder „Durch funktionierende Entität ersetzen“).
+  - Die Kacheln der Befundliste zeigen als große Zahl die gruppierte Anzahl (Folgen eines Ausfalls hängen an dessen Ursache), darunter die Gesamtzahl samt Folgen; die Verlaufslinie rechnet ebenso.
   - Der erwartete Endzustand eines Plans sagt, wann der Recorder verbliebene Zustände löscht und dass Langzeitstatistik bleibt (oder dass alles bleibt, wenn die automatische Bereinigung aus ist); „1 Entität“ statt „1 Entitäten (0 Geräte)“.
 
 ### Behoben
@@ -74,6 +75,7 @@
   - In the header of the detail page, integration, device and area are links.
   - The row menu of a duplicate finding opens the working entity.
   - In the "Actions" tab, the step that resolves a finding is the first button in that finding's row (for example "Plan to remove" or "Replace by the working entity").
+  - The tiles of the findings list show the grouped count as the big number (follow-ups of an outage hang on their cause) and the total with the follow-ups below it; the history line counts the same way.
   - The expected end state of a plan says when the recorder deletes the states left behind and that long-term statistics stay (or that everything stays when the automatic purge is off); "1 entity" instead of "1 entities (0 devices)".
 
 #### Fixed
