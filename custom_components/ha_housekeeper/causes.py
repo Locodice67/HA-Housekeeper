@@ -5,6 +5,9 @@ an integration is not loaded, every entity it provides is unavailable, and one n
 more useful than a hundred findings. The follow-up findings get a ``cause_id`` and stay in the
 list; hidden or marked findings do not count.
 
+A device that is not down completely (one entity still works), but has at least two entities without a value, is a cause
+``device_partial`` without a finding of its own: its findings are grouped and can be marked at once.
+
 Causes can be chained, from the top down: an app that is stopped, the integration that hangs on
 it, a device of that integration, the entities of that device. A cause carries ``parent_id`` (the
 cause above it) and ``child_ids`` (the causes right below it); ``follower_count`` counts the
@@ -25,6 +28,7 @@ from .impact import RANK, USAGE
 from .outage_levels import Levels, outage_level
 
 DEVICE_MIN_ENTITIES = 3  # a device with fewer entities is not a pattern
+PARTIAL_MIN = 2  # findings of one device that are grouped although the device is not down
 OUTAGE_STATES = frozenset({"unavailable", "unknown"})  # an entity without a value
 KEY_LIMIT = 500
 TARGET_MIN = 2  # automations, scripts and dashboards that point to the same missing target
@@ -233,6 +237,28 @@ def apply_causes(
         if below is not None and above is not None:
             below["parent_id"] = above["id"]
             above["child_ids"].append(below["id"])
+
+    # 2b. Devices with some entities without a value: one group per device, from two findings on.
+    # The integration comes first: when it is not loaded, its entities are its follow-ups.
+    partial: dict[str, list[dict[str, Any]]] = {}
+    for finding in by_object.values():
+        device_id = entity[finding["object_id"]].get("device_id")
+        if device_id and "cause_id" not in finding:
+            partial.setdefault(device_id, []).append(finding)
+    down = {f["object_id"] for f in findings if f["rule_id"] == DEVICE_RULE}
+    for item in objects:
+        group = partial.get(item["object_id"]) if item["object_type"] == "device" else None
+        if not group or len(group) < PARTIAL_MIN or item["object_id"] in down:
+            continue
+        # Partly: one entity still works. A device without any value waits for its own finding.
+        working = (entity[i] for i in members.get(item["object_id"], []))
+        if not any(e["status"] not in OUTAGE_STATES and _counts(e) for e in working):
+            continue
+        ids = [f["object_id"] for f in group]
+        cause = _cause("device_partial", item, group, users, ids)
+        for finding in group:
+            finding["cause_id"] = cause["id"]
+        causes[cause["id"]] = cause
 
     # 3. Apps that are stopped: the integrations that seem to hang on them are the followers.
     app_findings: dict[str, list[dict[str, Any]]] = {}

@@ -157,14 +157,22 @@ class FindingStatusMixin {
   }
 
   // The selected rows whose object can carry a mark (entity, device, integration, app): selection key -> object key.
-  markTargets() {
+  markTargets(onDevice = false) {
     const out = new Map();
     for (const key of this.findSel) {
       const finding = this.data.findings.find(f => f.key === key);
-      const objectKey = finding && this.findingKey(finding);
+      let objectKey = finding && this.findingKey(finding);
+      // "On the device": an entity is marked through its device, which then covers all its entities.
+      const device = onDevice && objectKey?.startsWith("entity:") && this.findObject(objectKey)?.device_id;
+      if (device && this.findObject(`device:${device}`)) objectKey = `device:${device}`;
       if (objectKey && MARK_TYPES.includes(objectKey.split(":")[0])) out.set(key, objectKey);
     }
     return out;
+  }
+
+  // How many selected entities have a device: only then the form offers to mark the devices instead.
+  markDeviceCount() {
+    return new Set([...this.markTargets(true).values()].filter(k => k.startsWith("device:"))).size - new Set([...this.markTargets().values()].filter(k => k.startsWith("device:"))).size;
   }
 
   // The kinds every selected object accepts: integrations and apps take fewer than entities and devices.
@@ -174,12 +182,15 @@ class FindingStatusMixin {
   }
 
   async commitMarkBulk() {
-    const b = this.bulk, targets = this.markTargets();
-    const failed = await this.runBulk([...targets.keys()], async key => {
-      const [object_type, ...rest] = targets.get(key).split(":");
+    const b = this.bulk, targets = this.markTargets(b.onDevice);
+    // One mark per object: several findings of the same device need it once.
+    const objects = [...new Set(targets.values())];
+    const failed = await this.runBulk(objects, async objectKey => {
+      const [object_type, ...rest] = objectKey.split(":");
       const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
+      targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
     await this.refreshData();
     if (!failed) this.bulk = null;
@@ -191,9 +202,11 @@ class FindingStatusMixin {
     const b = this.bulk;
     if (!b) return "";
     if (b.kind === "mark") {
-      const targets = this.markTargets(), kinds = this.markKindsFor(targets);
+      const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
+      const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
-      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(targets.size)})</strong>
+      const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
+      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(objects)})</strong>${onDevice}
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
@@ -290,6 +303,8 @@ class FindingStatusMixin {
       if (label) label.onchange = ev => { this.bulk.label = ev.target.value; };
       const area = form.querySelector("[data-bulk-area]");
       if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
+      const onDevice = form.querySelector("[data-bulk-ondevice]");
+      if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
       const days = form.querySelector("[data-bulk-days]");
@@ -300,11 +315,11 @@ class FindingStatusMixin {
 }
 Object.assign(TEXT.de, {
   stateOpen: "Offen", freshAll: "Neu und in Arbeit", freshNew: "Neu (letzte {days} Tage)", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
-  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
+  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", markOnDevice: "am Gerät statt an jeder Entität", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen", markKnown: "Als bekannt markieren",
 });
 Object.assign(TEXT.en, {
   stateOpen: "Open", freshAll: "New and in work", freshNew: "New (last {days} days)", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
-  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
+  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", markOnDevice: "on the device instead of each entity", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
 });

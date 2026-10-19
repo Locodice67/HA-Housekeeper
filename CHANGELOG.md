@@ -19,6 +19,8 @@
 
 - **Ausfälle im Standby:**
   - Ein Gerät, dessen Entitäten alle keinen Wert mehr haben (etwa im Standby), gilt als „Gerät ganz ausgefallen“, nicht mehr nur bei „nicht verfügbar“. Seine Entitäten stehen als Folgen darunter, ein Vermerk am Gerät blendet alle aus. Entitäten, die nie einen Wert hatten, und deaktivierte zählen nicht mit.
+  - Hat ein Gerät nur einige Entitäten ohne Wert (ab zwei), stehen sie in der Ansicht „Gruppiert“ als eine Zeile unter dem Gerät. Dort und beim ganz ausgefallenen Gerät setzt „Gerät vermerken“ einen Vermerk für alle.
+  - Die Sammelaktion „Vermerk setzen“ kann den Vermerk am Gerät statt an jeder einzelnen Entität setzen.
 - **Oberfläche:**
   - In der Ursachendiagnose öffnen Integration, Gerät und funktionierende Entität per Klick ihre Seite.
   - In der Kopfzeile der Detailseite sind Integration, Gerät und Bereich verlinkt.
@@ -61,6 +63,8 @@
 
 - **Outages in standby:**
   - A device whose entities all lost their value (in standby, say) counts as "Device is down completely", no longer only when they are unavailable. Its entities are listed as follow-ups below it, and one mark on the device hides them all. Entities that never had a value and disabled ones do not count.
+  - When only some entities of a device have no value (two or more), the “Grouped” view shows them as one row below the device. There, and for a device that is down completely, “Mark the device” sets one mark for all of them.
+  - The bulk action “Set a mark” can set the mark on the device instead of on each entity.
 - **Interface:**
   - In the cause diagnosis, the integration, device and working entity open their page on click.
   - In the header of the detail page, integration, device and area are links.

@@ -3581,6 +3581,22 @@ test("Done lists what a plan fixed and what ended by itself; objects removed or 
   assert.ok(html.includes("Object removed (not fixed)"));
 });
 
+test("the selection bar can mark the device once instead of each of its entities", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const f = id => ({ rule_id: "entity.state_unknown", object_id: id, classification: "unknown", confidence: 0.9, key: `u|${id}`, ignored: false, evidence: [] });
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unknown", device_id: "tv" });
+  el.data = { ...DATA, objects: [ent("sensor.a"), ent("sensor.b"), { object_type: "device", object_id: "tv", name: "TV", status: "active" }], findings: [f("sensor.a"), f("sensor.b")], causes: [] };
+  el.findSel = new Set(["u|sensor.a", "u|sensor.b"]);
+  assert.equal(el.markDeviceCount(), 1);
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
+  el.bulk = { kind: "mark", reason: "", days: 0, markKind: "", error: "", onDevice: true };
+  assert.ok(el.bulkForm().includes("data-bulk-ondevice") && el.bulkForm().includes("(1)"));
+  await el.commitBulk();
+  assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_set").map(c => `${c.object_type}:${c.object_id}`), ["device:tv"]);
+  assert.equal(el.findSel.size, 0);
+});
+
 test("the selection bar sets a mark on every picked object that can carry one", async () => {
   const { el } = panel("en");
   const calls = [];

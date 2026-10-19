@@ -8844,11 +8844,13 @@ class CausesMixin {
     const link = `${c.object_type}:${c.object_id}`, own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
     const byId = id => this.causeList().find(x => x.id === id);
     const own = !includeOwn || c.virtual ? "" : `<div class="rowwrap">${this.causeBox(c)}<button class="row" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(c.name)}</strong></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(own1 ? own1.impact : "")}</button>${this.rowMenu(own1)}</div>${this.rowDecide(own1)}`;
+    // A device whose entities lost their values: one mark on the device covers all of them.
+    const mark = ["device_down", "device_partial"].includes(c.kind) && !this.findObject(link)?.mark ? `<div class="pad"><button type="button" class="btn" data-watch-mark="${this.esc(link)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("causeMarkDevice")}</button></div>` : "";
     const below = (c.child_ids || []).map(byId).filter(Boolean).map(x => this.causeEntry(x)).join("");
     const followers = (this.data.findings || []).filter(f => f.cause_id === c.id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id));
     const pg = this.paginate(`cause_${c.id}`, followers.map(f => this.findingRow(f)));
     const parts = `${below}${pg.rows.join("")}${pg.footer}`;
-    return `${own}${parts ? `<div class="kids">${parts}</div>` : ""}`;
+    return `${own}${mark}${parts ? `<div class="kids">${parts}</div>` : ""}`;
   }
 
   // The entries at the top of the findings list, as the overview shows them: by impact, a chain once at its top.
@@ -8892,7 +8894,7 @@ Object.assign(TEXT.de, {
   causesTitle: "Ausfälle",
   cause_device_novalue: "Alle {n} Entitäten des Geräts haben seit {span} keinen Wert mehr. Meist ist das Gerät im Standby oder ausgeschaltet.", hint_device_novalue: "Ist das gewollt, hält ein Vermerk „Absichtlich offline“ am Gerät es fest; dann meldet Housekeeper weder das Gerät noch seine Entitäten.", devAllNoValue: "alle {n} ohne Wert", noValue: "Ohne Wert", sumRiskOutage: "Beim Entfernen (nicht der Ausfall)", cause_device_unavailable: "Alle {n} Entitäten des Geräts sind seit {span} nicht verfügbar. Das Gerät ist registriert, liefert aber keine Werte.", hint_device_unavailable: "Prüfen, ob das Gerät erreichbar ist (Strom, Netzwerk, Cloud-Verbindung), und die Integration neu laden.", devAllDown: "alle {n} nicht verfügbar", causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageDevices: "{n} Geräte",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
-  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
+  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen", cause_device_partial: "Gerät {name}: mehrere Entitäten ohne Wert", causeMarkDevice: "Gerät vermerken",
   causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
   findingsFollowSub: "dazu {n} Folgen der Ausfälle", findingsOfFollow: "davon {n} Folgen der Ausfälle", actOutages: "Ausfälle",
 });
@@ -8900,7 +8902,7 @@ Object.assign(TEXT.en, {
   causesTitle: "Outages",
   cause_device_novalue: "All {n} entities of the device have had no value for {span}. Usually the device is in standby or switched off.", hint_device_novalue: "If that is intended, a mark “Offline on purpose” on the device records it; then Housekeeper reports neither the device nor its entities.", devAllNoValue: "all {n} without a value", noValue: "No value", sumRiskOutage: "When removed (not the outage)", cause_device_unavailable: "All {n} entities of the device have been unavailable for {span}. The device is registered but delivers no values.", hint_device_unavailable: "Check that the device is reachable (power, network, cloud connection) and reload the integration.", devAllDown: "all {n} unavailable", causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageDevices: "{n} devices",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
-  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
+  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely", cause_device_partial: "Device {name}: several entities without a value", causeMarkDevice: "Mark the device",
   causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
   findingsFollowSub: "plus {n} follow-ups of the outages", findingsOfFollow: "of which {n} follow-ups of the outages", actOutages: "Outages",
 });
@@ -10759,14 +10761,22 @@ class FindingStatusMixin {
   }
 
   // The selected rows whose object can carry a mark (entity, device, integration, app): selection key -> object key.
-  markTargets() {
+  markTargets(onDevice = false) {
     const out = new Map();
     for (const key of this.findSel) {
       const finding = this.data.findings.find(f => f.key === key);
-      const objectKey = finding && this.findingKey(finding);
+      let objectKey = finding && this.findingKey(finding);
+      // "On the device": an entity is marked through its device, which then covers all its entities.
+      const device = onDevice && objectKey?.startsWith("entity:") && this.findObject(objectKey)?.device_id;
+      if (device && this.findObject(`device:${device}`)) objectKey = `device:${device}`;
       if (objectKey && MARK_TYPES.includes(objectKey.split(":")[0])) out.set(key, objectKey);
     }
     return out;
+  }
+
+  // How many selected entities have a device: only then the form offers to mark the devices instead.
+  markDeviceCount() {
+    return new Set([...this.markTargets(true).values()].filter(k => k.startsWith("device:"))).size - new Set([...this.markTargets().values()].filter(k => k.startsWith("device:"))).size;
   }
 
   // The kinds every selected object accepts: integrations and apps take fewer than entities and devices.
@@ -10776,12 +10786,15 @@ class FindingStatusMixin {
   }
 
   async commitMarkBulk() {
-    const b = this.bulk, targets = this.markTargets();
-    const failed = await this.runBulk([...targets.keys()], async key => {
-      const [object_type, ...rest] = targets.get(key).split(":");
+    const b = this.bulk, targets = this.markTargets(b.onDevice);
+    // One mark per object: several findings of the same device need it once.
+    const objects = [...new Set(targets.values())];
+    const failed = await this.runBulk(objects, async objectKey => {
+      const [object_type, ...rest] = objectKey.split(":");
       const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
+      targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
     await this.refreshData();
     if (!failed) this.bulk = null;
@@ -10793,9 +10806,11 @@ class FindingStatusMixin {
     const b = this.bulk;
     if (!b) return "";
     if (b.kind === "mark") {
-      const targets = this.markTargets(), kinds = this.markKindsFor(targets);
+      const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
+      const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
-      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(targets.size)})</strong>
+      const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
+      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(objects)})</strong>${onDevice}
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
@@ -10892,6 +10907,8 @@ class FindingStatusMixin {
       if (label) label.onchange = ev => { this.bulk.label = ev.target.value; };
       const area = form.querySelector("[data-bulk-area]");
       if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
+      const onDevice = form.querySelector("[data-bulk-ondevice]");
+      if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
       const days = form.querySelector("[data-bulk-days]");
@@ -10902,12 +10919,12 @@ class FindingStatusMixin {
 }
 Object.assign(TEXT.de, {
   stateOpen: "Offen", freshAll: "Neu und in Arbeit", freshNew: "Neu (letzte {days} Tage)", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
-  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
+  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", markOnDevice: "am Gerät statt an jeder Entität", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen", markKnown: "Als bekannt markieren",
 });
 Object.assign(TEXT.en, {
   stateOpen: "Open", freshAll: "New and in work", freshNew: "New (last {days} days)", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
-  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
+  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", markOnDevice: "on the device instead of each entity", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
 });
 

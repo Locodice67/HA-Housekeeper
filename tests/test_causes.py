@@ -181,6 +181,17 @@ def test_a_device_in_standby_is_down_and_collects_its_unknown_entities() -> None
     assert [(c["id"], c["follower_count"]) for c in causes] == [("device_down:d1", 1)]
 
 
+def test_a_device_with_some_entities_without_a_value_groups_their_findings() -> None:
+    objects = [DEVICE, *(_entity(f"sensor.{n}", device_id="d1") for n in "abc")]
+    objects[3]["status"] = "active"
+    findings = [_finding("sensor.a"), _finding("sensor.b", classification="unknown")]
+    causes = apply_causes(objects, [], findings)
+    assert [(c["id"], c["follower_count"], c["virtual"]) for c in causes] == [
+        ("device_partial:d1", 2, False)
+    ]
+    assert apply_causes(objects, [], findings[:1]) == [], "one finding is no group"
+
+
 def test_an_integration_that_is_down_is_a_cause_even_without_follow_up_findings() -> None:
     objects = [ENTRY, _entity("sensor.a", config_entry_id="e1")]
     edges = [
