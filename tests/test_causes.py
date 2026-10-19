@@ -161,6 +161,26 @@ def test_a_device_is_down_when_all_its_entities_are_and_one_has_a_finding() -> N
     assert device_down_findings(entities, devices, flagged) == [], "one entity works"
 
 
+def test_a_device_in_standby_is_down_and_collects_its_unknown_entities() -> None:
+    from custom_components.ha_housekeeper.causes import device_down_findings
+
+    entities = [
+        _entity(f"sensor.{n}", device_id="d1", status="unknown", had_value=True) for n in "abc"
+    ]
+    entities += [
+        _entity("sensor.never", device_id="d1", status="unknown"),
+        _entity("sensor.off", device_id="d1", status="disabled"),
+    ]
+    flagged = [_finding("sensor.a", classification="unknown", rule_id="entity.state_unknown")]
+    found = device_down_findings(entities, [DEVICE], flagged)
+    assert [(f["object_id"], f["evidence"][0]["kind"]) for f in found] == [
+        ("d1", "all_entities_without_value")
+    ]
+    found[0]["key"], found[0]["ignored"] = "k|d1", False
+    causes = apply_causes([DEVICE, *entities], [], [*flagged, *found])
+    assert [(c["id"], c["follower_count"]) for c in causes] == [("device_down:d1", 1)]
+
+
 def test_an_integration_that_is_down_is_a_cause_even_without_follow_up_findings() -> None:
     objects = [ENTRY, _entity("sensor.a", config_entry_id="e1")]
     edges = [

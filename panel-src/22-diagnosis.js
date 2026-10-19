@@ -85,13 +85,15 @@ class DiagnosisMixin {
     } else if (item.object_type === "device") {
       const ids = item.config_entry_ids || [];
       ids.forEach(id => rows.push(this.integrationCheck(id).row));
-      const down = this.data.findings.some(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored);
-      rows.push(down ? this.check(t("entities"), "red", t("devAllDown", { n: this.formatNumber(item.entity_count) }), t("unavailable"))
+      const downFinding = this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored), down = !!downFinding;
+      // A device in standby: its entities lost their values (unknown) rather than being unavailable.
+      const standby = downFinding?.evidence?.[0]?.kind === "all_entities_without_value";
+      rows.push(down ? this.check(t("entities"), "red", t(standby ? "devAllNoValue" : "devAllDown", { n: this.formatNumber(item.entity_count) }), t(standby ? "noValue" : "unavailable"))
         : this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
       const downSince = down ? this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id)?.first_detected_at : null;
       if (down) {
-        cause = t("cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
-        hint = t("hint_device_unavailable");
+        cause = t(standby ? "cause_device_novalue" : "cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
+        hint = t(standby ? "hint_device_novalue" : "hint_device_unavailable");
         tone = "red";
       } else cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
     } else if (item.object_type === "config_entry") {

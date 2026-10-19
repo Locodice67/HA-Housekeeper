@@ -1,5 +1,89 @@
 # Changelog
 
+## Unreleased
+
+### Neu
+
+- **Labels:**
+  - Das Label `housekeeper_keep` an einem Gerät oder einer Entität wirkt wie der Vermerk „Nicht entfernen“: Es sperrt alle Bereinigungsschritte, blendet aber keinen Befund aus. In Home Assistant lässt es sich auf mehreren Objekten gleichzeitig setzen.
+  - Unter Einstellungen → Ausnahmen zeigt ein Block die drei Labels `housekeeper_keep`, `housekeeper_ignore` und `housekeeper_critical`: was jedes bewirkt, ob es in Home Assistant angelegt ist und an wie vielen Objekten es hängt.
+  - Das Inventar lässt sich nach Label filtern.
+- **Entitäten, die die Integration nicht mehr bereitstellt:** Sie werden als verwaist erkannt statt als „nicht verfügbar“, auch bei YAML-Entitäten, nach derselben Wartezeit wie ein Ausfall. Sie lassen sich direkt entfernen, ohne Quarantäne, aber mit Vorschau, Backup und Wiederherstellen, auch unter Bereinigen; am ersten Tag fragt die Vorschau nach, ob die Entität wirklich weg ist.
+- **Duplikate:**
+  - Auch der umgekehrte Fall wird erkannt: Die alte `sensor.x` ist übrig, die neue `sensor.x_2` läuft (gleiches Gerät oder gleicher Name).
+  - Beim Ersetzen ist die funktionierende Entität vorbelegt; Vorschläge bei fehlenden Verweisen öffnen das Ersetzen mit diesem Ziel.
+- **Ausnahmen:** Regeln nach Integration gelten auch für den Befund „Integration nicht ladbar“, etwa für den Drucker-Eintrag, solange der Drucker aus ist (Diskussion 28).
+- **Entität „Aktivität“:** Zeigt, ob Housekeeper gerade scannt, einen Plan ausführt, auf den Start von Home Assistant wartet oder bereit ist; passt auf ein Dashboard neben den Knopf „Scan starten“.
+
+### Geändert
+
+- **Ausfälle im Standby:**
+  - Ein Gerät, dessen Entitäten alle keinen Wert mehr haben (etwa im Standby), gilt als „Gerät ganz ausgefallen“, nicht mehr nur bei „nicht verfügbar“. Seine Entitäten stehen als Folgen darunter, ein Vermerk am Gerät blendet alle aus. Entitäten, die nie einen Wert hatten, und deaktivierte zählen nicht mit.
+- **Oberfläche:**
+  - In der Ursachendiagnose öffnen Integration, Gerät und funktionierende Entität per Klick ihre Seite.
+  - In der Kopfzeile der Detailseite sind Integration, Gerät und Bereich verlinkt.
+  - Das Zeilenmenü eines Duplikat-Befunds öffnet die funktionierende Entität.
+  - Im Reiter „Aktionen“ steht der Schritt, der einen Befund löst, als erster Knopf in dessen Zeile (zum Beispiel „Entfernen planen“ oder „Durch funktionierende Entität ersetzen“).
+  - Der erwartete Endzustand eines Plans sagt, wann der Recorder verbliebene Zustände löscht und dass Langzeitstatistik bleibt (oder dass alles bleibt, wenn die automatische Bereinigung aus ist); „1 Entität“ statt „1 Entitäten (0 Geräte)“.
+
+### Behoben
+
+- **Aufräumen und Labels:**
+  - Unter Bereinigen → „Geräte deaktivieren“ erscheinen Geräte mit dem Vermerk „Nicht entfernen“, dem Label `housekeeper_ignore` oder einer Ausnahmeregel nicht mehr; Geräte ganz ohne Entität (etwa Bluetooth-Proxy) sind als „Keine Entitäten“ gekennzeichnet (Diskussion).
+  - Das Label `housekeeper_ignore` an einem Gerät blendet auch dessen Befunde und die seiner Entitäten aus, nicht nur bei Entitäten und Automationen.
+- **Priorität:** „Wurde nie ausgelöst“ und „Lange nicht ausgelöst“ sind bei Automationen, die Kritisches steuern (Alarm, Überflutung), nicht mehr „Hoch“ (Diskussion 33).
+- **Inventar:** Automationen, Skripte und Szenen erscheinen nur noch einmal und werden einmal gezählt, nicht zusätzlich als Entität; die Detailseite verlinkt beide (Issue 34).
+- **Knopf „Scan starten“:** Er gilt während eines Scans nicht mehr als „nicht verfügbar“, darum meldet Housekeeper ihn nicht mehr selbst als flatternd (Issue 35).
+- **Oberfläche:**
+  - Das Menü am Zeilenende (⋮) wird nicht mehr am Rand der Karte abgeschnitten (Issue 32).
+  - „In HA öffnen“ führt bei Szenen ohne Editor zur Geräteseite; „Entität öffnen“ gibt es auch für Szenen.
+  - Bei einem ausgefallenen Gerät zeigt die Ursachendiagnose, dass alle Entitäten nicht verfügbar sind, statt „aktiv und stellt Entitäten bereit“; die Risiko-Zeile sagt, dass sie das Entfernen meint.
+- **Backup-Schutz:**
+  - Backups anderer Werkzeuge (zum Beispiel Google Drive Backup) stehen in der Tabelle als „Anderes Werkzeug“ statt „Manuell“, denn Home Assistant weiß nicht, ob sie geplant waren.
+  - Die Ziele eines Backups stehen mit lesbaren Namen („Lokal“, „Netzwerkspeicher: …“, „Google Drive“) als Pillen statt als Kennungen; das Konto fällt weg.
+
+### English
+
+#### New
+
+- **Labels:**
+  - The label `housekeeper_keep` on a device or entity works like the mark “Do not remove”: it blocks every cleanup step but hides no finding. In Home Assistant it can be set on several objects at once.
+  - Settings → Exceptions has a block with the three labels `housekeeper_keep`, `housekeeper_ignore` and `housekeeper_critical`: what each does, whether it exists in Home Assistant and how many objects carry it.
+  - The inventory can be filtered by label.
+- **Entities the integration no longer provides:** They are recognised as orphaned instead of "unavailable", YAML entities too, after the same wait as an outage. They can be removed straight away, without quarantine, but with preview, backup and restore, in Cleanup too; on the first day the preview asks whether the entity is really gone.
+- **Duplicates:**
+  - The reverse case is recognised as well: the old `sensor.x` is left over, the new `sensor.x_2` works (same device or same name).
+  - When replacing, the working entity is filled in; suggestions for missing references open the replacement with that target.
+- **Exceptions:** Rules by integration also cover the "integration cannot be loaded" finding, such as a printer's entry while the printer is off (discussion 28).
+- **Entity “Activity”:** Shows whether Housekeeper is scanning, running a plan, waiting for Home Assistant to start or idle; fits on a dashboard next to the “Start scan” button.
+
+#### Changed
+
+- **Outages in standby:**
+  - A device whose entities all lost their value (in standby, say) counts as "Device is down completely", no longer only when they are unavailable. Its entities are listed as follow-ups below it, and one mark on the device hides them all. Entities that never had a value and disabled ones do not count.
+- **Interface:**
+  - In the cause diagnosis, the integration, device and working entity open their page on click.
+  - In the header of the detail page, integration, device and area are links.
+  - The row menu of a duplicate finding opens the working entity.
+  - In the "Actions" tab, the step that resolves a finding is the first button in that finding's row (for example "Plan to remove" or "Replace by the working entity").
+  - The expected end state of a plan says when the recorder deletes the states left behind and that long-term statistics stay (or that everything stays when the automatic purge is off); "1 entity" instead of "1 entities (0 devices)".
+
+#### Fixed
+
+- **Cleanup and labels:**
+  - Under Cleanup → “Disable devices”, devices with the “Do not remove” mark, the label `housekeeper_ignore` or an exception rule no longer appear; devices with no entity at all (such as a Bluetooth proxy) are marked “No entities” (discussion).
+  - The label `housekeeper_ignore` on a device also hides its findings and those of its entities, no longer only for entities and automations.
+- **Priority:** "Never triggered" and "Not triggered for a long time" are no longer "High" for automations that control something critical (alarm, flooding) (discussion 33).
+- **Inventory:** Automations, scripts and scenes appear once and are counted once, no longer also as an entity; the detail page links both (issue 34).
+- **“Start scan” button:** It is no longer “unavailable” during a scan, so Housekeeper no longer reports it as flapping itself (issue 35).
+- **Interface:**
+  - The row menu (⋮) is no longer cut off at the edge of the card (issue 32).
+  - "Open in HA" leads to the device page for scenes without an editor; "Open entity" is offered for scenes too.
+  - For a device that is down, the diagnosis shows that all its entities are unavailable instead of “active and provides entities”; the risk row says it is about removing.
+- **Backup protection:**
+  - Backups made by other tools (for example Google Drive Backup) show as “Other tool” instead of “Manual” in the table, because Home Assistant cannot tell whether they were scheduled.
+  - The targets of a backup show readable names (“Local”, “Network storage: …”, “Google Drive”) as pills instead of IDs; the account part is left out.
+
 ## 1.10.2 - 2026-10-19
 
 ### Behoben

@@ -25,6 +25,7 @@ from .impact import RANK, USAGE
 from .outage_levels import Levels, outage_level
 
 DEVICE_MIN_ENTITIES = 3  # a device with fewer entities is not a pattern
+OUTAGE_STATES = frozenset({"unavailable", "unknown"})  # an entity without a value
 KEY_LIMIT = 500
 TARGET_MIN = 2  # automations, scripts and dashboards that point to the same missing target
 SERVICE_MIN = TARGET_MIN
@@ -44,6 +45,13 @@ DEVICE_RULE = "device.down"
 APP_RULE = "app.stopped_in_use"
 
 
+def _counts(entity: dict[str, Any]) -> bool:
+    """Whether an entity says something about its device: not disabled, and it had a value once."""
+    if entity["status"] == "disabled":
+        return False
+    return entity["status"] != "unknown" or bool(entity.get("had_value"))
+
+
 def device_down_findings(
     entities: list[dict[str, Any]],
     devices: list[dict[str, Any]],
@@ -51,20 +59,22 @@ def device_down_findings(
     now: datetime | None = None,
     levels: Levels | None = None,
 ) -> list[dict[str, Any]]:
-    """One finding for each device whose entities are all unavailable (at least three).
+    """One finding for each device whose entities are all without a value (at least three).
 
+    Without a value is unavailable, or unknown after the entity had a value (a device in standby).
+    Disabled entities and those that never had a value neither count nor keep the device up.
     It waits as long as the entity findings do: at least one entity of the device must already
     have a finding, so a device that has just gone offline is no finding yet.
     """
-    flagged = {f["object_id"] for f in findings if f["classification"] == "unavailable"}
+    flagged = {f["object_id"] for f in findings if f["classification"] in OUTAGE_STATES}
     members: dict[str, list[dict[str, Any]]] = {}
     for item in entities:
         if item.get("device_id"):
             members.setdefault(item["device_id"], []).append(item)
     result = []
     for device in devices:
-        group = members.get(device["object_id"], [])
-        if len(group) < DEVICE_MIN_ENTITIES or any(e["status"] != "unavailable" for e in group):
+        group = [e for e in members.get(device["object_id"], []) if _counts(e)]
+        if len(group) < DEVICE_MIN_ENTITIES or any(e["status"] not in OUTAGE_STATES for e in group):
             continue
         if not any(e["object_id"] in flagged for e in group):
             continue
@@ -84,7 +94,14 @@ def device_down_findings(
             "classification": "problem",
             "confidence": 0.9,
             "first_detected_at": max(since) if since else None,
-            "evidence": [{"kind": "all_entities_unavailable", "source": "entity_registry"}],
+            "evidence": [
+                {
+                    "kind": "all_entities_unavailable"
+                    if all(e["status"] == "unavailable" for e in group)
+                    else "all_entities_without_value",
+                    "source": "entity_registry",
+                }
+            ],
         }
         if level is not None:
             found["outage_level"] = level
@@ -93,7 +110,7 @@ def device_down_findings(
 
 
 def _visible(finding: dict[str, Any]) -> bool:
-    return finding["classification"] == "unavailable" and not finding.get("ignored")
+    return finding["classification"] in OUTAGE_STATES and not finding.get("ignored")
 
 
 def _consumers(entity_ids: list[str], users: dict[str, set[str]]) -> dict[str, int]:
