@@ -15,6 +15,8 @@
 - **Ausnahmen:** Regeln nach Integration gelten auch für den Befund „Integration nicht ladbar“, etwa für den Drucker-Eintrag, solange der Drucker aus ist (Diskussion 28).
 - **Entität „Aktivität“:** Zeigt, ob Housekeeper gerade scannt, einen Plan ausführt, auf den Start von Home Assistant wartet oder bereit ist; passt auf ein Dashboard neben den Knopf „Scan starten“.
 
+- **Vorschläge für Vermerke:** Eine Karte über der Befundliste sammelt Geräte und Entitäten, die regelmäßig ausfallen oder keinen Wert haben (etwa im Standby), je Gerät eine Zeile mit erkanntem Zeitfenster. „Übernehmen“ setzt den Vermerk „Absichtlich offline“, „Alle übernehmen“ alle nach einer Rückfrage. Zeit ohne Wert zählt dafür mit, nicht aber für die Verfügbarkeit.
+
 ### Geändert
 
 - **Ausfälle im Standby:**
@@ -58,6 +60,8 @@
   - When replacing, the working entity is filled in; suggestions for missing references open the replacement with that target.
 - **Exceptions:** Rules by integration also cover the "integration cannot be loaded" finding, such as a printer's entry while the printer is off (discussion 28).
 - **Entity “Activity”:** Shows whether Housekeeper is scanning, running a plan, waiting for Home Assistant to start or idle; fits on a dashboard next to the “Start scan” button.
+
+- **Suggested marks:** A card above the findings list gathers devices and entities that fail or lose their value regularly (in standby, say), one row per device with the detected time window. “Accept” sets the mark “Offline on purpose”, “Accept all” sets them all after a question. Time without a value counts for this, but not for the availability.
 
 #### Changed
 

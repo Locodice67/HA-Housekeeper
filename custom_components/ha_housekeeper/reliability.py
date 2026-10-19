@@ -55,7 +55,10 @@ THRESHOLDS = {
 def query_runs(
     hass: HomeAssistant, start: float, end: float, days: DayCache | None = None
 ) -> dict[str, Any]:
-    """Blocking: the unavailable intervals per entity in [start, end].
+    """Blocking: the unavailable intervals per entity in [start, end], and those without a value.
+
+    ``blank`` holds the intervals in state ``unknown`` (a device in standby). They only feed the
+    pattern of an unstable entity, never the availability figures.
 
     With ``days`` the finished days are taken from it (or read once and put there) and only the
     rest is read; the pieces are joined so that an outage running over midnight stays one.
@@ -69,17 +72,19 @@ def query_runs(
             pieces(start, end, days.oldest) if days else [(start, end, False)]
         ):
             part = days.get(begin) if keep and days else None
-            if part is None:
+            if part is None or "blank" not in part:  # a day kept before ``blank`` existed
                 part = _query_piece(session, begin, finish, last=finish >= end)
                 if keep and days:
                     days.put(begin, part)
             parts.append((begin, finish, part))
     seen, intervals = join_pieces(parts)
+    _, blank = join_pieces(parts, "blank")
     return {
         "start": start,
         "end": end,
         "seen": seen,
         "intervals": intervals,
+        "blank": blank,
         "took_ms": round((time.monotonic() - started) * 1000),
     }
 
@@ -98,9 +103,9 @@ def _query_piece(session: Any, start: float, end: float, *, last: bool) -> dict[
     from sqlalchemy import case, func, select
 
     seen: dict[str, float] = {}
-    intervals: dict[str, list[tuple[float, float]]] = {}
-    open_at_end: set[str] = set()
-    down = func.sum(case((States.state == "unavailable", 1), else_=0))
+    found: dict[str, dict[str, list[tuple[float, float]]]] = {"unavailable": {}, "unknown": {}}
+    still: dict[str, set[str]] = {"unavailable": set(), "unknown": set()}
+    down = func.sum(case((States.state.in_(("unavailable", "unknown")), 1), else_=0))
     upto = States.last_updated_ts <= end if last else States.last_updated_ts < end
     rows = session.execute(
         select(
@@ -135,24 +140,36 @@ def _query_piece(session: Any, start: float, end: float, *, last: bool) -> dict[
             )
             .subquery()
         )
-        for metadata_id, ts, nxt_ts in session.execute(
-            select(inner.c.metadata_id, inner.c.ts, inner.c.nxt).where(
-                inner.c.state == "unavailable"
+        # Rows in a row with the same state give intervals that touch; ``_merge`` joins them.
+        for metadata_id, ts, state, nxt_ts in session.execute(
+            select(inner.c.metadata_id, inner.c.ts, inner.c.state, inner.c.nxt).where(
+                inner.c.state.in_(("unavailable", "unknown"))
             )
         ).all():
             entity_id = affected[metadata_id]
             if nxt_ts is None:
-                open_at_end.add(entity_id)
-            intervals.setdefault(entity_id, []).append(
+                still[state].add(entity_id)
+            found[state].setdefault(entity_id, []).append(
                 (float(ts), float(nxt_ts if nxt_ts is not None else end))
             )
-    return {"seen": seen, "intervals": intervals, "open": open_at_end}
+    return {
+        "seen": seen,
+        "intervals": found["unavailable"],
+        "open": still["unavailable"],
+        "blank": found["unknown"],
+        "blank_open": still["unknown"],
+    }
 
 
 def join_pieces(
     parts: list[tuple[float, float, dict[str, Any]]],
+    kind: str = "intervals",
 ) -> tuple[dict[str, float], dict[str, list[tuple[float, float]]]]:
-    """Join consecutive pieces: an outage open at the end of one runs on to the next row of the entity."""
+    """Join consecutive pieces: an outage open at the end of one runs on to the next row of the entity.
+
+    ``kind`` is ``intervals`` (unavailable) or ``blank`` (unknown).
+    """
+    still = "open" if kind == "intervals" else "blank_open"
     seen: dict[str, float] = {}
     intervals: dict[str, list[tuple[float, float]]] = {}
     running: set[str] = set()
@@ -164,9 +181,9 @@ def join_pieces(
                 running.discard(entity_id)
         for entity_id, first in part["seen"].items():
             seen.setdefault(entity_id, first)
-        for entity_id, found in part["intervals"].items():
+        for entity_id, found in part.get(kind, {}).items():
             intervals.setdefault(entity_id, []).extend(found)
-        running |= part["open"]
+        running |= part.get(still, set())
     return seen, intervals
 
 
@@ -423,10 +440,12 @@ def flapping(
         if item.get("status") == "disabled":
             excluded["disabled"] += 1
             continue
+        # Without a value counts as well here: a device in standby fails in a pattern too.
+        blank = runs.get("blank", {}).get(entity_id, [])
         merged = _merge(
             [
                 (max(a, start), min(b, end))
-                for a, b in runs["intervals"].get(entity_id, [])
+                for a, b in [*runs["intervals"].get(entity_id, []), *blank]
                 if min(b, end) > max(a, start)
             ]
         )

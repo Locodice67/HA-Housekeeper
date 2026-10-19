@@ -2959,7 +2959,7 @@ class FindingsMixin {
     if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => CAUSE_OWN_RULES.includes(i.rule_id) && entries.some(c => c.id === i.cause_id && this.causeTotal(c)));
     const pg = this.paginate("findings", items);
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, items.length)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenNote()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? this.viewSwitch(grouped, open) : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${(followers && grouped) || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? this.viewSwitch(grouped, open) : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${(followers && grouped) || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -8538,15 +8538,21 @@ Object.assign(TEXT.de, {
   oftenChip: "Fällt regelmäßig aus", oftenChipAt: "Fällt meist zwischen {from} und {to} Uhr aus",
   oftenTitle: "Absichtlich?", oftenText: "{lines} Wenn das gewollt ist, hält ein Vermerk es fest, und Housekeeper meldet den Ausfall dann nicht mehr.",
   oftenSet: "Vermerk mit Zeitfenster setzen", oftenSetPlain: "Vermerk setzen", oftenSkip: "Nicht mehr fragen",
-  oftenNote: "{n} Befunde betreffen Objekte, die regelmäßig ausfallen. Absichtlich? Im Detail steht der Vorschlag für einen Vermerk.",
   oftenDevice: "Mehrere Entitäten dieses Geräts fallen zur selben Zeit aus.",
+  oftenCardTitle: "Vorschläge für Vermerke", oftenCardHint: "Diese Objekte fallen regelmäßig aus oder haben regelmäßig keinen Wert, etwa im Standby. Ein Vermerk „Absichtlich offline“ hält das fest; nach 90 Tagen fragt Housekeeper erneut.",
+  oftenCount: "{n} Vorschläge", oftenHides: "blendet {n} Befunde aus", oftenTake: "Übernehmen", oftenTakeAll: "Alle übernehmen",
+  oftenAllTitle: "Alle Vorschläge übernehmen?", oftenAllText: "{n} Vermerke „Absichtlich offline“ werden gesetzt, mit erkanntem Zeitfenster, wo es eines gibt. Sie blenden {hides} Befunde aus und lassen sich einzeln wieder entfernen.",
+  oftenReason: "Vorschlag: fällt regelmäßig aus",
 });
 Object.assign(TEXT.en, {
   oftenChip: "Fails regularly", oftenChipAt: "Usually fails between {from} and {to}",
   oftenTitle: "On purpose?", oftenText: "{lines} If that is intended, a mark records it and Housekeeper stops reporting the outage.",
   oftenSet: "Set a mark with a time window", oftenSetPlain: "Set a mark", oftenSkip: "Do not ask again",
-  oftenNote: "{n} findings concern objects that fail regularly. On purpose? The detail page proposes a mark.",
   oftenDevice: "Several entities of this device fail at the same time.",
+  oftenCardTitle: "Suggested marks", oftenCardHint: "These objects fail or lose their value regularly, in standby for instance. A mark “Offline on purpose” records that; after 90 days Housekeeper asks again.",
+  oftenCount: "{n} suggestions", oftenHides: "hides {n} findings", oftenTake: "Accept", oftenTakeAll: "Accept all",
+  oftenAllTitle: "Accept all suggestions?", oftenAllText: "{n} marks “Offline on purpose” are set, with the detected time window where there is one. They hide {hides} findings and can be removed one by one.",
+  oftenReason: "Suggested: fails regularly",
 });
 
 const OFTEN_RULES = ["entity.state_unavailable", "entity.state_unknown", "device.down"];
@@ -8598,11 +8604,62 @@ class OftenMixin {
     return ` · <span class="nw">${this.esc(w ? this.t("oftenChipAt", w) : this.t("oftenChip"))}</span>`;
   }
 
-  // One line on top of the findings: how many of them are such objects.
-  oftenNote() {
+  // The findings a mark "offline on purpose" on the object would hide: of a device also those of its entities.
+  oftenHidden(key) {
+    const [type, ...rest] = key.split(":"), id = rest.join(":");
+    const outage = f => !f.ignored && ["unavailable", "unknown", "stale"].includes(f.classification);
+    return (this.data?.findings || []).filter(f => type === "device"
+      ? (f.rule_id === "device.down" && f.object_id === id && !f.ignored) || (outage(f) && this.findObject(`entity:${f.object_id}`)?.device_id === id)
+      : outage(f) && f.object_id === id).length;
+  }
+
+  // The suggestions gathered: one per device whose entities fail together, else one per entity; most findings first.
+  oftenSuggestions() {
+    const out = new Map();
+    for (const f of this.data?.findings || []) {
+      let often = this.oftenFor(f);
+      if (!often) continue;
+      let key = f.rule_id === "device.down" ? `device:${f.object_id}` : `entity:${f.object_id}`;
+      const device = key.startsWith("entity:") && this.findObject(key)?.device_id;
+      const together = device && this.findObject(`device:${device}`) && this.oftenOut("device", device);
+      if (together) { key = `device:${device}`; often = together; }
+      if (out.has(key) || this.findObject(key)?.mark) continue;
+      out.set(key, { key, often, hides: this.oftenHidden(key) });
+    }
+    return [...out.values()].sort((a, b) => b.hides - a.hides || a.key.localeCompare(b.key));
+  }
+
+  // The card above the findings list: every suggestion as a row with "Accept", and all at once.
+  oftenCard() {
     this.ensureStability?.();
-    const n = (this.data?.findings || []).filter(f => this.oftenFor(f)).length;
-    return n ? `<p class="factnote">${this.t("oftenNote", { n: this.formatNumber(n) })}</p>` : "";
+    const items = this.oftenSuggestions();
+    if (!items.length) return "";
+    const open = this.foldOpen("often", false), pg = this.paginate("often", items);
+    const rows = pg.rows.map(({ key, often, hides }) => {
+      const item = this.findObject(key), w = this.oftenWindow(often.info);
+      const sub = [w ? this.t("oftenChipAt", w) : this.t("oftenChip"), this.t("oftenHides", { n: this.formatNumber(hides) })].join(" · ");
+      return `<div class="rowwrap"><button class="row" data-object="${this.esc(key)}">${this.tile(item?.object_type || "entity", "warn")}<span class="row-text"><strong>${this.esc(item?.name || key)}</strong><small>${this.esc(sub)}</small></span></button><button type="button" class="btn" data-often-take="${this.esc(key)}">${this.t("oftenTake")}</button><button type="button" class="btn quiet" data-often-skip="${this.esc(key)}">${this.t("oftenSkip")}</button></div>`;
+    }).join("");
+    const all = items.length > 1 ? `<div class="pad"><button type="button" class="btn" data-often-all>${this.t("oftenTakeAll")}</button></div>` : "";
+    const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.t("oftenCount", { n: this.formatNumber(items.length) }))}</span></button>`;
+    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${all}${rows}${pg.footer}</div>` : ""}</div></div>`;
+  }
+
+  // Set the suggested mark: offline on purpose, with the window when one was found, asked again after 90 days.
+  async takeOften(keys) {
+    const items = new Map(this.oftenSuggestions().map(s => [s.key, s]));
+    let failed = 0, last = null;
+    for (const key of keys) {
+      const s = items.get(key);
+      if (!s) continue;
+      const [object_type, ...rest] = key.split(":"), w = this.oftenWindow(s.often.info);
+      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: "expected_offline", reason: this.t("oftenReason"), days: OFTEN_MARK_DAYS };
+      if (w) msg.window = { mode: "time", from: w.from, to: w.to };
+      try { await this._hass.callWS(msg); } catch (err) { failed += 1; last = err; }
+    }
+    if (failed) this.failed(last);
+    try { await this.refreshData(); } catch (err) { this.failed(err); }
+    this.render();
   }
 
   // The card of the tab "Actions": what the numbers say, and the mark prepared for it.
@@ -8636,6 +8693,11 @@ class OftenMixin {
   bindOften(root) {
     root.querySelectorAll("[data-often-set]").forEach(el => el.onclick = () => this.openOftenMark(el.dataset.oftenSet));
     root.querySelectorAll("[data-often-skip]").forEach(el => el.onclick = () => this.skipOften(el.dataset.oftenSkip));
+    root.querySelectorAll("[data-often-take]").forEach(el => el.onclick = () => this.takeOften([el.dataset.oftenTake]));
+    root.querySelectorAll("[data-often-all]").forEach(el => el.onclick = () => {
+      const items = this.oftenSuggestions(), hides = items.reduce((n, s) => n + s.hides, 0);
+      this.confirmAsk(this.t("oftenAllText", { n: this.formatNumber(items.length), hides: this.formatNumber(hides) }), () => this.takeOften(items.map(s => s.key)), { title: this.t("oftenAllTitle"), yes: this.t("oftenTakeAll"), danger: false });
+    });
   }
 }
 

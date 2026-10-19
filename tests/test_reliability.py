@@ -258,6 +258,17 @@ def test_a_rate_of_one_and_a_half_a_day_is_flapping() -> None:
     assert exact["level"] == "flapping"
 
 
+def test_time_without_a_value_counts_for_the_pattern_but_not_for_the_availability() -> None:
+    from custom_components.ha_housekeeper.reliability import compute
+
+    runs = {**week({"a": 0.0}, {"a": episodes(2)}), "blank": {"a": episodes(2, at=90000)}}
+    result = flap({"a": []}, runs=runs)
+    assert [i["episodes"] for i in result["items"]] == [4]
+    entries = {"e1": {"title": "E", "domain": "x"}}
+    row = compute(runs, [{"entity_id": "a", "config_entry_id": "e1"}], entries)["entries"][0]
+    assert row["affected"][0]["availability"] == round(100 * (1 - 120 / WEEK_END), 2)
+
+
 def test_the_day_window_needs_three_episodes() -> None:
     day = {"start": 0.0, "end": DAY, "seen": {"a": 0.0}, "intervals": {"a": episodes(2)}}
     assert flap({"a": []}, runs=day)["items"] == []
