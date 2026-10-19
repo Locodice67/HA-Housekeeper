@@ -109,9 +109,9 @@ Die vier Schwellen stellst du unter **Einstellungen → Scan und Meldungen** ein
 
 Die Zahl im Kopf des Panels („Zustand 98,4 %“) ist der **Anteil der Objekte in Ordnung**. Sie zählt Objekte, nicht Befunde.
 
-1. **Ausgangswert** ist die Zahl der geprüften Objekte (Entitäten, Geräte, Integrationen, Automationen, Skripte, Szenen), ohne die Objekte, die nur Folgen einer Ursache sind: Die Ursache steht für sie.
+1. **Ausgangswert** ist die Zahl der geprüften Objekte (Entitäten, Geräte, Integrationen, Automationen, Skripte, Szenen).
 2. Jedes Objekt mit Befund nimmt nach seiner **schlimmsten** Stufe ab: **hoch 1**, **mittel 0,5**, **niedrig 0,2**, **Info 0**.
-3. Ein Objekt zählt **einmal**, auch mit mehreren Befunden. Folgen einer Ursache zählen nicht, die Ursache steht für sie.
+3. Ein Objekt zählt **einmal**, auch mit mehreren Befunden. Auch die Folgen eines Ausfalls sind eigene Objekte und zählen mit ihrer eigenen Stufe, damit der Anteil ehrlich bleibt.
 4. Bekannte, zurückgestellte und ausgeblendete Befunde zählen nicht.
 5. **Zustand = (Ausgangswert − Summe der Abzüge) ÷ Ausgangswert**, auf eine Dezimalstelle abgerundet, damit ein Haus mit Befund nie „100 %“ zeigt.
 

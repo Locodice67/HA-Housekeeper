@@ -269,7 +269,7 @@ def test_the_lead_series_leaves_out_the_follow_ups_of_a_cause(hass) -> None:
     assert (point["open"], point["lead"], point["lead_classes"]) == (3, 2, {"unused": 2})
 
 
-def test_the_state_of_the_house_leaves_the_followers_of_a_cause_out_of_the_base_too(hass) -> None:
+def test_the_state_of_the_house_counts_the_followers_of_a_cause_as_objects(hass) -> None:
     history = ScanHistory(hass)
     snapshot = _snapshot(
         "2026-10-06T08:00:00+00:00",
@@ -289,7 +289,7 @@ def test_the_state_of_the_house_leaves_the_followers_of_a_cause_out_of_the_base_
     ]
     history.record(snapshot)
     point = history.series()["points"][0]
-    assert point["health"] == 50.0, "one unit of the base, half of it taken off"
+    assert point["health"] == 50.0, "three objects, each taking off half: the followers count too"
 
 
 def test_a_pinned_scan_point_is_named_compared_kept_beyond_the_retention_and_deleted(hass) -> None:
