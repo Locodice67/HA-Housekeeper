@@ -6430,3 +6430,20 @@ test("a sparkline shows at most the last seven days", () => {
   el.series = { points: Array.from({ length: 10 }, (_, i) => ({ at: new Date(Date.UTC(2026, 9, 11 + i)).toISOString(), open: i })) };
   assert.ok(el.sparkline("open", "bad").includes("+7 in 7 days"));
 });
+
+test("the findings tiles are fixed: they count the open findings whatever the status, show every reason, and a click opens the open list", () => {
+  const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
+  const f = (key, classification, ignored = false) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored, ignored_by: ignored ? "user" : null });
+  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "orphaned"), f("c", "orphaned", true)] };
+  el.view = "findingsNav"; el.findingStatus = "hidden";
+  const html = el.findingsView();
+  assert.ok(html.includes('class="sumtile zero"') && !html.includes('data-finding-filter="unused"'), "a reason without open findings is a quiet 0");
+  const orphaned = html.slice(html.indexOf('data-finding-filter="orphaned"'), html.indexOf("</button>", html.indexOf('data-finding-filter="orphaned"')));
+  assert.ok(orphaned.includes(">1<"), "the hidden one does not count");
+  const tile = { dataset: { findingFilter: "orphaned" } };
+  shadow.querySelectorAll = selector => (selector === "[data-finding-filter]" ? [tile] : []);
+  el.bind();
+  tile.onclick();
+  assert.equal(`${el.findingStatus}|${el.findingFilter}`, "|orphaned");
+});
+

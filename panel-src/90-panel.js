@@ -982,7 +982,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
-    root.querySelector("[data-finding-followers]")?.addEventListener("click", () => { const on = !this.findingFollowers; this.clearFindingFilters(); this.findingFollowers = on; this.pages = {}; this.render(); this.showList(); });
+    root.querySelector("[data-finding-followers]")?.addEventListener("click", () => { const on = !this.findingFollowers; this.clearFindingFilters(); this.findingStatus = ""; this.findingFollowers = on; this.pages = {}; this.render(); this.showList(); });
     // One note of the filters above the list: its ✕ takes off just that filter.
     root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
       const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
@@ -1042,7 +1042,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-changes-cat]").forEach(el => el.onclick = () => { const v = el.dataset.changesCat; this.changesCat = this.changesCat === v ? "" : v; this.render(); this.showList(); });
     root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.pages = {}; this.render(); });
     // A tile starts from the plain list of its status, so a click on it always shows the number it says.
-    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter, same = v && this.findingFilter === v; this.clearFindingFilters(); this.findingFilter = same ? "" : v; this.pages = {}; this.render(); this.showList(); });
+    // The tiles count the open findings, so a tile always shows the open list.
+    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter, same = v && this.findingFilter === v; this.clearFindingFilters(); this.findingStatus = ""; this.findingFilter = same ? "" : v; this.pages = {}; this.render(); this.showList(); });
     const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };

@@ -243,7 +243,6 @@ class FindingsMixin {
   findingsView() {
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const classes = [...new Set(all.map(f => this.findingReason(f)))];
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
     const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !this.findingHeld && !this.findingCause && !st.q && !Object.values(st.f || {}).some(Boolean);
@@ -267,22 +266,29 @@ class FindingsMixin {
     const isFollower = f => this.isFollowUp(f);
     const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
     const afterFollows = afterAll.filter(isFollower).length, afterCount = afterAll.length;
-    // The tiles count within the chosen status (open, new, hidden …), every finding of a reason, the follow-ups too.
-    const tile = c => { const mine = all.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length; return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: this.reasonTone(c), filter: c, active: this.findingFilter === c, spark: spark(`reason:${c}`, "bad") }; };
-    // A fixed order, from the cause to what it does, so a tile keeps its place from scan to scan.
-    const rank = c => { const i = FINDING_ORDER.indexOf(c); return i < 0 ? FINDING_ORDER.length : i; };
-    const ordered = [...classes].sort((a, b) => rank(a) - rank(b));
+    // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with
+    // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
+    const openAll = this.data.findings.filter(f => !f.ignored);
+    const tile = c => {
+      const mine = openAll.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length;
+      if (!mine.length) return { label: this.reasonLabel(c), value: "0", tone: "zero", spark: spark(`reason:${c}`, "bad") };
+      return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: this.reasonTone(c), filter: c, active: this.findingFilter === c, spark: spark(`reason:${c}`, "bad") };
+    };
+    // A fixed order, from the cause to what it does; a reason no list names comes last.
+    const ordered = [...FINDING_ORDER, ...new Set(openAll.map(f => this.findingReason(f)).filter(c => !FINDING_ORDER.includes(c)))];
     // The groups follow the colour of a reason: red ones are faults, the rest is tidying up, also a reason no list names.
     const faults = ordered.filter(c => this.reasonTone(c) === "red"), tidy = ordered.filter(c => this.reasonTone(c) !== "red");
-    const followers = all.filter(isFollower).length;
-    const allObjects = this.countObjects(this.objectTree(all, all, true));
-    const total = { label: this.t("allFindings"), value: this.formatNumber(all.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: all.length ? "warn" : "ok", filter: "", active: !this.findingFilter && !this.findingFollowers, spark: spark(this.findingStatus ? "" : "open", "bad") };
+    const followers = openAll.filter(isFollower).length;
+    const allObjects = this.countObjects(this.objectTree(openAll, openAll, true));
+    // "All findings" clears the filters; it is not marked itself, only a filter that is on is.
+    const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
-    // The head of a group filters the list to the whole group, like a tile to one reason.
+    // The head of a group filters the list to the whole group, like a tile to one reason; without open findings it is a quiet label.
     const group = (title, list, tone, id) => {
-      if (!list.length) return "";
-      const n = all.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
-      return `<div class="sumgroup"><button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}">${this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }))}</button>${this.sumTiles(list.map(tile), "compact")}</div>`;
+      const n = openAll.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
+      const text = this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }));
+      const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}">${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
+      return `<div class="sumgroup">${head}${this.sumTiles(list.map(tile), "compact")}</div>`;
     };
     const tiles = `<div class="findsum"><div class="sumall">${this.sumTiles([total], "compact")}${followLink}</div><div class="sumrows">${group("sumGroupUrgent", faults, "red", "red")}${group("sumGroupTidy", tidy, "warn", "tidy")}</div></div>`;
     const fixedView = this.findingStatus === "fixed";
