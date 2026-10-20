@@ -6650,3 +6650,9 @@ test("All of the unstable entities counts every one, and the list says it shows 
   const html = el.unstableCard({ window_days: 7, unstable: { items: [item], total: 31, excluded: 0 } });
   assert.ok(html.includes(">31<") && html.includes("the 1 most noticeable in the list") && html.includes("The 1 most noticeable of 31"));
 });
+
+test("a storage category is named in words with the system's name below, and its share is against the space in use", () => {
+  const { el } = panel("en");
+  const html = el.sysCategories([{ id: "addons_data", label: "apps_data", bytes: 25 }, { id: "media", label: "media", bytes: 75 }], 100);
+  assert.ok(html.includes("App data") && html.includes("apps_data") && html.includes("25 %") && html.includes("75 %"));
+});

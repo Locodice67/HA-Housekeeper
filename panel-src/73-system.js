@@ -132,7 +132,7 @@ class SystemMixin {
       const choice = this.viewTabBar("storage", tabs, by);
       const title = key => `<h3 class="syssec">${this.esc(this.t(key))}</h3>`;
       const apps = `<p class="factnote">${this.t("sysAppsHint")} <button type="button" class="link" data-view="components">${this.t("components")}</button></p>`;
-      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats) : this.sysConsumers(r.breakdown)}${apps}`;
+      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats, r.categories?.used) : this.sysConsumers(r.breakdown)}${apps}`;
       const cut = r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
       return `<div class="stack">${head}${tiles}<div class="panel">${choice}${cut}${list}${this.howCounted("sysFootnote")}</div></div>`;
     });
@@ -147,15 +147,24 @@ class SystemMixin {
 
   sysBySize() { return [{ key: "size", label: "sysColSize", dir: "desc", get: x => x.bytes ?? null }]; }
 
-  sysCategories(cats) {
+  // The categories of the disk in words, with the name the system gives them below; the share is against the space
+  // in use, as bar and number, like the tables of the database.
+  sysCategories(cats, used = cats.reduce((sum, c) => sum + (c.bytes || 0), 0)) {
     const max = Math.max(0, ...cats.map(c => c.bytes));
+    const label = c => { const key = `sysCat_${c.id}`, text = this.t(key); return text === key ? c.label : text; };
+    const share = c => (used ? Math.round((c.bytes || 0) / used * 100) : 0);
     return this.sysList("syscat", cats, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: c => c.label }],
-      text: c => `${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
-      columns: [{ key: "name", label: "sysColCategory", cell: c => this.nameCell(c.label, c.id !== c.label ? c.id : "") }, ...this.sysSizeColumns(max)],
-      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes"], rows: c => [c.label, c.id, c.bytes],
+      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: label }],
+      text: c => `${label(c)} ${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
+      columns: [
+        { key: "name", label: "sysColCategory", cell: c => this.nameCell(label(c), label(c) !== c.label ? c.label : "") },
+        this.sysSizeColumns(max)[0],
+        { key: "share", label: "sysColShare", sortable: false, cell: c => `<span class="dbshare">${this.sysShare(c.bytes || 0, used)}<b>${this.esc(`${this.formatNumber(share(c))} %`)}</b></span>` },
+      ],
+      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes", "%"], rows: c => [label(c), c.id, c.bytes, share(c)],
     });
   }
+
 
   sysConsumers(items) {
     const max = Math.max(0, ...items.map(x => x.bytes));

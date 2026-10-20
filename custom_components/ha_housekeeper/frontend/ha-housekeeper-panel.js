@@ -14907,7 +14907,7 @@ Object.assign(TEXT.de, {
     sysTabCards: "Custom Cards", sysTabCardsHint: "Dashboard-Ressourcen", sysTabBlueprints: "Blueprints", sysTabBlueprintsHint: "Größe der Dateien", sysNoSupervisor: "nur mit Supervisor",
   cardStatus_missing: "Datei fehlt", cardStatus_external: "extern", cardStatus_unused: "ungenutzt", cardStatus_used: "genutzt", cardStatus_unknown: "unbekannt",
   cardStatusHint_missing: "Die lokale Datei gibt es nicht mehr; die Karte lädt nicht.", cardStatusHint_external: "Eine externe Adresse; Housekeeper prüft sie nicht.", cardStatusHint_unused: "Kein Dashboard nutzt eine Karte aus dieser Datei. Ein Hinweis, kein Urteil: Hilfsmodule werden anders gebraucht.", cardStatusHint_used: "Ein Dashboard nutzt eine Karte aus dieser Datei.", cardStatusHint_unknown: "Aus der Datei lassen sich keine Kartennamen lesen; ob sie gebraucht wird, ist offen.",
-  sysColCategory: "Kategorie", sysColPlace: "Bereich", sysColSize: "Größe", sysColShare: "Anteil", sysColIntegration: "Integration", sysColApp: "App", sysColState: "Status", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Daten",
+  sysColCategory: "Kategorie", sysCat_system: "System", sysCat_addons_data: "Daten der Apps", sysCat_addons_config: "Konfiguration der Apps", sysCat_homeassistant: "Home-Assistant-Konfiguration", sysCat_media: "Medien", sysCat_share: "Freigaben", sysCat_ssl: "Zertifikate", sysCat_backup: "Backups", sysColPlace: "Bereich", sysColSize: "Größe", sysColShare: "Anteil", sysColIntegration: "Integration", sysColApp: "App", sysColState: "Status", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Daten",
   sysColUrl: "Ressource", sysColType: "Typ", sysColName: "Name", sysColDomain: "Art", sysColAuthor: "Autor",
   sysTarget_recorder_db: "Recorder-Datenbank", sysTarget_backups: "Backups", sysTarget_custom_components: "Custom Components", sysTarget_media: "Medien", sysTarget_www: "www (lokale Web-Dateien)", sysTarget_image: "Bilder-Upload", sysTarget_tts: "TTS-Cache", sysTarget_blueprints: "Blueprints", sysTarget_themes: "Themes", sysTarget_deps: "Python-Abhängigkeiten (deps)", sysTarget_custom_cards: "Custom Cards",
   sysFolder: "Ordner", sysFolderHint: "Gezählt wird der ganze Ordner der Karte.", sysExternal: "extern oder nicht gefunden", sysAppRunning: "läuft", sysAppStopped: "gestoppt",
@@ -14985,7 +14985,7 @@ Object.assign(TEXT.en, {
     sysTabCards: "Custom cards", sysTabCardsHint: "dashboard resources", sysTabBlueprints: "Blueprints", sysTabBlueprintsHint: "size of the files", sysNoSupervisor: "only with a Supervisor",
   cardStatus_missing: "File missing", cardStatus_external: "external", cardStatus_unused: "unused", cardStatus_used: "used", cardStatus_unknown: "unknown",
   cardStatusHint_missing: "The local file is gone; the card does not load.", cardStatusHint_external: "An external address; Housekeeper does not check it.", cardStatusHint_unused: "No dashboard uses a card from this file. A hint, not a verdict: helper modules are used in other ways.", cardStatusHint_used: "A dashboard uses a card from this file.", cardStatusHint_unknown: "No card names can be read from the file; whether it is needed is open.",
-  sysColCategory: "Category", sysColPlace: "Area", sysColSize: "Size", sysColShare: "Share", sysColIntegration: "Integration", sysColApp: "App", sysColState: "State", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Data",
+  sysColCategory: "Category", sysCat_system: "System", sysCat_addons_data: "App data", sysCat_addons_config: "App configuration", sysCat_homeassistant: "Home Assistant configuration", sysCat_media: "Media", sysCat_share: "Shared folder", sysCat_ssl: "Certificates", sysCat_backup: "Backups", sysColPlace: "Area", sysColSize: "Size", sysColShare: "Share", sysColIntegration: "Integration", sysColApp: "App", sysColState: "State", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Data",
   sysColUrl: "Resource", sysColType: "Type", sysColName: "Name", sysColDomain: "Kind", sysColAuthor: "Author",
   sysTarget_recorder_db: "Recorder database", sysTarget_backups: "Backups", sysTarget_custom_components: "Custom components", sysTarget_media: "Media", sysTarget_www: "www (local web files)", sysTarget_image: "Image upload", sysTarget_tts: "TTS cache", sysTarget_blueprints: "Blueprints", sysTarget_themes: "Themes", sysTarget_deps: "Python dependencies (deps)", sysTarget_custom_cards: "Custom cards",
   sysFolder: "Folder", sysFolderHint: "The whole folder of the card is counted.", sysExternal: "external or not found", sysAppRunning: "running", sysAppStopped: "stopped",
@@ -15362,7 +15362,7 @@ class SystemMixin {
       const choice = this.viewTabBar("storage", tabs, by);
       const title = key => `<h3 class="syssec">${this.esc(this.t(key))}</h3>`;
       const apps = `<p class="factnote">${this.t("sysAppsHint")} <button type="button" class="link" data-view="components">${this.t("components")}</button></p>`;
-      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats) : this.sysConsumers(r.breakdown)}${apps}`;
+      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats, r.categories?.used) : this.sysConsumers(r.breakdown)}${apps}`;
       const cut = r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
       return `<div class="stack">${head}${tiles}<div class="panel">${choice}${cut}${list}${this.howCounted("sysFootnote")}</div></div>`;
     });
@@ -15377,15 +15377,24 @@ class SystemMixin {
 
   sysBySize() { return [{ key: "size", label: "sysColSize", dir: "desc", get: x => x.bytes ?? null }]; }
 
-  sysCategories(cats) {
+  // The categories of the disk in words, with the name the system gives them below; the share is against the space
+  // in use, as bar and number, like the tables of the database.
+  sysCategories(cats, used = cats.reduce((sum, c) => sum + (c.bytes || 0), 0)) {
     const max = Math.max(0, ...cats.map(c => c.bytes));
+    const label = c => { const key = `sysCat_${c.id}`, text = this.t(key); return text === key ? c.label : text; };
+    const share = c => (used ? Math.round((c.bytes || 0) / used * 100) : 0);
     return this.sysList("syscat", cats, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: c => c.label }],
-      text: c => `${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
-      columns: [{ key: "name", label: "sysColCategory", cell: c => this.nameCell(c.label, c.id !== c.label ? c.id : "") }, ...this.sysSizeColumns(max)],
-      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes"], rows: c => [c.label, c.id, c.bytes],
+      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: label }],
+      text: c => `${label(c)} ${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
+      columns: [
+        { key: "name", label: "sysColCategory", cell: c => this.nameCell(label(c), label(c) !== c.label ? c.label : "") },
+        this.sysSizeColumns(max)[0],
+        { key: "share", label: "sysColShare", sortable: false, cell: c => `<span class="dbshare">${this.sysShare(c.bytes || 0, used)}<b>${this.esc(`${this.formatNumber(share(c))} %`)}</b></span>` },
+      ],
+      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes", "%"], rows: c => [label(c), c.id, c.bytes, share(c)],
     });
   }
+
 
   sysConsumers(items) {
     const max = Math.max(0, ...items.map(x => x.bytes));
