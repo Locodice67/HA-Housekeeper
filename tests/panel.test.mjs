@@ -834,10 +834,10 @@ test("grouped causes and single findings obey the same table sort", () => {
   el.lvState("findings", "impact", "desc");
   el.lv.findings.sort = "name"; el.lv.findings.dir = "asc";
   let html = el.findingsView();
-  assert.ok(html.indexOf('data-fsel-group="og:entity:sensor.a"') < html.indexOf("Integration Zulu is not loaded"));
+  assert.ok(html.indexOf('data-fold="og:entity:sensor.a"') < html.indexOf("Integration Zulu is not loaded"));
   el.lv.findings.dir = "desc";
   html = el.findingsView();
-  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fsel-group="og:entity:sensor.a"'));
+  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fold="og:entity:sensor.a"'));
 });
 
 test("batteries and unreferenced lists filter by area and sort", () => {
@@ -2196,7 +2196,8 @@ test("the sort and filter of a list come back, the search text does not; finding
   el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1" }] };
   el.view = "findingsNav"; el.findSel = new Set(["k1"]);
   el.render();
-  assert.ok(/data-fsel-group="og:[^"]+" checked/.test(shadow.innerHTML) && shadow.innerHTML.includes("data-fsel-hide"), "the head of its object is ticked");
+  assert.ok(shadow.innerHTML.includes("data-fsel-hide"), "the selection bar is shown");
+  assert.ok(!/data-fsel-group="og:/.test(shadow.innerHTML), "the head of its object has no box of its own, so it is not ticked with it");
   assert.equal(el.exportRows().length, 1);
 });
 
@@ -5658,9 +5659,9 @@ test("the finding of an outage is the head of its integration, with a filter too
   const own = { rule_id: "config_entry.not_loaded", object_id: "e1", classification: "problem", confidence: 0.9, key: "config_entry.not_loaded|e1", ignored: false, evidence: [], impact: "low", cause_id: "integration_down:e1" };
   const c = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hue", finding_key: own.key, follower_count: 0, total_followers: 0, child_ids: [], consumers: {}, impact: "low", parent_id: null };
   el.data = { ...DATA, objects: [], causes: [c], findings: [own] };
-  assert.equal((el.findingsView().match(/data-fsel-group="og:config_entry:e1"/g) || []).length, 1, "the head of its integration in the grouped list");
+  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "the head of its integration in the grouped list selects its own finding");
   el.findingFilter = "outage";
-  assert.equal((el.findingsView().match(/data-fsel-group="og:config_entry:e1"/g) || []).length, 1, "and under a filter too");
+  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "and under a filter too");
   el.showFollowers = true;
   assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "a row of its own in the flat list");
 });

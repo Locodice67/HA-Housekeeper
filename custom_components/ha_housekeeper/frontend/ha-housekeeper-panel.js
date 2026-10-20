@@ -16800,7 +16800,8 @@ class ObjectGroupsMixin {
     const title = n.cause ? this.t(`cause_${n.cause.kind}`, { name: n.cause.name }) : this.nodeName(n);
     const tone = n.cause ? "red" : this.tone(f.list[0]?.classification);
     const type = n.cause ? n.cause.object_type : n.key.split(":")[0];
-    const pick = keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}">` : this.causeBox(n.cause || {});
+    // The head selects only its own finding, never the rows below it, and they do not tick it either.
+    const pick = this.causeBox(n.cause || {});
     const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.nodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
     const total = n.cause ? this.causeTotal(n.cause) : 0;
     const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}`;
