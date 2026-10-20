@@ -11561,7 +11561,7 @@ Object.assign(TEXT.de, {
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
   stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
-  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen & Vermerke", setHintExceptions: "Status, Vermerke, Regeln und Labels.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
+  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen & Vermerke", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_maintenance: "{n} verfehlte Wartungsziele", navCount_policies: "{n} Verstöße gegen Richtlinien", navCount_other: "{n} Punkte zum Ansehen", setHintExceptions: "Status, Vermerke, Regeln und Labels.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setNoneHidden: "nichts ausgeblendet", setRuleOne: "1 Regel", setRulesCount: "{n} Regeln", setVacationOn: "Urlaubsmodus an", setVacationOff: "Urlaubsmodus aus", setVacationNone: "Urlaubsmodus nicht eingerichtet", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
   actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
@@ -11610,7 +11610,7 @@ Object.assign(TEXT.en, {
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
   stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
-  setTabProtection: "Protection mode", setTabExceptions: "Exceptions & marks", setHintExceptions: "Status, marks, rules and labels.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
+  setTabProtection: "Protection mode", setTabExceptions: "Exceptions & marks", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_maintenance: "{n} maintenance goals missed", navCount_policies: "{n} policy violations", navCount_other: "{n} items to look at", setHintExceptions: "Status, marks, rules and labels.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setNoneHidden: "nothing hidden", setRuleOne: "1 rule", setRulesCount: "{n} rules", setVacationOn: "Vacation mode on", setVacationOff: "Vacation mode off", setVacationNone: "Vacation mode not set up", setOn: "on", setOff: "off",
   maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
   actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
@@ -17860,12 +17860,18 @@ class HAHousekeeperPanel extends HTMLElement {
     return Object.fromEntries(["exposure", "dataflow", "secrets", "runs"].map(v => [v, found[v] || undefined]));
   }
 
+  // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
+  navCountHint(view, n) {
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies"].includes(view) ? `navCount_${view}` : "navCount_other";
+    return this.t(key, { n: this.formatNumber(n) });
+  }
+
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
     const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
-    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
+    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;

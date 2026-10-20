@@ -668,12 +668,18 @@ class HAHousekeeperPanel extends HTMLElement {
     return Object.fromEntries(["exposure", "dataflow", "secrets", "runs"].map(v => [v, found[v] || undefined]));
   }
 
+  // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
+  navCountHint(view, n) {
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies"].includes(view) ? `navCount_${view}` : "navCount_other";
+    return this.t(key, { n: this.formatNumber(n) });
+  }
+
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
     const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
-    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
+    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;

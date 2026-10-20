@@ -5641,7 +5641,7 @@ test("the bar shows what the scan counted for the security and runs views, and n
   const { el } = panel("en");
   el.data = { ...el.data, meta: { ...el.data.meta, view_counts: { exposure: 2, secrets: 3, runs: 4 } } };
   const bar = el.topbar();
-  const num = view => (bar.match(new RegExp(`data-view="${view}"[^>]*>.*?(?:<em>(\\d+)</em>)?</button>`)) || [])[1];
+  const num = view => (bar.match(new RegExp(`data-view="${view}"[^>]*>.*?(?:<em[^>]*>(\\d+)</em>)?</button>`)) || [])[1];
   assert.equal(num("exposure"), "2"); assert.equal(num("secrets"), "3"); assert.equal(num("runs"), "4");
   assert.equal(num("dataflow"), undefined, "a view left out has no number");
   assert.equal(num("inventory"), undefined, "the stock has none");
@@ -6345,4 +6345,11 @@ test("checked objects count what the inventory shows under its filter, an automa
   assert.ok(el.overview().includes('data-jump="inventory" data-status="" data-type="_rated"'));
   el.typeFilter = "_rated";
   assert.equal(el.filtered().length, el.health().base);
+});
+
+test("a number in the menu says what it counts", () => {
+  const { el } = panel("en");
+  assert.equal(el.navCountHint("batteries", 3), "3 low batteries");
+  assert.equal(el.navCountHint("secrets", 2), "2 items to look at");
+  assert.ok(el.topbar().includes(`title="${el.navCountHint("findingsNav", el.findingTotal())}"`));
 });
