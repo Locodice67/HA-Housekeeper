@@ -159,6 +159,7 @@ test("home functions editor keeps required members and offers only direct invent
   assert.doesNotMatch(html, /data-monitor-pick="entity:sensor.b"/);
   assert.match(html, /class="row monitor-choice"/);
   assert.match(el.styles(), /\.row\.monitor-choice\{grid-template-columns:auto minmax\(0,1fr\) auto\}/);
+  assert.match(html, /class="chip active" type="button" data-monitor-type=""/, "the type of the results is a row of chips");
   assert.match(html, /data-monitor-type="scene"/);
   el.monitorQuery = "home";
   assert.match(el.monitorEditor(), /data-monitor-pick="scene:scene.home"/);

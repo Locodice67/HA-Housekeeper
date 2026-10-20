@@ -294,7 +294,8 @@ class MonitorMixin {
     const matches = query.length < 2 ? [] : available.filter(o => `${o.name} ${o.object_id} ${o.aliases?.join?.(" ") || ""} ${this.monitorObjectContext(o)}`.toLowerCase().includes(query));
     const grouped = groups.map(([kind]) => [kind, matches.filter(o => typeOf(o) === kind)]);
     const candidates = grouped.flatMap(([kind, items]) => !this.monitorType || this.monitorType === kind ? items.slice(0, this.monitorType ? 50 : 10) : []);
-    const tabs = [["", "monitorTypeAll"], ...groups].map(([kind, label]) => `<button class="btn small ${this.monitorType === kind || !this.monitorType && !kind ? "primary" : "quiet"}" type="button" data-monitor-type="${kind}" aria-pressed="${this.monitorType === kind || !this.monitorType && !kind}">${this.t(label)}</button>`).join("");
+    // The type of the search results as chips, like the status chips of the findings page.
+    const tabs = [["", "monitorTypeAll"], ...groups].map(([kind, label]) => { const on = this.monitorType === kind || (!this.monitorType && !kind); return `<button class="chip${on ? " active" : ""}" type="button" data-monitor-type="${kind}" aria-pressed="${on}">${this.t(label)}</button>`; }).join("");
     const selected = form.members.map((member, i) => {
       const object = this.findObject(member.object_key);
       const kind = member.object_key.split(":")[0];
