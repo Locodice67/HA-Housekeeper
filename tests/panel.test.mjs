@@ -5973,6 +5973,15 @@ test("while the full database check runs, the page looks again quietly and only 
   assert.equal(calls, 2); assert.ok(!loading, "no flash of reading");
 });
 
+test("a database finding of a kind the panel does not know shows its name and level, and the export lists the figures", () => {
+  const { el } = panel("en");
+  const row = el.dbFindingRow({ kind: "future_kind", level: "hint" });
+  assert.ok(row.includes("future_kind") && row.includes("Hint") && !row.includes("What to do?"));
+  el.dbExporter({ ...DBH, findings: [] });
+  const facts = el._exporters.recdb.sections.find(sec => sec.name === "facts").rows().map(x => x[0]);
+  assert.ok(facts.includes("Size: 11 GB (WAL 3 GB)") && facts.includes("2 gaps from restarts (normal)"));
+});
+
 test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {
   const { el, shadow } = panel("en");
   const tabs = el.searchPages().filter(page => page.view === "maintenance" && page.viewTab).map(page => page.viewTab);

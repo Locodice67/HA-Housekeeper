@@ -1232,13 +1232,13 @@ Object.assign(TEXT.en, {
 
 // Texts for the database card; merged into TEXT.
 Object.assign(TEXT.de, {
-  dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
+  dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   dbNone: "Keine Auffälligkeit in der Datenbank.", dbWhatToDo: "Was tun?", dbProblem: "Problem", dbHint: "Hinweis",
-  dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect})", dbSizeServer: "Datenbank {db} (Angabe des Servers, {dialect})", dbSizeEstimated: "Datenbank etwa {db} (Schätzung des Servers, {dialect})", dbTileServer: "laut Server ({dialect})", dbTileEstimated: "geschätzt ({dialect})", dbAbout: "etwa {size}", dbTablesTitle: "Größte Tabellen", dbTablesHint: "Daten und Indizes je Tabelle, laut Server.", dbTablesHintSqlite: "Daten und Indizes je Tabelle; einmal am Tag gemessen.", dbTablesAt: "Stand {at}.", dbTablesMore: "{n} weitere Tabellen", dbColTable: "Tabelle", dbColBytes: "Bytes", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileGrowthShare: "{pct} % der Größe am Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
+  dbNoSize: "Größe nicht messbar (Datenbank: {dialect})", dbTileServer: "laut Server ({dialect})", dbTileEstimated: "geschätzt ({dialect})", dbAbout: "etwa {size}", dbTablesTitle: "Größte Tabellen", dbTablesHint: "Daten und Indizes je Tabelle, laut Server.", dbTablesHintSqlite: "Daten und Indizes je Tabelle; einmal am Tag gemessen.", dbTablesAt: "Stand {at}.", dbTablesMore: "{n} weitere Tabellen", dbColTable: "Tabelle", dbColBytes: "Bytes", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileGrowthShare: "{pct} % der Größe am Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
   dbKind_wal_large: "Große WAL-Datei", dbKind_growth: "Ungewöhnliches Wachstum", dbKind_duplicates: "Doppelte Statistikzeitpunkte", dbKind_missing_hours: "Fehlende Stunden in Statistiken", dbKind_statistics_issues: "Statistik passt nicht zur Entität", dbKind_recorder_gap: "Lücken im Recorder",
   dbWal: "Die WAL-Datei ist {wal} groß, die Datenbank {db}.", dbGrowth: "In 7 Tagen {recent} gewachsen, in den Wochen davor etwa {base} pro Woche.",
-  dbDuplicates: "{n}{more} Zeitpunkte stehen doppelt in den Statistiken, vor allem bei: {list}.", dbMissing: "{n} Reihen haben Lücken im Stundenverlauf: {list}.", dbMissingHours: "{n} Std. fehlen",
+  dbDuplicates: "{n}{more} Zeitpunkte stehen doppelt in den Statistiken, vor allem bei: {list}.", dbMissingHours: "{n} Std. fehlen",
   dbIssues: "{n} Reihen: {list}.", dbRecorderGap: "{n} Zeiträume ohne einen einzigen Eintrag, der längste {longest}, zuletzt ab {latest}. Kein Neustart erklärt sie.",
   dbIssue_units_changed: "Einheit geändert", dbIssue_unsupported_state_class: "State-Class nicht unterstützt", dbIssue_state_class_removed: "State-Class entfernt", dbIssue_unsupported_unit: "Einheit nicht unterstützt", dbIssue_mean_type_changed: "Art des Mittelwerts geändert",
   dbAdvice_wal_large: "Ein Neustart von Home Assistant verkleinert die WAL-Datei meist. Bleibt sie danach groß, hält etwas anderes die Datenbank lange offen, etwa ein Add-on wie SQLite Web: schließe es und starte noch einmal neu.",
@@ -1250,16 +1250,16 @@ Object.assign(TEXT.de, {
   dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens {gap} Minuten ohne einen einzigen Eintrag in den Zuständen der letzten {gapDays} Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab {missing} in den letzten {missingDays} Tagen. Housekeeper repariert nichts und löscht nichts.",
   todoDbProblem: "Datenbank: Problem",
   dbColFrom: "Von", dbColTo: "Bis", dbColHours: "Dauer", dbColCause: "Ursache",
-  stormTabFindings: "Auffälligkeiten", stormTabEntities: "Lauteste Entitäten", stormTabIntegrations: "Integrationen", stormTabEvents: "Ereignisse", dbMissingShared: "{n} Reihen haben Lücken im Stundenverlauf. Bei allen Reihen zugleich fehlen {hours} Stunden in {count} Zeiträumen; dort wurde keine Statistik berechnet.", dbMissingOwn: "Dazu kommen eigene Lücken einzelner Sensoren (Liste unten).", dbMissingOnlyShared: "Alle Lücken fallen in diese gemeinsamen Zeiträume.", dbMissingOwnOnly: "{n} Sensoren haben Lücken im Stundenverlauf, alle bei den Sensoren selbst. Es gibt keine gemeinsamen Ausfälle.", dbSeriesNone: "Keine Sensoren mit Lücken.", dbGapCause_restart: "Home Assistant stand (Neustart)", dbGapCause_recorder: "Recorder lief nicht oder die Statistik wurde nicht berechnet", dbDetails: "Details: {gaps} gemeinsame Zeiträume, {series} Reihen", dbGapsTitle: "Gemeinsame Lücken (bei allen Reihen)", dbSeriesTitle: "Sensoren mit den meisten Lücken ({n})", dbColSeries: "Sensor", dbColOwn: "Eigene", dbColShared: "Gemeinsame", dbColMissing: "Gesamt",
+  stormTabFindings: "Auffälligkeiten", stormTabEntities: "Lauteste Entitäten", stormTabIntegrations: "Integrationen", stormTabEvents: "Ereignisse", dbMissingShared: "{n} Reihen haben Lücken im Stundenverlauf. Bei allen Reihen zugleich fehlen {hours} Stunden in {count} Zeiträumen; dort wurde keine Statistik berechnet.", dbMissingOwn: "Dazu kommen eigene Lücken einzelner Sensoren (Liste unten).", dbMissingOnlyShared: "Alle Lücken fallen in diese gemeinsamen Zeiträume.", dbMissingOwnOnly: "{n} Sensoren haben Lücken im Stundenverlauf, alle bei den Sensoren selbst. Es gibt keine gemeinsamen Ausfälle.", dbSeriesNone: "Keine Sensoren mit Lücken.", dbGapCause_restart: "Home Assistant stand (Neustart)", dbGapCause_recorder: "Recorder lief nicht oder die Statistik wurde nicht berechnet", dbGapsTitle: "Gemeinsame Lücken (bei allen Reihen)", dbSeriesTitle: "Sensoren mit den meisten Lücken ({n})", dbColOwn: "Eigene", dbColShared: "Gemeinsame", dbColMissing: "Gesamt",
 });
 Object.assign(TEXT.en, {
-  dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
+  dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbLoading: "Checking the database. On a large database this can take a few seconds …",
   dbNone: "Nothing unusual in the database.", dbWhatToDo: "What to do?", dbProblem: "Problem", dbHint: "Hint",
-  dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect})", dbSizeServer: "Database {db} (reported by the server, {dialect})", dbSizeEstimated: "Database about {db} (estimated by the server, {dialect})", dbTileServer: "reported by the server ({dialect})", dbTileEstimated: "estimated ({dialect})", dbAbout: "about {size}", dbTablesTitle: "Largest tables", dbTablesHint: "Data and indexes per table, as the server reports them.", dbTablesHintSqlite: "Data and indexes per table; measured once a day.", dbTablesAt: "As of {at}.", dbTablesMore: "{n} more tables", dbColTable: "Table", dbColBytes: "Bytes", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileGrowthShare: "{pct} % of the size a day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
+  dbNoSize: "Size not measurable (database: {dialect})", dbTileServer: "reported by the server ({dialect})", dbTileEstimated: "estimated ({dialect})", dbAbout: "about {size}", dbTablesTitle: "Largest tables", dbTablesHint: "Data and indexes per table, as the server reports them.", dbTablesHintSqlite: "Data and indexes per table; measured once a day.", dbTablesAt: "As of {at}.", dbTablesMore: "{n} more tables", dbColTable: "Table", dbColBytes: "Bytes", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileGrowthShare: "{pct} % of the size a day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
   dbKind_wal_large: "Large WAL file", dbKind_growth: "Unusual growth", dbKind_duplicates: "Duplicate statistics timestamps", dbKind_missing_hours: "Missing hours in statistics", dbKind_statistics_issues: "Statistics do not fit the entity", dbKind_recorder_gap: "Gaps in the recorder",
   dbWal: "The WAL file is {wal}, the database {db}.", dbGrowth: "Grew {recent} in 7 days, about {base} a week in the weeks before.",
-  dbDuplicates: "{n}{more} timestamps appear twice in the statistics, mostly in: {list}.", dbMissing: "{n} series have gaps in their hourly record: {list}.", dbMissingHours: "{n} h missing",
+  dbDuplicates: "{n}{more} timestamps appear twice in the statistics, mostly in: {list}.", dbMissingHours: "{n} h missing",
   dbIssues: "{n} series: {list}.", dbRecorderGap: "{n} periods without a single entry, the longest {longest}, the latest from {latest}. No restart explains them.",
   dbIssue_units_changed: "unit changed", dbIssue_unsupported_state_class: "state class not supported", dbIssue_state_class_removed: "state class removed", dbIssue_unsupported_unit: "unit not supported", dbIssue_mean_type_changed: "mean type changed",
   dbAdvice_wal_large: "A restart of Home Assistant usually shrinks the WAL file. If it stays large after that, something else keeps the database open for long, such as an add-on like SQLite Web: close it and restart once more.",
@@ -1271,7 +1271,7 @@ Object.assign(TEXT.en, {
   dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least {gap} minutes without a single entry in the states of the last {gapDays} days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from {missing} in the last {missingDays} days. Housekeeper repairs nothing and deletes nothing.",
   todoDbProblem: "Database: problem",
   dbColFrom: "From", dbColTo: "To", dbColHours: "Length", dbColCause: "Cause",
-  stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "On top of that, single sensors have gaps of their own (list below).", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbMissingOwnOnly: "{n} sensors have gaps in their hourly record, all in the sensors themselves. There are no shared outages.", dbSeriesNone: "No sensors with gaps.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbDetails: "Details: {gaps} shared periods, {series} series", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Sensors with the most gaps ({n})", dbColSeries: "Sensor", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
+  stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "On top of that, single sensors have gaps of their own (list below).", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbMissingOwnOnly: "{n} sensors have gaps in their hourly record, all in the sensors themselves. There are no shared outages.", dbSeriesNone: "No sensors with gaps.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Sensors with the most gaps ({n})", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
 });
 
 Object.assign(TEXT.de, {
@@ -7276,7 +7276,14 @@ class DbHealthMixin {
     if (f.kind === "disk_low") return this.t("dbDiskLow", { free: size(f.free_bytes), total: size(f.total_bytes) });
     if (f.kind === "corrupt_files") return this.t("dbCorruptFiles", { n: n(f.files), size: size(f.bytes), list: f.names.map(x => this.esc(x)).join(", ") });
     if (f.kind === "integrity") return this.t("dbIntegrity", { at: this.formatDate(f.at), lines: f.lines.map(l => this.esc(l)).join("; ") }) + (f.unclean_starts ? ` ${this.t("dbIntegrityCrash", { n: n(f.unclean_starts) })}` : "");
-    return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
+    if (f.kind === "recorder_gap") return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
+    return ""; // a kind from a newer backend: the row shows its name and level
+  }
+
+  // A text of a finding kind, or null when this panel does not know the kind yet.
+  dbKindText(prefix, kind) {
+    const key = `${prefix}${kind}`, text = this.t(key);
+    return text === key ? null : text;
   }
 
   // What lies behind a finding: the periods all series lack, and the series with their own and their shared hours.
@@ -7318,8 +7325,8 @@ class DbHealthMixin {
 
   // What to do stays folded: the finding reads first, the advice is one click away.
   dbFindingRow(f) {
-    const tone = f.level === "problem" ? "red" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f, true)}</small><details class="rowdetails"><summary>${this.t("dbWhatToDo")}</summary><small>${this.t(`dbAdvice_${f.kind}`)}</small></details></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
+    const tone = f.level === "problem" ? "red" : "warn", text = this.dbFindingText(f, true), advice = this.dbKindText("dbAdvice_", f.kind);
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.dbKindText("dbKind_", f.kind) ?? this.esc(f.kind)}</strong>${text ? `<small>${text}</small>` : ""}${advice ? `<details class="rowdetails"><summary>${this.t("dbWhatToDo")}</summary><small>${advice}</small></details>` : ""}</span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
   }
 
   // The full integrity check on demand: a button, and the result of the last run.
@@ -7332,19 +7339,27 @@ class DbHealthMixin {
     return `<div class="row"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
   }
 
+  // The figures as tiles, and short notes for what could not be measured and for the normal restart gaps;
+  // the page shows them, the export lists them.
+  dbFigures(r) {
+    const dialect = this.esc(this.dbDialect(r.dialect)), server = r.dialect !== "sqlite";
+    const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
+    const tiles = [
+      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: server ? this.t(r.estimated ? "dbTileEstimated" : "dbTileServer", { dialect }) : this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
+      growthKnown ? { label: this.t("dbTileGrowth"), value: this.dbGrowthSize(r.growth.per_day, true), sub: sizeKnown && r.db_bytes > 0 ? this.t("dbTileGrowthShare", { pct: this.formatNumber(Math.round(Math.abs(r.growth.per_day) / r.db_bytes * 1000) / 10) }) : "", tone: "mute" } : null,
+      r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
+      r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
+    ].filter(Boolean);
+    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
+    return { tiles, notes };
+  }
+
   // What the page shows, for its export; registered before the page bar so the button is there on the first render.
   dbExporter(r) {
-    const dialect = this.esc(this.dbDialect(r.dialect)), server = r.dialect !== "sqlite";
-    const facts = [];
-    if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(server ? this.t(r.estimated ? "dbSizeEstimated" : "dbSizeServer", { db: this.formatBytes(r.db_bytes), dialect }) : this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
-    else facts.push(this.t("dbNoSize", { dialect }));
-    if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.dbGrowthSize(r.growth.per_day) }));
-    else facts.push(this.t("dbGrowthUnknown"));
-    if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
-    if (r.auto_purge === false) facts.push(this.t("dbOvPurgeOff"));
-    if (r.restart_gaps) facts.push(this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }));
+    const { tiles, notes } = this.dbFigures(r);
+    const facts = [...tiles.map(t => `${t.label}: ${t.value}${t.sub ? ` (${t.sub})` : ""}`), ...notes];
     this.setPageExporter("recdb", "recorder-database", `${this.t("recorder")} · ${this.t("dbTitle")}`, [
-      { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.t(`dbKind_${f.kind}`), this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.t(`dbAdvice_${f.kind}`)]) },
+      { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.dbKindText("dbKind_", f.kind) ?? f.kind, this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.dbKindText("dbAdvice_", f.kind) ?? ""]) },
       { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
       { name: "tables", title: this.t("dbTablesTitle"), header: [this.t("dbColTable"), this.t("dbColBytes")], rows: () => (r.tables || []).map(t => [t.name, t.bytes]) },
     ].filter(sec => sec.rows().length));
@@ -7362,17 +7377,8 @@ class DbHealthMixin {
     if (!r.available) return `<div class="stack">${head}<div class="panel"><p class="factnote">${this.t("relNoRecorder")}</p></div></div>`;
     if (r.busy) return `<div class="stack">${head}<div class="panel">${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div></div>`;
     const th = r.thresholds || {};
-    const dialect = this.esc(this.dbDialect(r.dialect)), server = r.dialect !== "sqlite";
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
-    // The figures stand as tiles; what could not be measured, and the normal restart gaps, stay as short notes.
-    const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
-    const tiles = this.sumTiles([
-      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: server ? this.t(r.estimated ? "dbTileEstimated" : "dbTileServer", { dialect }) : this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
-      growthKnown ? { label: this.t("dbTileGrowth"), value: this.dbGrowthSize(r.growth.per_day, true), sub: sizeKnown && r.db_bytes > 0 ? this.t("dbTileGrowthShare", { pct: this.formatNumber(Math.round(Math.abs(r.growth.per_day) / r.db_bytes * 1000) / 10) }) : "", tone: "mute" } : null,
-      r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
-      r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
-    ]);
-    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
+    const figures = this.dbFigures(r), tiles = this.sumTiles(figures.tiles), notes = figures.notes;
     return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>${this.dbTablesCard(r)}</div>`;
   }
 
