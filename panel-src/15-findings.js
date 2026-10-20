@@ -284,13 +284,17 @@ class FindingsMixin {
     const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
     // The head of a group filters the list to the whole group, like a tile to one reason; without open findings it is a quiet label.
-    const group = (title, list, tone, id) => {
+    const group = (title, list, tone, id, row) => {
       const n = openAll.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
       const text = this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }));
       const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}">${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
-      return `<div class="sumgroup">${head}${this.sumTiles(list.map(tile), "compact")}</div>`;
+      return `<div class="sumhead" style="grid-row:${row}">${head}</div><div class="sumrow" style="--r:${row + 1}">${this.sumTileCells(list.map(c => ({ ...tile(c), hint: this.reasonLabel(c) })))}</div>`;
     };
-    const tiles = `<div class="findsum"><div class="sumall">${this.sumTiles([total], "compact")}${followLink}</div><div class="sumrows">${group("sumGroupUrgent", faults, "red", "red")}${group("sumGroupTidy", tidy, "warn", "tidy")}</div></div>`;
+    // "All findings" stands left over both rows; the follow-ups are named inside it. The whole tile clears the filters,
+    // the link to the follow-ups lies above that.
+    const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(this.t("allFindings"))}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
+    // One grid: the faults in the first row, the tidying up in the second, every tile of the same width and height.
+    const tiles = `<div class="findsum" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${Math.max(faults.length, tidy.length)}">${totalTile}${group("sumGroupUrgent", faults, "red", "red", 1)}${group("sumGroupTidy", tidy, "warn", "tidy", 3)}</div>`;
     const fixedView = this.findingStatus === "fixed";
     // A filter that leaves few findings opens their heads by itself; a head opened or closed by hand stays so.
     this._autoOpen = !open && sorted.length <= FINDING_AUTO_OPEN;

@@ -3,7 +3,13 @@ class LayoutMixin {
   // A row of key figures. tile: { label, value, sub, tone ("ok"|"warn"|"red"|"mute"), tab, filter, lf } where tab ("view|id") makes it a button; lf ([list id, filter name, value]) sets that list filter, an empty name clears them all.
   // `cls` adds a class to the grid, e.g. "even" for tiles of one size in rows of three.
   sumTiles(tiles, cls = "") {
-    const cells = tiles.filter(Boolean).map(t => {
+    const cells = this.sumTileCells(tiles);
+    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
+  }
+
+  // The tiles alone, for a page that lays them out in a grid of its own.
+  sumTileCells(tiles) {
+    return tiles.filter(Boolean).map(t => {
       const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
       const hint = t.hint ? ` title="${this.esc(t.hint)}"` : "";
       // Three kinds, told apart by a cue in the corner: a figure only (flat), a filter of the list below (funnel, marked when on), a link to another page (arrow).
@@ -20,7 +26,6 @@ class LayoutMixin {
       if (t.unref) return go(`data-unref-tab="${t.unref}"`);
       return t.tab ? go(`data-view-tab="${this.esc(t.tab)}"`) : `<div class="sumtile ${t.tone || "mute"}"${hint}>${inner}</div>`;
     }).join("");
-    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
   }
 
   // When the data of a page was read last (for its "as of"), and a time given in seconds as ISO text.

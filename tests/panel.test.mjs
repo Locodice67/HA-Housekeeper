@@ -6447,3 +6447,13 @@ test("the findings tiles are fixed: they count the open findings whatever the st
   assert.equal(`${el.findingStatus}|${el.findingFilter}`, "|orphaned");
 });
 
+test("All findings stands over both rows of reason tiles and names the follow-ups inside the tile", () => {
+  const { el } = panel("en");
+  const f = (key, classification, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false, ...extra });
+  el.data = { ...DATA, findings: [f("a", "unavailable", { cause_id: "c1" }), f("b", "orphaned")] };
+  el.view = "findingsNav";
+  const html = el.findingsView(), all = html.slice(html.indexOf('class="sumall"'), html.indexOf('class="sumhead"'));
+  assert.ok(all.includes("data-finding-followers") && all.includes('data-finding-filter=""'), "the follow-ups link sits in the tile");
+  assert.ok(html.includes('style="--r:2"') && html.includes('style="--r:4"'), "faults in the first row, tidying up in the second");
+});
+
