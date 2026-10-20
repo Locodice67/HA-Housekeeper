@@ -2,8 +2,8 @@
 // snoozed, hidden), some follow from what Housekeeper sees (new, in work, fixed). Nothing here stores anything:
 // the decisions are the ones of the ignore list, the rest is derived from the scan and the journal of plans.
 const NEW_FINDING_DAYS = 7, DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"];
-// The chips of the list are states that exclude each other; "new" and "in work" are subsets of the open ones and live in the list bar as one filter.
-const FINDING_STATES = ["known", "snoozed", "hidden"], FRESH_STATES = ["new", "inwork"];
+// The chips of the list are states that exclude each other; "new", "in work" and "due" are parts of the open ones.
+const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
   bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ausgeblendet", bandMark: "Markiert: {kind}", bandRemoveMark: "Entfernen",
@@ -33,10 +33,15 @@ class FindingStatusMixin {
 
   // The objects of drafted or running plans; rebuilt when the journal changes.
   planSets() {
-    if (this._planSets?.journal === this.journal) return this._planSets;
+    const hour = Math.floor(Date.now() / 3600000); // a preview runs out with time, not only with a new journal
+    if (this._planSets?.journal === this.journal && this._planSets.data === this.data && this._planSets.hour === hour) return this._planSets;
     const active = new Set();
-    for (const plan of this.journal || []) if (ACTIVE_PLAN.includes(plan.status)) (plan.objects || []).forEach(id => active.add(id));
-    this._planSets = { journal: this.journal, active };
+    // A preview older than a day can no longer be confirmed: it is dropped by the backend and does not count here.
+    // A plan for a device puts the findings of its entities in work as well.
+    const devices = new Set();
+    for (const plan of this.journal || []) if (ACTIVE_PLAN.includes(plan.status) && !this.planStale(plan)) (plan.objects || []).forEach(id => { active.add(id); devices.add(id); });
+    for (const o of this.data?.objects || []) if (o.object_type === "entity" && o.device_id && devices.has(o.device_id)) active.add(o.object_id);
+    this._planSets = { journal: this.journal, data: this.data, hour, active };
     return this._planSets;
   }
 
@@ -64,6 +69,7 @@ class FindingStatusMixin {
       case "all": return true;
       case "new": return this.isNewFinding(f);
       case "inwork": return this.inWork(f);
+      case "due": return !f.ignored && Boolean(f.resurfaced);
       default: return this.decidedState(f) === this.findingStatus;
     }
   }
@@ -71,7 +77,7 @@ class FindingStatusMixin {
   statusCount(state) {
     const list = this.data.findings;
     if (state === "") return list.filter(f => !f.ignored).length;
-    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : this.decidedState(f) === state)).length;
+    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : state === "due" ? !f.ignored && f.resurfaced : this.decidedState(f) === state)).length;
   }
 
   // "New", "In work" next to a row's other facts.
@@ -79,18 +85,14 @@ class FindingStatusMixin {
     return [this.isNewFinding(f) ? this.t("stateNew") : "", this.inWork(f) ? this.t("stateInwork") : ""].filter(Boolean).map(x => ` · ${x}`).join("");
   }
 
-  // The filter of the list bar: findings first seen in the last days, or touched by a plan that is running.
-  freshFilter() {
-    return { name: "fresh", all: this.t("freshAll"), options: [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")]] };
-  }
-
-  freshMatch(f, value) { return value === "new" ? this.isNewFinding(f) : this.inWork(f); }
-
+  // One row for the state of a finding: open with its parts (new in the last days, in work, due again), then what was
+  // decided and what was done. The tiles count within the chosen chip.
   statusChips() {
-    const chip = (state, label, count) => `<button class="chip ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}">${label} (${this.formatNumber(count)})</button>`;
+    const chip = (state, label, count, sub = false) => `<button class="chip${sub ? " sub" : ""} ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}" aria-pressed="${(this.findingStatus || "") === state}">${label} (${this.formatNumber(count)})</button>`;
+    const parts = [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")], ["due", this.t("stateDue")]].map(([s, label]) => [s, label, this.statusCount(s)]).filter(([, , n]) => n);
     const decided = FINDING_STATES.filter(s => this.statusCount(s)), fixed = this.doneCount();
-    if (!decided.length && !fixed) return "";
-    return [chip("", this.t("stateOpen"), this.findingTotal()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
+    const rest = [...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])];
+    return [chip("", this.t("stateOpen"), this.findingTotal()), ...parts.map(([s, label, n]) => chip(s, label, n, true)), ...(rest.length ? ['<span class="chipsep" aria-hidden="true"></span>', ...rest] : [])].join("");
   }
 
   doneDays() { return this.doneDaysSel || 30; }
@@ -334,7 +336,7 @@ class FindingStatusMixin {
   }
 }
 Object.assign(TEXT.de, {
-  stateOpen: "Offen", freshAll: "Neu / in Arbeit: alle", freshNew: "Neu (letzte {days} Tage)", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
+  stateOpen: "Offen", freshNew: "Neu ({days} Tage)", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
   doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", excCreate: "Ausnahme anlegen", fselStatus: "Status setzen …", statusTitle: "Status setzen · {n} Befunde",
   decideKindHint_keep: "Ist so gewollt. Bleibt still, bis du es änderst. Begründung nötig.", decideKindHint_snooze: "Kümmere ich mich später drum. Kommt nach der Frist als „fällig“ zurück.", decideKindHint_ignore: "Interessiert mich nicht. Begründung freiwillig.",
   statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt: Vermerk oder Ausnahme.",
@@ -343,7 +345,7 @@ Object.assign(TEXT.de, {
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
 Object.assign(TEXT.en, {
-  stateOpen: "Open", freshAll: "New / in work: all", freshNew: "New (last {days} days)", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
+  stateOpen: "Open", freshNew: "New ({days} days)", stateDue: "Due", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
   doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", excCreate: "Add exception", fselStatus: "Set status …", statusTitle: "Set status · {n} findings",
   decideKindHint_keep: "Meant to be this way. Stays quiet until you change it. Needs a reason.", decideKindHint_snooze: "I will see to it later. Comes back as “due” after the time.", decideKindHint_ignore: "Not of interest to me. Reason optional.",
   statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object: a mark or an exception.",

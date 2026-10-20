@@ -26,7 +26,9 @@ class SparklineMixin {
   sparkline(key, rising) {
     // "class:<name>" reads the open findings of one class, "lead:<name>" the same without follow-ups; a day that stored
     // classes without it had none, and a day from before the follow-ups were told apart has no such series at all.
-    const read = p => key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
+    // "reason:<name>" reads the open findings of one tile of the findings page (all of them, the outage rules as one).
+    const read = p => key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
+      : key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
       : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
     const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
     if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;

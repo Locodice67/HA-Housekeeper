@@ -267,6 +267,8 @@ def test_the_lead_series_leaves_out_the_follow_ups_of_a_cause(hass) -> None:
     history.record(snapshot)
     point = history.series()["points"][0]
     assert (point["open"], point["lead"], point["lead_classes"]) == (3, 2, {"unused": 2})
+    # The tiles count every open finding by its reason; what starts a chain is an outage whatever its class.
+    assert point["reasons"] == {"unused": 2, "outage": 1}
 
 
 def test_the_state_of_the_house_counts_the_followers_of_a_cause_as_objects(hass) -> None:

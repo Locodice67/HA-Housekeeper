@@ -5,14 +5,14 @@
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
   ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
-  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt",
-  ogNew: "neu: {age}", ogOf: "Gerät {name}", causesOnly: "Nur Ursachen", fselPart: "{n} von {m}",
+  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt",
+  ogNew: "neu: {age}", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
   ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
-  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object",
-  ogNew: "new: {age}", ogOf: "Device {name}", causesOnly: "Causes only", fselPart: "{n} of {m}",
+  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object",
+  ogNew: "new: {age}", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
 
 const OG_NO_VALUE = ["unavailable", "unknown"];
@@ -169,7 +169,7 @@ class ObjectGroupsMixin {
 
   // The rows of a node in the findings table: its head, and while open the nodes and findings below it, indented.
   nodeRows(n, depth = 0) {
-    const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
+    const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, Boolean(this._autoOpen)), object = this.findObject(n.key);
     const keys = f.list.map(x => x.key);
     (this._findGroups ||= {})[id] = keys;
     const title = n.cause ? this.t(`cause_${n.cause.kind}`, { name: n.cause.name }) : this.nodeName(n);
@@ -197,7 +197,7 @@ class ObjectGroupsMixin {
 
   // A card of a dashboard with several broken references: a head of its own, the references below it.
   cardRows(g, depth) {
-    const f = g.members[0], p = f.evidence[0].place, keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
+    const f = g.members[0], p = f.evidence[0].place, keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, Boolean(this._autoOpen));
     (this._findGroups ||= {})[id] = keys;
     const title = [...this.placeParts(p)].join(" › ") || f.object_id;
     const sub = [this.t("brokenCount", { n: keys.length }), this.isOrphan(p) ? this.t("brokenOrphanShort") : ""].filter(Boolean).join(" · ");

@@ -3302,7 +3302,8 @@ test("findings that began with an update get a line, a tile and a filter", () =>
   assert.deepEqual(el.visibleFindings().length, 2);
   el.findingAfter = true;
   assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
-  assert.ok(el.findingsView().includes('data-finding-after="1"') && el.findingsView().includes('data-fold="corr"'));
+  assert.ok(el.findingsView().includes('data-fold="corr"') && !el.findingsView().includes('data-finding-after="1"'), "the hint row opens the card; the filter is in it");
+  assert.ok(el.findingsView().includes('data-fclear="after"'), "an active filter from the card stays visible as a note");
   assert.ok(!el.corrGroupsCard().includes("Update of hue"));
   el.folds = { corr: true, "corr_g": true };
   const card = el.corrGroupsCard();
@@ -3371,7 +3372,7 @@ test("the button for findings after an update counts every finding and names the
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x")] };
   el.corr = { groups: [{ id: "g", kind: "entry_version", at: "2026-10-01T10:05:00+00:00", domain: "hue", from: "1", to: "2", total: 3, keys: ["a", "b", "c"], only_group: false }], by_key: { a: "g", b: "g", c: "g" } };
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
-  el.findingAfter = true;
+  el.findingAfter = true; el.folds = { corr: true };
   const html = el.findingsView();
   assert.ok(html.includes("3 findings began together with an update") && html.includes("1 of them follow-ups") && html.includes("3 findings on 3 objects"));
 });
@@ -3568,9 +3569,9 @@ test("the findings list is one list: a chain is one entry with a counter and ope
   el.data = { ...el.data, findings: [...el.data.findings, { ...f("x", "integration_down:e1"), rule_id: "config_entry.not_loaded", key: "own1" }], causes: [app, { ...integ, finding_key: "own1" }] };
   el.findingsView();
   assert.ok(el._findGroups["og:app:a"].includes("own1"), "an outage with a finding of its own is picked with its head");
-  el.lvState("findings", "impact", "desc"); el.lv.findings.f.type = "_causes";
-  assert.ok(!el.findingsView().includes("sensor.c"), "the filter keeps only the chains");
-  el.lv.findings.f.type = ""; el.showFollowers = true;
+  el.findingFollowers = true;
+  assert.ok(!el.findingsView().includes("sensor.c"), "the follow-ups of the total tile keep only the chains");
+  el.findingFollowers = false; el.showFollowers = true;
   assert.ok(el.findingsView().includes("Follow-up of MQTT"));
 });
 
@@ -4876,7 +4877,7 @@ test("the overview counts batteries that report volts as low too", () => {
 
 test("the findings tiles carry a sparkline for the total and each class, the status line of the overview the one for the score", () => {
   const { el } = panel("en");
-  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused } });
+  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused } });
   el.series = { points: [day(1, 90, 4, 2), day(2, 80, 6, 3), day(3, 70, 8, 5)] };
   const html = el.findingsView();
   assert.ok((html.match(/class="spark"/g) || []).length >= 2);
@@ -4884,6 +4885,7 @@ test("the findings tiles carry a sparkline for the total and each class, the sta
   assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
   assert.ok(el.sparkline("lead:unused", "bad").includes("+3"));
   assert.ok(el.sparkline("lead:unused", "bad").includes("spark-hint") === false);
+  assert.ok(el.sparkline("reason:unused", "bad").includes("+3"), "the tiles read the open findings by reason");
   assert.ok(!html.includes(`${el.health().percent} %`), "the score is not a tile of this page any more");
   el.view = "overview"; el.render();
   assert.ok(el.shadowRoot.innerHTML.includes("statustext") && /statustext[\s\S]*?class="spark"/.test(el.shadowRoot.innerHTML), "the score history sits under the headline");
@@ -5648,13 +5650,14 @@ test("an integration outage is a reason of its own, with a tile and a filter of 
   assert.equal(el.findingReason(el.data.findings[1]), "orphaned");
   const html = el.findingsView();
   assert.ok(html.includes("Outage") && html.includes("All findings") && !html.includes("All reasons"), "the reason is set by the tiles only");
-  assert.ok(html.includes('data-lf="findings|fresh"') && !html.includes('data-fstatus="new"'), "new and in work are a filter of the list bar, not chips");
+  assert.ok(!html.includes('data-lf="findings|fresh"'), "new and in work are chips of the status row, not a filter of the list bar");
   el.findingFilter = "outage";
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
   el.findingFilter = "";
   el.data.findings[1].first_detected_at = "2020-01-01T00:00:00Z";
   el.data.findings[0].first_detected_at = new Date().toISOString();
-  el.lvState("findings", "impact", "desc").f.fresh = "new";
+  el.findingStatus = "new";
+  assert.ok(el.findingsView().includes('data-fstatus="new"'), "the chip appears while there is something new");
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
 });
 
@@ -6145,5 +6148,25 @@ test("the reason tiles are grouped by their colour: orphaned is tidying up, not 
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a", "orphaned"), f("b", "unavailable")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
   const html = el.findingsView(), tidy = html.indexOf(">Tidying up<"), faults = html.indexOf(">Faults<"), orphaned = html.indexOf(`>${el.statusLabel("orphaned")}<`);
-  assert.ok(tidy > 0 && faults > tidy && orphaned > tidy && orphaned < faults, "orphaned sits under tidying up, before the faults");
+  assert.ok(faults > 0 && tidy > faults && orphaned > tidy, "orphaned sits under tidying up, which follows the faults");
+});
+
+test("the findings page: outages are one reason, stale is a fault, a tile starts from a plain list and the head counts within it", () => {
+  const { el } = panel("en");
+  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key, classification, confidence: 0.9, ignored: false, impact: "low", ...extra });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "s1", name: "Kitchen sensor", device_id: "d1", status: "unavailable" }, { object_type: "device", object_id: "d1", name: "Hub" }], edges: [], causes: [],
+    findings: [f("d1", "device.down", "problem"), f("s1", "entity.state_unavailable", "unavailable"), f("s2", "entity.stale", "stale"), f("a1", "automation.blocked", "problem"), f("s3", "entity.state_unavailable", "unavailable")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.equal(el.findingReason(el.data.findings[0]), "outage", "a device that is down is an outage, not a problem");
+  assert.equal(`${el.reasonTone("stale")}|${el.reasonLabel("problem")}`, "red|Automation impaired");
+  el.lvState("findings", "impact", "desc").q = "kitchen";
+  el.clearFindingFilters(); el.findingFilter = "unavailable";
+  assert.equal(el.lv.findings.q, "", "a tile clears the search before it filters");
+  el.lv.findings.q = "kitchen";
+  assert.ok(el.findingsView().includes("1 of 2 findings"), "narrowed further, the head names the number of the active tile");
+  el.lv.findings.q = "";
+  el.journal = [{ plan_id: "p", status: "dry_run", created_at: new Date().toISOString(), objects: ["d1"] }];
+  assert.ok(el.inWork(el.data.findings[1]), "a plan for a device puts the findings of its entities in work");
+  el.journal = [{ plan_id: "p", status: "dry_run", created_at: new Date(Date.now() - 2 * 864e5).toISOString(), objects: ["d1"] }];
+  assert.ok(!el.inWork(el.data.findings[0]), "a preview older than a day does not count");
 });

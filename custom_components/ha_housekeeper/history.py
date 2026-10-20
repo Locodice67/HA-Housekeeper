@@ -121,7 +121,17 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
     for finding in open_findings:
         name = str(finding.get("classification") or "")
         classes[name] = classes.get(name, 0) + 1
-    # The tiles count without the follow-ups that hang on a cause, so their curves do too.
+    # The tiles of the findings page count every open finding by its reason: what starts an outage chain is one
+    # reason ("outage") whatever its class, so its curve does not split over several classes.
+    reasons: dict[str, int] = {}
+    for finding in open_findings:
+        name = (
+            "outage"
+            if finding.get("rule_id") in CAUSE_OWN_RULES
+            else str(finding.get("classification") or "")
+        )
+        reasons[name] = reasons.get(name, 0) + 1
+    # Without the follow-ups that hang on a cause: kept for the points stored before the reasons.
     lead_classes: dict[str, int] = {}
     for finding in open_findings:
         if not _is_follower(finding):
@@ -138,6 +148,7 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         "classes": classes,
         "lead": sum(lead_classes.values()),
         "lead_classes": lead_classes,
+        "reasons": reasons,
         "health_base": health_base,
         "health_load": health_load,
         # The settings that decide whether some findings exist at all.
@@ -404,6 +415,7 @@ class ScanHistory:
                     "classes": cp.get("classes"),
                     "lead": cp.get("lead"),
                     "lead_classes": cp.get("lead_classes"),
+                    "reasons": cp.get("reasons"),
                     "health": health_percent(cp.get("health_base"), cp.get("health_load")),
                     "rated": cp.get("health_base"),
                     "unavailable": sum(

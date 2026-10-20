@@ -5,7 +5,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.findingScanNew = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -912,9 +912,9 @@ class HAHousekeeperPanel extends HTMLElement {
       ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {}; this.findingScanNew = el.dataset.jumpScanNew !== undefined;
-      if (this.findingScanNew) { this.findingStatus = ""; this.findingAfter = false; this.findingDue = false; }
+      if (this.findingScanNew) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
-      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingDue = false; }
+      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
@@ -953,7 +953,14 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
-    root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
+    root.querySelector("[data-finding-followers]")?.addEventListener("click", () => { const on = !this.findingFollowers; this.clearFindingFilters(); this.findingFollowers = on; this.pages = {}; this.render(); this.showList(); });
+    // One note of the filters above the list: its ✕ takes off just that filter.
+    root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
+      const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false;
+      else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
+      this.pages = {}; this.render();
+    });
     this.bindMarks(root);
     this.bindExceptions(root);
     this.bindMcp(root);
@@ -1004,8 +1011,9 @@ class HAHousekeeperPanel extends HTMLElement {
       this.pages = {}; this.persistLv(id); this.render(); this.showList();
     });
     root.querySelectorAll("[data-changes-cat]").forEach(el => el.onclick = () => { const v = el.dataset.changesCat; this.changesCat = this.changesCat === v ? "" : v; this.render(); this.showList(); });
-    root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.findingFilter = ""; this.findingAfter = false; this.findingScanNew = false; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter; this.findingFilter = v && this.findingFilter === v ? "" : v; this.pages = {}; this.render(); this.showList(); });
+    root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.pages = {}; this.render(); });
+    // A tile starts from the plain list of its status, so a click on it always shows the number it says.
+    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter, same = v && this.findingFilter === v; this.clearFindingFilters(); this.findingFilter = same ? "" : v; this.pages = {}; this.render(); this.showList(); });
     const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };

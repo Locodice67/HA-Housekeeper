@@ -108,9 +108,7 @@ class SearchPagesMixin {
     if (entry.viewTab) (this.viewTab ||= {})[view] = entry.viewTab;
     if (entry.kind === "filter" && entry.objectStatus) { this.statusFilter = entry.objectStatus; this.typeFilter = ""; this.originFilter = ""; }
     if (entry.kind === "filter" && !entry.objectStatus) {
-      const fresh = FRESH_STATES.includes(entry.findingStatus);
-      this.findingStatus = fresh ? "" : entry.findingStatus;
-      if (fresh) this.lvState("findings", "impact", "desc").f.fresh = entry.findingStatus;
+      this.findingStatus = entry.findingStatus; // new and in work are chips of the status row like the others
     }
     this.render();
     if (view === "changes" && !this.compare) this.loadCompare();

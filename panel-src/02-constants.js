@@ -113,8 +113,13 @@ const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script"
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];
 // The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
-const FINDING_URGENT = ["problem", "unavailable", "outage", "broken_reference", "run_error", "recurring"];
-const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate", "orphaned"];
+// The fixed order of the reason tiles, from the cause to what it does: faults first, then tidying up. Which group a
+// tile is in comes from its colour (see FAULT_REASONS), not from this list; a reason it does not name comes last.
+const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "problem", "unknown", "orphaned", "unused", "possible_duplicate"];
+// Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
+const FAULT_REASONS = ["outage", "stale"];
+// A filter that leaves at most this many findings opens the heads of the grouped list by itself.
+const FINDING_AUTO_OPEN = 20;
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
