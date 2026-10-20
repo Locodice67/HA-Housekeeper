@@ -15005,7 +15005,7 @@ const BATTERY_GROUP_DAYS = 14;
 
 Object.assign(TEXT.de, {
   btColName: "Gerät", btColArea: "Bereich", btColType: "Typ", btColLevel: "Stand", btColSlope: "Verbrauch", btColLeft: "Leer in", btColAct: "Aktion", btColDate: "Datum", btTypeChange: "Typ ändern", btLevelOk: "in Ordnung",
-  btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "unter Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
+  btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "jetzt", btLeftLowHint: "Schon unter der Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
   btFilterSoon: "Bald leer", btFilterUntyped: "Ohne Typ", btAllTypes: "Alle Typen",
   needNone: "Keine Batterie ist unter ihrer Grenze oder erreicht sie laut Prognose in den nächsten 30 Tagen.", needUntyped: "ohne Typ", needUntypedHint: "Typ in der Tabelle setzen", needNow: "Jetzt niedrig", needNowLink: "Unter der Grenze; die Liste unten zeigt sie",
   btTableNote: "Prognose nur bis 90 Tage, aus den letzten fünf Wochen: eine Schätzung, keine Zusage. Ohne Prognose: {unknown} (zu wenige Tage oder stabil). Nach einem Wechsel zählt nur der Verlauf danach.",
@@ -15015,7 +15015,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   btColName: "Device", btColArea: "Area", btColType: "Type", btColLevel: "Level", btColSlope: "Drain", btColLeft: "Empty in", btColAct: "Action", btColDate: "Date", btTypeChange: "Change type", btLevelOk: "ok",
-  btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "below limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
+  btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "now", btLeftLowHint: "Already below the limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
   btFilterSoon: "Empty soon", btFilterUntyped: "No type", btAllTypes: "All types",
   needNone: "No battery is below its limit or forecast to reach it within 30 days.", needUntyped: "no type", needUntypedHint: "set the type in the table", needNow: "Low now", needNowLink: "Below the limit; the list below shows them",
   btTableNote: "Forecast only up to 90 days, from the last five weeks: an estimate, not a promise. No forecast for {unknown} (too few days or stable). After a change only the time since counts.",
@@ -15079,7 +15079,8 @@ class BatteryTableMixin {
 
   batteryLeftCell(row) {
     const fc = row.fc;
-    if (row.low) return `<b class="red">${this.t("btLeftLow")}</b>`;
+    // Already below the limit: it is empty for the purpose of the list now; the tooltip says why.
+    if (row.low) return `<b class="red" title="${this.esc(this.t("btLeftLowHint"))}">${this.t("btLeftLow")}</b>`;
     if (!fc) return `<span class="muted">—</span>`;
     if (fc.state === "falling") return `<b class="${fc.days <= BATTERY_SOON_DAYS ? "red" : fc.days <= BATTERY_NEED_DAYS ? "amber" : ""}">${this.t("btLeftDays", { n: fc.days })}</b>`;
     if (fc.state === "far") return `<span class="muted">${this.t("btLeftFar", { n: BATTERY_FAR_DAYS })}</span>`;
