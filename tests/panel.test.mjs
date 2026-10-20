@@ -6630,3 +6630,9 @@ test("a policy row that cannot be ticked has a greyed box that says why", () => 
   const box = el.polSelBox({ object_type: "automation", object_id: "automation.a", name: "A", key: "k", ignored: false });
   assert.ok(box.includes("disabled") && box.includes("Only entities and devices"));
 });
+
+test("a run finding keeps its figure and its hint apart", () => {
+  const { el } = panel("en");
+  const line = el.runsFindingLines({ findings: [{ kind: "failing", level: "warn", errors: 2, runs: 4, step: "action/1", step_count: 2 }] });
+  assert.ok(/<\/span> <span class="fnote">/.test(line));
+});

@@ -44,8 +44,9 @@ class RunsMixin {
     return p ? p() : "";
   }
 
+  // Pill, figure and hint of each finding; the space keeps the sentences apart where a table sets the line inline.
   runsFindingLines(row) {
-    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span><span class="fnote">${this.t(`rfHint_${f.kind}`)}</span></small>`).join("");
+    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span> <span class="fnote">${this.t(`rfHint_${f.kind}`)}</span></small>`).join("");
   }
 
   runsTrend(row, days = row.per_day) {
