@@ -6306,3 +6306,17 @@ test("setbacks and due reminders land on their filtered lists, one setback on it
   assert.ok(item("followup").jump.includes('data-jump-lf="journal|follow|regression"'));
   assert.ok(item("reminders").jump.includes('data-jump-lf="reminders|state|due"'));
 });
+
+test("the vacation bar shows exactly the findings it holds back, not every finding hidden by a rule", () => {
+  const { el, shadow } = panel("en");
+  const f = (key, phase) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: true, ignored_by: "rule", ignore_rule: { id: "r", kind: "area", targets: ["x"], action: "hide", phase } });
+  el.data = { ...DATA, meta: { ...DATA.meta, vacation: { entity: "input_boolean.away", active: true, held: 1, rules: 1 } }, findings: [f("held", "vacation"), f("always", undefined)] };
+  el.lvState("findings", "impact", "desc").q = "old";
+  const go = { dataset: { vacGo: "hidden" } };
+  shadow.querySelectorAll = selector => (selector === "[data-vac-go]" ? [go] : []);
+  el.bindExceptions(shadow);
+  go.onclick({ preventDefault() {} });
+  assert.equal(`${el.view}|${el.findingStatus}|${el.lv.findings.q}`, "findingsNav|hidden|");
+  assert.equal(el.visibleFindings().map(x => x.key).join(), "held");
+  assert.ok(el.findingsView().includes("Held back for the vacation (1)"));
+});

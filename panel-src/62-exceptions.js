@@ -418,7 +418,8 @@ class ExceptionsMixin {
       ev.preventDefault();
       this.selected = null; this.pages = {};
       // The findings held back are on the findings page, hidden for an exception; the rules in the settings.
-      if (el.dataset.vacGo === "hidden") { this.view = "findingsNav"; this.findingStatus = "hidden"; this.lvState("findings", "impact", "desc").f.by = "rule"; } else { this.view = "settings"; this.settingsTab = "exceptions"; this.excScope = "vacation"; }
+      // The held findings are hidden ones, and only those of the vacation mode: other rules hide findings as well.
+      if (el.dataset.vacGo === "hidden") { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.clearFindingFilters(); this.findingStatus = "hidden"; this.findingHeld = true; } else { this.view = "settings"; this.settingsTab = "exceptions"; this.excScope = "vacation"; }
       if (el.dataset.vacGo === "new") { this.render(); if (!this.exc) await this.loadExceptions(); this.openException("", "vacation"); return; }
       this.render();
     });

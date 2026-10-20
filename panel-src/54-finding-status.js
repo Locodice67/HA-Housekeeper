@@ -68,6 +68,9 @@ class FindingStatusMixin {
     return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && counts(f)).map(f => f.key));
   }
 
+  // The findings the vacation mode holds back right now or until its grace ends: what the vacation bar counts.
+  heldKeys() { return new Set((this.data?.findings || []).filter(f => f.ignored_by === "rule" && ["vacation", "after"].includes(f.ignore_rule?.phase)).map(f => f.key)); }
+
   inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
 
   // Does a finding belong to the chosen status? "" is the default: everything not decided.
