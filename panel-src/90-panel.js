@@ -1151,6 +1151,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-policy-ignore]").forEach(el => el.onclick = () => this.changePolicy({ type: "ha_housekeeper/ignore", finding_key: el.dataset.policyIgnore, ignored: el.dataset.policyValue === "1" }));
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-db-check]")?.addEventListener("click", () => this.loadDbHealth(false, true));
+    // A fold in a row: kept open across renders; its content is drawn when it opens.
+    root.querySelectorAll("[data-fold-details]").forEach(el => el.addEventListener("toggle", () => { const id = el.dataset.foldDetails; if (this.foldOpen(id, false) === el.open) return; this.folds = { ...this.folds, [id]: el.open }; this.render(); }));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelector("[data-bkc-open]")?.addEventListener("click", () => { this.folds = { ...this.folds, bkc: true }; this.render(); this.shadowRoot?.querySelector?.("#hk-bkc")?.scrollIntoView?.({ block: "start" }); });
     root.querySelectorAll("[data-bh-open]").forEach(el => el.onclick = () => { this.bhForm = this.bhForm === el.dataset.bhOpen ? null : el.dataset.bhOpen; this.render(); });
