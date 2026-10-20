@@ -6479,3 +6479,12 @@ test("an object with a single finding of its own is one row, without a head to o
   assert.ok(!html.includes('data-fold="og:automation:automation.a1"') && html.includes('data-fsel="k1"'));
 });
 
+test("the head of an object selects all its findings, the head of an outage only its own", () => {
+  const { el } = panel("en");
+  const f = (key, rule_id) => ({ key, rule_id, object_id: "automation.a1", classification: "orphaned", confidence: 0.9, ignored: false });
+  el.data = { ...DATA, findings: [f("a", "automation.x"), f("b", "automation.y")] };
+  el.view = "findingsNav";
+  const html = el.findingsView();
+  assert.ok(html.includes('data-fsel-group="og:automation:automation.a1"'));
+  assert.equal(el._findGroups["og:automation:automation.a1"].sort().join(), "a,b");
+});
