@@ -151,3 +151,102 @@ def test_simulation_splits_the_purged_rows_into_statistics_and_states():
     assert (both["purge_stat_rows"], both["purge_states_rows"], both["purge_rows"]) == (3, 5, 8)
     only = simulate([{**action, "states": False}])
     assert (only["purge_stat_rows"], only["purge_states_rows"]) == (3, 0)
+
+
+def _import_hourly(hass, statistic_id: str, starts) -> None:
+    from homeassistant.components.recorder.models import StatisticMeanType
+    from homeassistant.components.recorder.statistics import async_import_statistics
+
+    async_import_statistics(
+        hass,
+        {
+            "mean_type": StatisticMeanType.NONE,
+            "has_sum": True,
+            "name": None,
+            "source": "recorder",
+            "statistic_id": statistic_id,
+            "unit_class": "energy",
+            "unit_of_measurement": "kWh",
+        },
+        [{"start": start, "state": float(i), "sum": float(i)} for i, start in enumerate(starts)],
+    )
+
+
+async def test_deleting_an_orphan_takes_its_statistics_and_states_from_the_database(
+    recorder_mock, hass
+) -> None:
+    from datetime import timedelta
+
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    from custom_components.ha_housekeeper import recorder_purge
+
+    hour = dt_util.utcnow().replace(minute=0, second=0, microsecond=0)
+    _import_hourly(hass, "sensor.gone", [hour - timedelta(hours=h) for h in (3, 2)])
+    for value in ("1", "2"):
+        hass.states.async_set("sensor.gone", value)
+    hass.states.async_set("sensor.kept", "1")
+    await async_wait_recording_done(hass)
+    before = await recorder_purge.count_history(hass, ["sensor.gone", "sensor.kept"])
+    assert before["sensor.gone"]["states"] == 2 and before["sensor.gone"]["statistics"] == 2
+
+    removed, left, error = await recorder_purge.delete_statistics(
+        hass, ["sensor.gone"], states=True
+    )
+    assert (removed, left, error) == (["sensor.gone"], [], None)
+    after = await recorder_purge.count_history(hass, ["sensor.gone", "sensor.kept"])
+    assert after["sensor.gone"] == {"states": 0, "statistics": 0}
+    assert after["sensor.kept"]["states"] == 1
+
+
+async def test_trimming_deletes_old_states_a_stretch_and_old_statistics_only(
+    recorder_mock, hass, freezer
+) -> None:
+    from datetime import timedelta
+
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    from custom_components.ha_housekeeper import recorder_purge
+
+    now = dt_util.utcnow()
+    for days in (20, 10, 5):
+        freezer.move_to(now - timedelta(days=days))
+        hass.states.async_set("sensor.power", str(days))
+        hass.states.async_set("sensor.meter", str(days))
+    freezer.move_to(now)
+    hass.states.async_set("sensor.power", "0")
+    hass.states.async_set("sensor.meter", "0")
+    hour = now.replace(minute=0, second=0, microsecond=0)
+    _import_hourly(hass, "sensor.meter", [hour - timedelta(days=d) for d in (10, 3)])
+    await async_wait_recording_done(hass)
+
+    # States older than 14 days go, younger ones stay.
+    assert await recorder_purge.trim_states(hass, "sensor.power", 14) == (0, None)
+    assert (await recorder_purge.count_history(hass, ["sensor.power"]))["sensor.power"][
+        "states"
+    ] == 3
+
+    # A stretch of states: only the row inside [from, to) goes.
+    rng = {
+        "from": (now - timedelta(days=11)).timestamp(),
+        "to": (now - timedelta(days=9)).timestamp(),
+    }
+    before = await recorder_purge.count_trim(hass, "sensor.meter", None, rng, ["states"])
+    assert before["rows"] == 1
+    deleted, error = await recorder_purge.trim_extra(hass, "sensor.meter", None, rng, ["states"])
+    assert (deleted, error) == ({"states": 1}, None)
+    assert (await recorder_purge.count_trim(hass, "sensor.meter", None, rng, ["states"]))[
+        "rows"
+    ] == 0
+
+    # Long-term statistics older than 7 days go, the one of 3 days ago stays.
+    deleted, error = await recorder_purge.trim_extra(hass, "sensor.meter", 7, None, ["long_term"])
+    assert (deleted, error) == ({"long_term": 1}, None)
+    left = await recorder_purge.count_trim(hass, "sensor.meter", 1, None, ["long_term"])
+    assert left["rows"] == 1
