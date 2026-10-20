@@ -114,7 +114,7 @@ class DbHealthMixin {
       : c.state === "ok" ? this.t("dbCheckOk", { at: this.formatDate(c.at) })
       : c.state === "failed" ? this.t("dbCheckFailed", { at: this.formatDate(c.at) })
       : c.state === "damaged" ? this.t("dbCheckDamaged", { at: this.formatDate(c.at) }) : this.t("dbCheckNever");
-    return `<div class="row"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
+    return `<div class="row dbcheck"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
   }
 
   // The figures as tiles, and short notes for what could not be measured and for the normal restart gaps;
