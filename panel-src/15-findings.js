@@ -385,6 +385,7 @@ class FindingsMixin {
     });
     this.render();
     if (!failed) this.toast(this.t("findUnhidden", { n: done }));
+    if (done) await this.reloadAfterDecision();
   }
 
   async hideSelectedFindings() {
@@ -395,6 +396,7 @@ class FindingsMixin {
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
     });
     this.render();
+    if (keys.length) await this.reloadAfterDecision();
   }
 
   findingTitle(f) {
@@ -451,6 +453,9 @@ class FindingsMixin {
         this._rev++;
       }
       this.decide = null;
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); this.decide = null; }
     this.render();
   }

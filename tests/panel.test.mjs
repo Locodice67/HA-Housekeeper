@@ -6690,3 +6690,16 @@ test("the tiles of Maintenance and Clean up keep one status pill each: what is o
   const tiles = el.cleanupView();
   assert.ok((tiles.match(/>Nothing to do</g) || []).length >= 3, "an empty job says so in its pill");
 });
+
+test("after a decision the list reads the findings again, so a device marked as known is no outage any more", async () => {
+  const { el } = panel("en");
+  const own = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false, cause_id: "device_down:d1" };
+  el.data = { ...DATA, findings: [own], causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Hub", finding_key: own.key, child_ids: [], consumers: {} }] };
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.type); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [{ ...own, ignored: true, cause_id: undefined }], causes: [] } : {}; } };
+  el.render = () => {};
+  el.decide = { key: own.key, kind: "keep", days: 0, reason: "known", error: "" };
+  await el.commitDecide();
+  assert.deepEqual(calls, ["ha_housekeeper/ignore", "ha_housekeeper/inventory"]);
+  assert.equal(el.data.causes.length, 0, "the outages come from the server again");
+});

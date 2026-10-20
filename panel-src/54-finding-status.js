@@ -304,6 +304,15 @@ class FindingStatusMixin {
     });
     if (!failed) this.bulk = null;
     this.render();
+    if (failed < keys.length) await this.reloadAfterDecision();
+  }
+
+  // After a decision the server works the outages out again: a device marked as known is no outage any more, and its
+  // entities stand on their own. The list reads the findings again, so it shows what the server now counts.
+  async reloadAfterDecision() {
+    if (!this.data || !this._hass) return;
+    try { await this.refreshData(); } catch (_) { return; } // the local change stays on screen until the next load
+    this.render();
   }
 
   // Sends one request per selected finding. Done ones leave the selection; failed ones stay selected, so
@@ -327,6 +336,9 @@ class FindingStatusMixin {
       await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); }
     this.render();
   }

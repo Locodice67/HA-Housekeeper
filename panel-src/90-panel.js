@@ -978,6 +978,9 @@ class HAHousekeeperPanel extends HTMLElement {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
         if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
+        this.render();
+        await this.reloadAfterDecision();
+        return;
       } catch (err) { this.failed(err); }
       this.render();
     });

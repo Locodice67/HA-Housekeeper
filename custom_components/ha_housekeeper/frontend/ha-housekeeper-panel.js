@@ -3135,6 +3135,7 @@ class FindingsMixin {
     });
     this.render();
     if (!failed) this.toast(this.t("findUnhidden", { n: done }));
+    if (done) await this.reloadAfterDecision();
   }
 
   async hideSelectedFindings() {
@@ -3145,6 +3146,7 @@ class FindingsMixin {
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
     });
     this.render();
+    if (keys.length) await this.reloadAfterDecision();
   }
 
   findingTitle(f) {
@@ -3201,6 +3203,9 @@ class FindingsMixin {
         this._rev++;
       }
       this.decide = null;
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); this.decide = null; }
     this.render();
   }
@@ -8805,7 +8810,9 @@ class MarksMixin {
   // The backend refreshes its cached snapshot; the panel fetches that copy, so no new scan is needed.
   async refreshData() {
     const key = this.selected ? this.objectKey(this.selected) : null;
-    this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    const data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
+    this.data = data;
     this._rev++;
     if (key) this.selected = this.findObject(key) || null;
   }
@@ -11416,6 +11423,15 @@ class FindingStatusMixin {
     });
     if (!failed) this.bulk = null;
     this.render();
+    if (failed < keys.length) await this.reloadAfterDecision();
+  }
+
+  // After a decision the server works the outages out again: a device marked as known is no outage any more, and its
+  // entities stand on their own. The list reads the findings again, so it shows what the server now counts.
+  async reloadAfterDecision() {
+    if (!this.data || !this._hass) return;
+    try { await this.refreshData(); } catch (_) { return; } // the local change stays on screen until the next load
+    this.render();
   }
 
   // Sends one request per selected finding. Done ones leave the selection; failed ones stay selected, so
@@ -11439,6 +11455,9 @@ class FindingStatusMixin {
       await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); }
     this.render();
   }
@@ -18411,6 +18430,9 @@ class HAHousekeeperPanel extends HTMLElement {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
         if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
+        this.render();
+        await this.reloadAfterDecision();
+        return;
       } catch (err) { this.failed(err); }
       this.render();
     });

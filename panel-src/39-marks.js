@@ -87,7 +87,9 @@ class MarksMixin {
   // The backend refreshes its cached snapshot; the panel fetches that copy, so no new scan is needed.
   async refreshData() {
     const key = this.selected ? this.objectKey(this.selected) : null;
-    this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    const data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
+    this.data = data;
     this._rev++;
     if (key) this.selected = this.findObject(key) || null;
   }
