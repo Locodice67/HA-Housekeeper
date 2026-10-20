@@ -203,7 +203,8 @@ class FindingsMixin {
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter")]);
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
-    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
+    // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
+    if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
     if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
@@ -308,7 +309,10 @@ class FindingsMixin {
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
     const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
-    const count = this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
+    // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
+    const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
+    const count = outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
+      : this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
     // Grouped, the pages count the rows shown, heads and what is open below them, not only the heads.
     const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
     const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);

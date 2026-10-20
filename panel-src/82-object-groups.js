@@ -5,13 +5,13 @@
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
   ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
-  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt",
+  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
   ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
   ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
-  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object",
+  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
   ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
 
@@ -105,7 +105,7 @@ class ObjectGroupsMixin {
     const f = this.nodeFacts(n), parts = [];
     if (n.cause) {
       const total = this.causeTotal(n.cause);
-      if (total) parts.push(this.t("causeExplains", { n: this.formatNumber(total) }));
+      if (total) parts.push(this.tCount("causeExplains", total));
       parts.push(this.causeShort(n.cause));
     }
     const own = n.findings.filter(x => x !== f.own && !(n.cause && x.cause_id === n.cause.id));
@@ -182,7 +182,7 @@ class ObjectGroupsMixin {
     const pick = n.cause ? this.causeBox(n.cause) : keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(this.t("selectObjectFindings", { name: this.nodeName(n) }))}">` : "";
     const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.nodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
     const total = n.cause ? this.causeTotal(n.cause) : 0;
-    const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}`;
+    const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}`;
     const link = object ? `<button type="button" class="finding-link" data-object="${this.esc(n.key)}">${label}</button>` : `<button type="button" class="finding-link" data-fold="${this.esc(id)}">${label}</button>`;
     const conf = f.conf[0] == null ? "–" : f.conf[0] === f.conf[1] ? `${Math.round(f.conf[0] * 100)} %` : `<span title="${this.esc(this.t("certSpanHint"))}">${Math.round(f.conf[0] * 100)}–${Math.round(f.conf[1] * 100)} %</span>`;
     const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);

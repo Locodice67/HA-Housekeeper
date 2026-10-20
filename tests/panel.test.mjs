@@ -3564,7 +3564,7 @@ test("follow-up findings of a cause stay folded until asked for, and the export 
   assert.equal(el.exportRows().length, 3);
   const html = el.findingsView();
   assert.ok(html.includes("Integration Cloud is not loaded") && html.includes("2 follow-ups") && html.includes("explains 2 more findings") && html.includes("data-toggle-followers"));
-  assert.ok(entriesOf(el).includes("1 automations affected") && !entriesOf(el).includes("timeout"));
+  assert.ok(entriesOf(el).includes("1 automation affected") && !entriesOf(el).includes("timeout"));
   el.showFollowers = true;
   assert.equal(el.collapseFollowers(el.visibleFindings()).length, 3);
   assert.equal(el.todoItems().some(i => i.key === "outages"), true);
@@ -6276,6 +6276,9 @@ test("the outages row of the overview jumps to exactly the chains it counts, qui
   el.findingOutages = true;
   assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "own_loud,s1");
   assert.ok(el.findingsView().includes("Outages from the overview (1)"));
+  el.findingOutages = "high";
+  const view = el.findingsView();
+  assert.ok(view.includes("Outages (1)") && view.includes("1 outage with 2 findings") && view.includes("1 follow-up"), "named after its row, counted like the overview, in the singular");
 });
 
 test("a jump from the overview into the findings starts from the plain open list, then sets its own filter", () => {

@@ -45,7 +45,7 @@ const TEXT = {
     healthBad: "Dringend", healthHint: "Zustand in Punkten von 100, nach den Befunden der Objekte", healthTip: "Zustand in Punkten. Betroffen: {affected} von {base} Objekten.",
     openFindings: "Befunde",
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
-    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neu kritisch seit dem letzten Scan", outagesFilter: "Ausfälle aus der Übersicht ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
+    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neu kritisch seit dem letzten Scan", outagesFilter: "Ausfälle aus der Übersicht ({n})", outagesFilterHigh: "Ausfälle ({n})", outagesFilterMedium: "Weitere Ausfälle ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
    
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
@@ -230,7 +230,7 @@ const TEXT = {
     healthBad: "Urgent", healthHint: "State in points out of 100, by the findings of the objects", healthTip: "State in points. Affected: {affected} of {base} objects.",
     openFindings: "Findings",
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
-    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical since the last scan", outagesFilter: "Outages from the overview ({n})", heldFilter: "Held back for the vacation ({n})",
+    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical since the last scan", outagesFilter: "Outages from the overview ({n})", outagesFilterHigh: "Outages ({n})", outagesFilterMedium: "Further outages ({n})", heldFilter: "Held back for the vacation ({n})",
    
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
@@ -2966,7 +2966,8 @@ class FindingsMixin {
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter")]);
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
-    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
+    // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
+    if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
     if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
@@ -3071,7 +3072,10 @@ class FindingsMixin {
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
     const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
-    const count = this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
+    // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
+    const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
+    const count = outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
+      : this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
     // Grouped, the pages count the rows shown, heads and what is open below them, not only the heads.
     const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
     const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);
@@ -9149,12 +9153,15 @@ class CausesMixin {
   causeShort(c) { return c.kind === "integration_down" ? [this.causeCounts(c), this.outageLine(c)].filter(Boolean).join(" · ") : [this.causeCounts(c), this.causeLine(c)].filter(Boolean).join(" · "); }
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
+  // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
+  tCount(key, n) { return this.t(n === 1 ? `${key}1` : key, { n: this.formatNumber(n) }); }
+
   causeCounts(c) {
     if (c.kind === "service_missing") return this.t("causeCallers", { n: this.formatNumber(c.follower_count) });
     if (c.virtual) return this.t("causeUsers", { n: this.formatNumber(c.follower_count) });
     if (c.kind === "app_down") return this.t("causeBelow", { n: this.formatNumber(c.child_ids.length) });
     if (!c.follower_count && !Object.keys(c.consumers || {}).length) return this.t("causeNone");
-    const parts = [this.t("causeN_entity", { n: this.formatNumber(c.follower_count) }), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeN_${k}`, { n: c.consumers[k] }))];
+    const parts = [this.tCount("causeN_entity", c.follower_count), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeN_${k}`, c.consumers[k]))];
     return this.t("causeCounts", { parts: parts.join(", ") });
   }
 
@@ -9260,9 +9267,9 @@ class CausesMixin {
   causeEntry(c) {
     const total = this.causeTotal(c), link = `${c.object_type}:${c.object_id}`;
     const title = this.esc(this.t(`cause_${c.kind}`, { name: c.name })), own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
-    const sub = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
+    const sub = [total ? this.tCount("causeExplains", total) : "", this.causeShort(c)].filter(Boolean).join(" · ");
     if (!total) return `<div class="rowwrap">${this.causeBox(c)}<button class="row rel" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${title}</strong><small>${this.esc(sub)}</small></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(c.impact)}</button>${this.causeMenu(c, own1)}</div>${this.rowDecide(own1)}`;
-    return this.fold(`cause_${c.id}`, { tone: "red", title, sub, pill: this.t("causeFollowers", { n: this.formatNumber(total) }) }, this.causeChildren(c), false);
+    return this.fold(`cause_${c.id}`, { tone: "red", title, sub, pill: this.tCount("causeFollowers", total) }, this.causeChildren(c), false);
   }
 
   causeChildren(c, includeOwn = true) {
@@ -9288,7 +9295,7 @@ class CausesMixin {
     const total = this.causeTotal(c), sub = [this.causeCounts(c), this.causeLine({ ...c, impact: null })].filter(Boolean).join(" · ");
     // A missing target has no page of its own: its row opens the findings filtered to it and what it explains.
     const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
-    return `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small></span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button>`;
+    return `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small></span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
   }
 
   // A single finding as a plain row of the overview: it opens the object; deciding and selecting happen on the Findings page.
@@ -9329,7 +9336,7 @@ Object.assign(TEXT.de, {
   cause_device_novalue: "Alle {n} Entitäten des Geräts haben seit {span} keinen Wert mehr. Meist ist das Gerät im Standby oder ausgeschaltet.", hint_device_novalue: "Ist das gewollt, hält ein Vermerk „Absichtlich offline“ am Gerät es fest; dann meldet Housekeeper weder das Gerät noch seine Entitäten.", devAllNoValue: "alle {n} ohne Wert", noValue: "Ohne Wert", sumRiskOutage: "Beim Entfernen (nicht der Ausfall)", cause_device_unavailable: "Alle {n} Entitäten des Geräts sind seit {span} nicht verfügbar. Das Gerät ist registriert, liefert aber keine Werte.", hint_device_unavailable: "Prüfen, ob das Gerät erreichbar ist (Strom, Netzwerk, Cloud-Verbindung), und die Integration neu laden.", devAllDown: "alle {n} nicht verfügbar", causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageIntegrations1: "1 Integration", outageDevices: "{n} Geräte", outageDevices1: "1 Gerät",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
   cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
-  causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageApps1: "1 App", outageTargets: "{n} fehlende Ziele", outageTargets1: "1 fehlendes Ziel", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", outageServices1: "1 fehlender Dienst", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
+  causeFollowers: "{n} Folgen", causeFollowers1: "1 Folge", causeExplains: "erklärt {n} weitere Befunde", causeExplains1: "erklärt 1 weiteren Befund", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageApps1: "1 App", outageTargets: "{n} fehlende Ziele", outageTargets1: "1 fehlendes Ziel", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", outageServices1: "1 fehlender Dienst", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
   findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{n} von {total} Befunden an {m} Objekten", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle", ovFoundAt: "erkannt {age}", actOutagesOpen: "Weitere Ausfälle",
 });
 Object.assign(TEXT.en, {
@@ -9337,7 +9344,7 @@ Object.assign(TEXT.en, {
   cause_device_novalue: "All {n} entities of the device have had no value for {span}. Usually the device is in standby or switched off.", hint_device_novalue: "If that is intended, a mark “Offline on purpose” on the device records it; then Housekeeper reports neither the device nor its entities.", devAllNoValue: "all {n} without a value", noValue: "No value", sumRiskOutage: "When removed (not the outage)", cause_device_unavailable: "All {n} entities of the device have been unavailable for {span}. The device is registered but delivers no values.", hint_device_unavailable: "Check that the device is reachable (power, network, cloud connection) and reload the integration.", devAllDown: "all {n} unavailable", causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageIntegrations1: "1 integration", outageDevices: "{n} devices", outageDevices1: "1 device",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
   cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
-  causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageApps1: "1 app", outageTargets: "{n} missing targets", outageTargets1: "1 missing target", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", outageServices1: "1 missing service", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
+  causeFollowers: "{n} follow-ups", causeFollowers1: "1 follow-up", causeExplains: "explains {n} more findings", causeExplains1: "explains 1 more finding", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageApps1: "1 app", outageTargets: "{n} missing targets", outageTargets1: "1 missing target", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", outageServices1: "1 missing service", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
   findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{n} of {total} findings on {m} objects", viewCountOf: "{n} of {total} findings", actOutages: "Outages", ovFoundAt: "found {age}", actOutagesOpen: "Further outages",
 });
 
@@ -10448,7 +10455,7 @@ Object.assign(TEXT.de, {
   safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
-  causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards",
+  causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards", causeN_entity1: "1 Entität", causeN_automation1: "1 Automation", causeN_script1: "1 Skript", causeN_dashboard1: "1 Dashboard",
 });
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
@@ -10456,7 +10463,7 @@ Object.assign(TEXT.en, {
   safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
-  causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
+  causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards", causeN_entity1: "1 entity", causeN_automation1: "1 automation", causeN_script1: "1 script", causeN_dashboard1: "1 dashboard",
 });
 Object.assign(TEXT.de, {
   modeBadge_full: "Alles erlaubt", modeBadge_read_only: "Nur lesen", modeBadge_quarantine: "Nur Quarantäne", modeBadge_confirmed: "Ohne endgültiges Löschen",
@@ -17120,13 +17127,13 @@ class MonitorMixin {
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
   ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
-  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt",
+  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
   ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
   ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
-  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object",
+  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
   ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
 
@@ -17220,7 +17227,7 @@ class ObjectGroupsMixin {
     const f = this.nodeFacts(n), parts = [];
     if (n.cause) {
       const total = this.causeTotal(n.cause);
-      if (total) parts.push(this.t("causeExplains", { n: this.formatNumber(total) }));
+      if (total) parts.push(this.tCount("causeExplains", total));
       parts.push(this.causeShort(n.cause));
     }
     const own = n.findings.filter(x => x !== f.own && !(n.cause && x.cause_id === n.cause.id));
@@ -17297,7 +17304,7 @@ class ObjectGroupsMixin {
     const pick = n.cause ? this.causeBox(n.cause) : keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(this.t("selectObjectFindings", { name: this.nodeName(n) }))}">` : "";
     const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.nodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
     const total = n.cause ? this.causeTotal(n.cause) : 0;
-    const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}`;
+    const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}`;
     const link = object ? `<button type="button" class="finding-link" data-object="${this.esc(n.key)}">${label}</button>` : `<button type="button" class="finding-link" data-fold="${this.esc(id)}">${label}</button>`;
     const conf = f.conf[0] == null ? "–" : f.conf[0] === f.conf[1] ? `${Math.round(f.conf[0] * 100)} %` : `<span title="${this.esc(this.t("certSpanHint"))}">${Math.round(f.conf[0] * 100)}–${Math.round(f.conf[1] * 100)} %</span>`;
     const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);
