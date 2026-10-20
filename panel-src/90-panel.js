@@ -835,6 +835,12 @@ class HAHousekeeperPanel extends HTMLElement {
         this.menuOpen = null; this.render();
       });
       root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      // Only one row menu (⋮) is open at a time: opening one closes the others. "toggle" does not bubble, so it is caught on the way down.
+      root.addEventListener("toggle", ev => {
+        const menu = ev.target;
+        if (!menu?.matches?.("details.rowmenu") || !menu.open) return;
+        root.querySelectorAll("details.rowmenu[open]").forEach(other => { if (other !== menu) other.open = false; });
+      }, true);
       // The column and export pop-ups close on a click elsewhere and on Escape.
       root.addEventListener("click", ev => {
         if (!this._colOpen && !this._expOpen) return;
