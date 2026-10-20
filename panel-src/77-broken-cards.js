@@ -62,15 +62,4 @@ class BrokenCardsMixin {
     const p = g.members[0].evidence[0].place;
     return this.check(this.t("brokenCardLabel"), "red", [...this.placeParts(p), this.t("brokenCount", { n: g.members.length })].join(" · "), this.t("missing"));
   }
-
-  findingGroup(g) {
-    const f = g.members[0], p = f.evidence[0].place, object = this.findObject(this.findingKey(f));
-    const keys = g.members.map(m => m.key), n = keys.length, id = `bg:${g.group}`, open = this.foldOpen(id, false);
-    (this._findGroups ||= {})[g.group] = keys;
-    const orphan = this.isOrphan(p);
-    const title = `${object?.name || f.object_id}${p.view != null ? ` › ${p.view}` : ""}`;
-    const sub = [...this.placeParts({ card: p.card, section: p.section }), this.t("brokenCount", { n })].join(" · ");
-    const head = `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(g.group)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"><button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile red"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}${orphan ? ` · ${this.esc(this.t("brokenOrphanShort"))}` : ""}</small></span><span class="pill red">${n}</span></button></div>`;
-    return `<div class="fold${open ? " open" : ""}">${head}${open ? `<div class="foldbody">${orphan ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div>` : ""}${g.members.map(m => this.findingRow(m, true)).join("")}</div>` : ""}</div>`;
-  }
 }

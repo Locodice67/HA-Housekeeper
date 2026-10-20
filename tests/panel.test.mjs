@@ -4982,11 +4982,13 @@ test("broken references of one dashboard card form one row with a readable place
   const rows = el.groupBroken(list);
   assert.equal(rows.length, 1);
   assert.equal(el.groupBroken([list[0]])[0], list[0], "a card with one broken reference stays a plain row");
-  el.folds = { [`bg:technik|${place.card_path}`]: true };
-  const html = el.findingGroup(rows[0]);
-  assert.ok(html.includes("Technik › Archiv") && html.includes("Card custom:charger-card (Section 2) · 3 broken references"));
+  // The grouped findings list: the dashboard is the head, the card a head below it, its references the rows.
+  el.view = "findingsNav";
+  el.folds = { "og:dashboard:technik": true, [`bg:technik|${place.card_path}`]: true };
+  const html = el.findingsView();
+  assert.ok(html.includes(`data-fold="bg:technik|${place.card_path}"`) && html.includes("Card custom:charger-card (Section 2)") && html.includes("3 broken references"));
   assert.ok(html.includes("looks abandoned: 3 of 4") && html.includes("Maybe: sensor.b_new") && html.includes("details/b"));
-  assert.ok(html.includes("<small>sensor.a · details/a"), "inside the group only the part below the card shows");
+  assert.ok(html.includes("sensor.a · details/a"), "inside the card only the part below it shows");
   assert.equal(el.placeText(list[0]), 'Tab “Archiv” · Card custom:charger-card (Section 2)');
   const diag = el.diagnose(el.data.objects[0]);
   assert.equal(diag.rows.filter(r => r.tone === "red").length, 1, "one diagnosis row per card");
