@@ -1709,6 +1709,7 @@ class StylesMixin {
       .mcplog tr.undone td{opacity:.55}.logwhat{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;min-width:0}.logwhat code{overflow-wrap:anywhere}.logwhat small,.logn{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.logdetail{padding:4px 0 8px}.logdetail small{color:var(--hk-muted)}.logdetail pre{margin:4px 0 0;padding:8px 10px;border-radius:8px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));overflow:auto}.mcpbulk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}.mcprow select,.mcpbulk select{font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--hk-border);background:var(--hk-card,transparent);color:var(--hk-text)}
       .mcprow .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.mcprow .seg{flex-wrap:nowrap;justify-content:flex-end}@media(max-width:640px){.mcprow .seg{grid-column:1/-1;grid-row:2;justify-content:flex-start;padding-left:52px}}.mcpneeds{color:var(--hk-amber)}.mcpnote{display:flex;gap:10px;align-items:flex-start;margin:12px 16px;padding:10px 12px;border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1));line-height:1.5}.mcpnote ha-icon{--mdc-icon-size:18px;flex:none;margin-top:1px;color:var(--hk-muted)}.mcpcalls{margin-left:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));font-weight:400}.mcphow .mcpsteps{display:grid;gap:8px;margin:6px 0 0;padding-left:20px;font-size:calc(13px*var(--hk-fs,1));line-height:1.6}.mcpchip{display:inline-block;margin:1px 2px;padding:1px 7px;border-radius:6px;background:var(--hk-soft);border:1px solid var(--hk-border);font-size:calc(12px*var(--hk-fs,1))}
       .statusopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.statusopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;cursor:pointer;background:var(--hk-surface)}.statusopt.on{border-color:var(--hk-blue-solid);box-shadow:0 0 0 1px var(--hk-blue-solid)}.statusopt input{margin:3px 0 0;flex:none}.statusopt span{display:grid;gap:2px;min-width:0}.statusopt small{color:var(--hk-muted);font-size:12.5px;white-space:normal}.statusform{display:grid;gap:10px}.statusrow{display:flex;gap:8px;flex-wrap:wrap}.statusrow input{flex:1 1 220px;min-width:0}.statusform .mbtns{display:flex;gap:8px;justify-content:flex-end}.menuitem span{display:grid;text-align:left}.menuitem small{color:var(--hk-muted);font-size:12px}.fbtns .btn.ha{background:none;box-shadow:none;border-color:var(--hk-border)}
+      .statustext h2 .headlink{text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:color-mix(in srgb,currentColor 25%,transparent);text-underline-offset:5px}.statustext p .link{font-size:inherit}.todogrp{display:flex;gap:8px;align-items:center}.foldhd small{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}.todogrp.red{color:var(--hk-red)}.whygroups{display:grid;gap:4px;margin-bottom:10px}.whygroups p{margin:0}.why-red{color:var(--hk-red)}.why-open{color:var(--hk-amber)}.why-care{color:var(--hk-muted)}
       ${this.themeCss()}
     </style>`;
   }
@@ -2428,16 +2429,32 @@ class OverviewMixin {
     return last ? `<small>${this.t("monitorLastProblemLine")}: <button class="link" data-monitor-last="${this.esc(last.id)}">${this.esc(last.name)}</button> · ${this.agoText(last.last_problem_at)}</small>` : "";
   }
 
-  // "1 topic urgent, 4 more open": what the headline counts are topics (rows of the list), not objects.
-  statusHeadline(health) {
-    const urgent = health.red === 1 ? this.t("statusUrgentOne") : this.t("statusUrgent", { n: this.formatNumber(health.red) });
-    if (health.red && health.later) return `${urgent}, ${this.t("statusMoreOpen", { n: this.formatNumber(health.later) })}`;
-    if (health.red) return urgent;
-    return health.later === 1 ? this.t("statusOpenOne") : this.t("statusOpen", { n: this.formatNumber(health.later) });
+  // The rows of the to-do card in the three groups the headline names: urgent (red), open (the rest outside maintenance)
+  // and maintenance. Every row is counted once, so the headline and the card add up.
+  todoGroups(items = this.todoItems()) {
+    const red = items.filter(i => i.tone === "red").sort((a, b) => (b.key === "monitor_problem") - (a.key === "monitor_problem"));
+    return { red, open: items.filter(i => i.tone !== "red" && i.area !== "care"), care: items.filter(i => i.tone !== "red" && i.area === "care") };
   }
 
-  statusSubline(health) {
-    return `${this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t("statusHealth", { percent: this.formatNumber(health.percent) })}`;
+  todoName(it) { return `${it.text || this.t(it.label)}${it.count !== undefined ? ` (${this.formatNumber(it.count)})` : ""}`; }
+
+  // The headline names what is urgent instead of counting topics: one or two by name, more as the first and a number.
+  // With `link` each name is a button to its row of the to-do card.
+  statusHeadline(groups = this.todoGroups(), link = false) {
+    const name = it => (link ? `<button type="button" class="headlink" data-todo-go="${this.esc(it.key)}" title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.todoName(it))}</button>` : this.esc(this.todoName(it)));
+    const red = groups.red;
+    if (red.length === 1) return name(red[0]);
+    if (red.length === 2) return this.t("statusAnd", { a: name(red[0]), b: name(red[1]) });
+    if (red.length > 2) return this.t("statusMoreUrgent", { first: name(red[0]), n: this.formatNumber(red.length - 1) });
+    return this.esc(this.t(groups.open.length ? "statusNothingUrgent" : "statusAllGood"));
+  }
+
+  // Below the headline: what is open besides the urgent rows, the objects with a finding and the way to the explanation.
+  statusSubline(health, groups = this.todoGroups()) {
+    const rest = [groups.open.length ? this.t("statusPartOpen", { n: this.formatNumber(groups.open.length) }) : "", groups.care.length ? this.t("statusPartCare", { n: this.formatNumber(groups.care.length) }) : ""].filter(Boolean);
+    const restText = rest.length ? (groups.red.length ? this.t("statusAlso", { what: rest.join(this.t("statusJoin")) }) : rest.join(this.t("statusJoin"))) : "";
+    return [restText, this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })].filter(Boolean).map(x => this.esc(x)).join(" · ")
+      + ` · <button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}">${this.t("healthWhy")}</button>`;
   }
 
   // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level,
@@ -2451,7 +2468,8 @@ class OverviewMixin {
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
     lines.push(row(this.t("whyShare"), this.t("pointsOf100", { n: this.formatNumber(health.percent) })));
-    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}">${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
+    const groups = ["red", "open", "care"].map(g => `<p><b class="why-${g}">${this.t(`group_${g}`)}</b> ${this.t(`whyGroup_${g}`)}</p>`).join("");
+    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}"><div class="whygroups"><strong>${this.t("whyHeadTitle")}</strong>${groups}</div><strong>${this.t("whyRingTitle")}</strong>${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
   }
 
   // A number with its noun, so that the rows count what they say: "8 integrations".
@@ -2472,18 +2490,19 @@ class OverviewMixin {
       const pill = it.count !== undefined ? this.todoCount(it) : it.pill;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${pill ? `<span class="pill ${it.tone}">${this.esc(pill)}</span>` : ""}</button>`;
     };
-    const inArea = area => items.filter(i => i.area === area && i.key !== "outages"); // the outages are entries of the list itself
+    const groups = this.todoGroups(items);
     const pinned = new Set(this.reauthFindings().map(f => f.object_id));
     const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)));
     const entryRow = e => (e.cause ? this.overviewCause(e.cause) : this.overviewFinding(e.finding));
-    const findingRows = [...inArea("findings").filter(i => i.key === "monitor_problem").map(row), ...inArea("findings").filter(i => i.key !== "monitor_problem").map(row), ...entries.slice(0, LIMIT).map(entryRow)];
     const all = `<button class="link" data-jump="findingsNav">${this.t("allFindings")} (${this.formatNumber(this.findingTotal())}) <ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
-    const state = [...inArea("state")].sort((x, y) => (y.tone === "red") - (x.tone === "red"));
-    const care = inArea("care");
+    const head = (g, n) => `<h3 class="foldhd todogrp ${g}">${this.t(`group_${g}`)} <span class="pill ${g === "red" ? "red" : "warn"}">${this.formatNumber(n)}</span></h3>`;
     const sections = [];
-    if (findingRows.length) sections.push(`<h3 class="foldhd">${this.t("areaFindings")}</h3>${findingRows.join("")}`);
-    if (state.length) sections.push(`<h3 class="foldhd">${this.t("areaState")}</h3>${state.map(row).join("")}`);
-    if (care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(care.length) }, care.map(row).join(""), !sections.length));
+    if (groups.red.length) sections.push(`${head("red", groups.red.length)}${groups.red.map(row).join("")}`);
+    if (groups.open.length) sections.push(`${head("open", groups.open.length)}${groups.open.map(row).join("")}`);
+    if (groups.care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(groups.care.length) }, groups.care.map(row).join(""), !sections.length));
+    // The first entries of the findings list: a look at what matters most, not counted as rows of the headline.
+    const top = entries.slice(0, LIMIT).map(entryRow);
+    if (top.length) sections.push(`<h3 class="foldhd">${this.t("topFindings")} <small class="muted">${this.t("topFindingsSub")}</small></h3>${top.join("")}`);
     const body = sections.length ? sections.join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
     return `<section class="panel u-mb14" aria-labelledby="hk-todo" id="hk-todo-card" tabindex="-1"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div>${all}</div>${body}${this.todoFoot()}</section>`;
   }
@@ -2554,10 +2573,10 @@ class OverviewMixin {
     const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
     const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-filter="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
-    const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.statusHeadline(health))}</button>` : this.t("statusAllGood");
+    const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button>
-      <div class="statustext"><span class="pill ${health.tone}">${this.t(health.label)}</span><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
+      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
       <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "lead", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
@@ -11340,9 +11359,15 @@ Object.assign(TEXT.de, {
   repeatPlan: "Plan wiederholen", repeatHint: "Es wurde nichts geändert. Das erstellt eine neue Vorschau mit denselben Objekten.",
   planResultDone: "Plan", undoYes: "Ja, rückgängig machen", undoAskOne: "Diese Änderung zurücksetzen?", undoAskAll: "Alles rückgängig machen?",
   undoAskAllHint: "Housekeeper stellt zurück, was dieser Plan geändert hat, soweit es unverändert ist.", undoAllHint: "Housekeeper kann zurückstellen, was dieser Plan geändert hat, solange es unverändert ist.", reportTitle: "Prüfbericht",
-  statusUrgentOne: "1 Thema dringend", statusUrgent: "{n} Themen dringend", statusMoreOpen: "{n} weitere offen", statusOpenOne: "1 Thema offen", statusOpen: "{n} Themen offen",
-  statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} Punkte", healthWhy: "Wie entsteht die Zahl?",
-  ratedObjects: "Geprüfte Objekte", pointsOf100: "{n} von 100", whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "je 2", whyWeight_medium: "je 1", whyWeight_low: "je 0,5", whyWeight_info: "kein Abzug", whyTotal: "Verbleibend", whyShare: "Zustand", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe, und zieht 2, 1 oder 0,5 ab; auch die Folgen einer Ursache sind Objekte und zählen mit ihrer eigenen Stufe. Der Zustand ist der Rest, umgerechnet auf 100 Punkte, mindestens 0. Die Farbe zeigt, ob etwas zu tun ist: rot bei dringenden Themen, gelb bei anderen offenen Themen oder Objekten mit hoher oder mittlerer Auswirkung, sonst grün; Wartung (Ziele, Erinnerungen, Quarantäne) färbt nicht. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
+  statusAnd: "{a} und {b}", statusMoreUrgent: "{first} und {n} weitere dringende Punkte", statusNothingUrgent: "Nichts dringend",
+  statusPartOpen: "{n} offen", statusPartCare: "{n} in der Wartung", statusJoin: " und ", statusAlso: "Dazu {what}",
+  group_red: "Dringend", group_open: "Offen", group_care: "Wartung", topFindings: "Wichtigste Befunde", topFindingsSub: "zählen nicht als eigener Punkt",
+  whyHeadTitle: "Die Kopfzeile", whyRingTitle: "Der Ring",
+  whyGroup_red: "ist, was jetzt etwas kaputt macht: Ausfälle, neue kritische Befunde, eine Anmeldung, die erneuert werden muss, eine gestörte überwachte Funktion, Rückfälle nach einem Plan, ein Backup- oder Datenbankproblem, eine fast volle Platte.",
+  whyGroup_open: "ist Zustand, der geprüft werden sollte: ein alter Scan, eine unklare überwachte Funktion, eine Platte, die voll wird.",
+  whyGroup_care: "sind Updates, Erinnerungen, Ziele, Quarantäne und entfernte HACS-Repositorys. Sie färben den Ring nie.",
+  statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} Punkte", healthWhy: "Wie kommt das zustande?",
+  ratedObjects: "Geprüfte Objekte", pointsOf100: "{n} von 100", whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "je 2", whyWeight_medium: "je 1", whyWeight_low: "je 0,5", whyWeight_info: "kein Abzug", whyTotal: "Verbleibend", whyShare: "Zustand", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe, und zieht 2, 1 oder 0,5 ab; auch die Folgen einer Ursache sind Objekte und zählen mit ihrer eigenen Stufe. Der Zustand ist der Rest, umgerechnet auf 100 Punkte, mindestens 0. Die Farbe zeigt, ob etwas zu tun ist: rot bei dringenden Punkten, gelb bei offenen Punkten oder Objekten mit hoher oder mittlerer Auswirkung, sonst grün; Wartung (Ziele, Erinnerungen, Quarantäne) färbt nicht. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
  
   unit_outages_1: "Ausfall", unit_outages_n: "Ausfälle", unit_followup_1: "Plan", unit_followup_n: "Pläne", unit_reminders_1: "Erinnerung", unit_reminders_n: "Erinnerungen", unit_criteria_1: "Ziel", unit_criteria_n: "Ziele", unit_critical_1: "Befund", unit_critical_n: "Befunde", unit_backup_1: "Problem", unit_backup_n: "Probleme", unit_quarantine_1: "Objekt", unit_quarantine_n: "Objekte",
   statusTasks: "{count} Aufgaben warten auf dich", statusTasksJump: "Zur Liste der Aufgaben springen", statusAllGood: "Alles in Ordnung",
@@ -11383,9 +11408,15 @@ Object.assign(TEXT.en, {
   repeatPlan: "Repeat plan", repeatHint: "Nothing was changed. This creates a new preview with the same objects.",
   planResultDone: "Plan", undoYes: "Yes, undo", undoAskOne: "Undo this change?", undoAskAll: "Undo everything?",
   undoAskAllHint: "Housekeeper puts back what this plan changed, as far as it is still unchanged.", undoAllHint: "Housekeeper can put back what this plan changed, as long as it is unchanged.", reportTitle: "Audit report",
-  statusUrgentOne: "1 topic urgent", statusUrgent: "{n} topics urgent", statusMoreOpen: "{n} more open", statusOpenOne: "1 topic open", statusOpen: "{n} topics open",
-  statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} points", healthWhy: "How is this number made?",
-  ratedObjects: "Checked objects", pointsOf100: "{n} of 100", whyStart: "Starting value · checked objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "2 each", whyWeight_medium: "1 each", whyWeight_low: "0.5 each", whyWeight_info: "nothing off", whyTotal: "Remaining", whyShare: "State", whyNote: "Every object counts once, with its worst level, and takes off 2, 1 or 0.5; the follow-ups of a cause are objects too and count with their own level. The state is what remains, scaled to 100 points, never below 0. The colour shows whether something needs doing: red for urgent topics, yellow for other open topics or objects with high or medium impact, green otherwise; maintenance (goals, reminders, quarantine) does not colour it. Hidden, known and snoozed findings do not count.",
+  statusAnd: "{a} and {b}", statusMoreUrgent: "{first} and {n} more urgent items", statusNothingUrgent: "Nothing urgent",
+  statusPartOpen: "{n} open", statusPartCare: "{n} in maintenance", statusJoin: " and ", statusAlso: "Plus {what}",
+  group_red: "Urgent", group_open: "Open", group_care: "Maintenance", topFindings: "Most important findings", topFindingsSub: "not counted as items of their own",
+  whyHeadTitle: "The headline", whyRingTitle: "The ring",
+  whyGroup_red: "is what breaks something now: outages, new critical findings, a login that needs renewing, a monitored function with a fault, setbacks after a plan, a backup or database problem, a nearly full disk.",
+  whyGroup_open: "is state that should be checked: an old scan, a monitored function that is unclear, a disk that is filling up.",
+  whyGroup_care: "are updates, reminders, goals, quarantine and removed HACS repositories. They never colour the ring.",
+  statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} points", healthWhy: "How does this come about?",
+  ratedObjects: "Checked objects", pointsOf100: "{n} of 100", whyStart: "Starting value · checked objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "2 each", whyWeight_medium: "1 each", whyWeight_low: "0.5 each", whyWeight_info: "nothing off", whyTotal: "Remaining", whyShare: "State", whyNote: "Every object counts once, with its worst level, and takes off 2, 1 or 0.5; the follow-ups of a cause are objects too and count with their own level. The state is what remains, scaled to 100 points, never below 0. The colour shows whether something needs doing: red for urgent items, yellow for open items or objects with high or medium impact, green otherwise; maintenance (goals, reminders, quarantine) does not colour it. Hidden, known and snoozed findings do not count.",
  
   unit_outages_1: "outage", unit_outages_n: "outages", unit_followup_1: "plan", unit_followup_n: "plans", unit_reminders_1: "reminder", unit_reminders_n: "reminders", unit_criteria_1: "goal", unit_criteria_n: "goals", unit_critical_1: "finding", unit_critical_n: "findings", unit_backup_1: "problem", unit_backup_n: "problems", unit_quarantine_1: "object", unit_quarantine_n: "objects",
   statusTasks: "{count} tasks are waiting for you", statusTasksJump: "Jump to the list of tasks", statusAllGood: "All good",
@@ -17923,7 +17954,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindNotes(root);
     this.bindConfirm(root);
     root.querySelectorAll("[data-health-why]").forEach(el => el.onclick = () => { this.healthWhy = !this.healthWhy; this.render(); });
-    root.querySelector("[data-todo-jump]")?.addEventListener("click", () => { const card = root.querySelector("#hk-todo-card"); card?.scrollIntoView?.({ block: "start", behavior: "smooth" }); card?.focus?.({ preventScroll: true }); });
+    // A name in the headline: its row of the to-do card, in view and focused.
+    root.querySelectorAll("[data-todo-go]").forEach(el => el.onclick = () => { const target = root.querySelector(`#hk-todo-card [data-todo="${el.dataset.todoGo}"]`) || root.querySelector("#hk-todo-card"); target?.scrollIntoView?.({ block: "center", behavior: "smooth" }); target?.focus?.({ preventScroll: true }); });
     this.bindExport(root);
     this.bindPlanWizard(root);
     this.bindExclude(root);

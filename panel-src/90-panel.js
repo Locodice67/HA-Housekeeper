@@ -960,7 +960,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindNotes(root);
     this.bindConfirm(root);
     root.querySelectorAll("[data-health-why]").forEach(el => el.onclick = () => { this.healthWhy = !this.healthWhy; this.render(); });
-    root.querySelector("[data-todo-jump]")?.addEventListener("click", () => { const card = root.querySelector("#hk-todo-card"); card?.scrollIntoView?.({ block: "start", behavior: "smooth" }); card?.focus?.({ preventScroll: true }); });
+    // A name in the headline: its row of the to-do card, in view and focused.
+    root.querySelectorAll("[data-todo-go]").forEach(el => el.onclick = () => { const target = root.querySelector(`#hk-todo-card [data-todo="${el.dataset.todoGo}"]`) || root.querySelector("#hk-todo-card"); target?.scrollIntoView?.({ block: "center", behavior: "smooth" }); target?.focus?.({ preventScroll: true }); });
     this.bindExport(root);
     this.bindPlanWizard(root);
     this.bindExclude(root);

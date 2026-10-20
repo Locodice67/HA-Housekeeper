@@ -2818,7 +2818,7 @@ test("polish: the to-do list groups by urgency, the cleanup view has tabs, the q
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString() }, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }] };
   const card = el.todoCard();
-  assert.ok(card.includes(">Findings<") && card.includes('data-fold="todo_care"') && !card.includes(">State<"), "areas without rows are left out, maintenance folds while something else is open");
+  assert.ok(card.includes("todogrp red") && card.includes('data-fold="todo_care"') && !card.includes("todogrp open"), "groups without rows are left out, maintenance folds while something else is open");
   el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
   const html = el.cleanupView();
   assert.ok(html.includes('data-view-tab="cleanup|entities"') && html.includes('data-view-tab="cleanup|devices"') && html.includes('data-view-tab="cleanup|unused"') && html.includes('data-view-tab="cleanup|stats"') && !html.includes('data-view-tab="cleanup|purges"'), "old purges are noted in the Journal, no tab here");
@@ -3821,7 +3821,7 @@ test("the health card names the score and the count; the safety line shows backu
   ];
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes("class=\"statushead\"") && /topics? (urgent|open)|All good/.test(html));
+  assert.ok(html.includes("class=\"statushead\"") && /data-todo-go=|Nothing urgent|All good/.test(html));
   assert.ok(/of \d+ objects with a finding/.test(html));
   assert.ok(html.includes("Last backup: 5 h ago") && html.includes("undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
@@ -4634,7 +4634,8 @@ test("the status is a state in points: each object once by its worst level, weig
   assert.equal(h.percent, 82.5);
   assert.equal(h.affected, 3, "the objects with a finding are the rows of the calculation, without info");
   assert.equal(h.tone, "warn", "an object with high impact is yellow while no urgent topic is open");
-  assert.equal(el.statusHeadline(h), "1 topic open");
+  assert.equal(el.statusHeadline(), "All good", "maintenance alone is nothing to name in the headline");
+  assert.ok(el.statusSubline(h).includes("1 in maintenance"));
   el.data = { ...el.data, causes: [], findings: Array.from({ length: 9 }, (_, i) => f(`x.${i}`, "high")) };
   items.push({ tone: "red", key: "disk", area: "state" }, { tone: "red", key: "backup", area: "state" });
   h = el.health();
@@ -6120,4 +6121,17 @@ test("the status of the selection is set in one form; an exception from a findin
   el.exc = { rules: [], areas: [{ id: "hall", name: "Hall" }], labels: [], integrations: [{ id: "hue", name: "Philips Hue" }], domains: [], devices: [], entities: [] };
   await el.openExceptionFor(["entity:light.a"]);
   assert.equal(el.excForm.scopes.map(s => `${s.id}:${s.picks.map(p => p.id).join()}`).join(" "), "objects:light.a devices:d1 areas:hall integrations:hue");
+});
+
+test("the headline names what is urgent, the to-do card has the same groups, and both add up", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, regressions: [], criteria_alerts: [] };
+  const items = [{ key: "outages", tone: "red", area: "findings", label: "actOutages", count: 5 }, { key: "critical", tone: "red", area: "findings", label: "actNewCritical", count: 6 }, { key: "stale", tone: "warn", area: "state", text: "Old scan", scan: true }, { key: "updates", tone: "warn", area: "care", text: "Updates" }];
+  el.todoItems = () => items;
+  assert.equal(el.statusHeadline(), "Outages (5) and New critical findings (6)");
+  assert.ok(el.statusSubline(el.health()).includes("Plus 1 open and 1 in maintenance"));
+  const card = el.todoCard();
+  assert.ok(card.includes('data-todo="outages"') && card.includes("todogrp red") && card.includes("todogrp open") && card.includes('data-fold="todo_care"'), "every counted item is a row of its group");
+  items.push({ key: "disk", tone: "red", area: "state", text: "Disk" });
+  assert.equal(el.statusHeadline(), "Outages (5) and 2 more urgent items");
 });

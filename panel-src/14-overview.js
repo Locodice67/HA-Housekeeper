@@ -190,16 +190,32 @@ class OverviewMixin {
     return last ? `<small>${this.t("monitorLastProblemLine")}: <button class="link" data-monitor-last="${this.esc(last.id)}">${this.esc(last.name)}</button> · ${this.agoText(last.last_problem_at)}</small>` : "";
   }
 
-  // "1 topic urgent, 4 more open": what the headline counts are topics (rows of the list), not objects.
-  statusHeadline(health) {
-    const urgent = health.red === 1 ? this.t("statusUrgentOne") : this.t("statusUrgent", { n: this.formatNumber(health.red) });
-    if (health.red && health.later) return `${urgent}, ${this.t("statusMoreOpen", { n: this.formatNumber(health.later) })}`;
-    if (health.red) return urgent;
-    return health.later === 1 ? this.t("statusOpenOne") : this.t("statusOpen", { n: this.formatNumber(health.later) });
+  // The rows of the to-do card in the three groups the headline names: urgent (red), open (the rest outside maintenance)
+  // and maintenance. Every row is counted once, so the headline and the card add up.
+  todoGroups(items = this.todoItems()) {
+    const red = items.filter(i => i.tone === "red").sort((a, b) => (b.key === "monitor_problem") - (a.key === "monitor_problem"));
+    return { red, open: items.filter(i => i.tone !== "red" && i.area !== "care"), care: items.filter(i => i.tone !== "red" && i.area === "care") };
   }
 
-  statusSubline(health) {
-    return `${this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t("statusHealth", { percent: this.formatNumber(health.percent) })}`;
+  todoName(it) { return `${it.text || this.t(it.label)}${it.count !== undefined ? ` (${this.formatNumber(it.count)})` : ""}`; }
+
+  // The headline names what is urgent instead of counting topics: one or two by name, more as the first and a number.
+  // With `link` each name is a button to its row of the to-do card.
+  statusHeadline(groups = this.todoGroups(), link = false) {
+    const name = it => (link ? `<button type="button" class="headlink" data-todo-go="${this.esc(it.key)}" title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.todoName(it))}</button>` : this.esc(this.todoName(it)));
+    const red = groups.red;
+    if (red.length === 1) return name(red[0]);
+    if (red.length === 2) return this.t("statusAnd", { a: name(red[0]), b: name(red[1]) });
+    if (red.length > 2) return this.t("statusMoreUrgent", { first: name(red[0]), n: this.formatNumber(red.length - 1) });
+    return this.esc(this.t(groups.open.length ? "statusNothingUrgent" : "statusAllGood"));
+  }
+
+  // Below the headline: what is open besides the urgent rows, the objects with a finding and the way to the explanation.
+  statusSubline(health, groups = this.todoGroups()) {
+    const rest = [groups.open.length ? this.t("statusPartOpen", { n: this.formatNumber(groups.open.length) }) : "", groups.care.length ? this.t("statusPartCare", { n: this.formatNumber(groups.care.length) }) : ""].filter(Boolean);
+    const restText = rest.length ? (groups.red.length ? this.t("statusAlso", { what: rest.join(this.t("statusJoin")) }) : rest.join(this.t("statusJoin"))) : "";
+    return [restText, this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })].filter(Boolean).map(x => this.esc(x)).join(" · ")
+      + ` · <button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}">${this.t("healthWhy")}</button>`;
   }
 
   // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level,
@@ -213,7 +229,8 @@ class OverviewMixin {
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
     lines.push(row(this.t("whyShare"), this.t("pointsOf100", { n: this.formatNumber(health.percent) })));
-    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}">${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
+    const groups = ["red", "open", "care"].map(g => `<p><b class="why-${g}">${this.t(`group_${g}`)}</b> ${this.t(`whyGroup_${g}`)}</p>`).join("");
+    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}"><div class="whygroups"><strong>${this.t("whyHeadTitle")}</strong>${groups}</div><strong>${this.t("whyRingTitle")}</strong>${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
   }
 
   // A number with its noun, so that the rows count what they say: "8 integrations".
@@ -234,18 +251,19 @@ class OverviewMixin {
       const pill = it.count !== undefined ? this.todoCount(it) : it.pill;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${pill ? `<span class="pill ${it.tone}">${this.esc(pill)}</span>` : ""}</button>`;
     };
-    const inArea = area => items.filter(i => i.area === area && i.key !== "outages"); // the outages are entries of the list itself
+    const groups = this.todoGroups(items);
     const pinned = new Set(this.reauthFindings().map(f => f.object_id));
     const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)));
     const entryRow = e => (e.cause ? this.overviewCause(e.cause) : this.overviewFinding(e.finding));
-    const findingRows = [...inArea("findings").filter(i => i.key === "monitor_problem").map(row), ...inArea("findings").filter(i => i.key !== "monitor_problem").map(row), ...entries.slice(0, LIMIT).map(entryRow)];
     const all = `<button class="link" data-jump="findingsNav">${this.t("allFindings")} (${this.formatNumber(this.findingTotal())}) <ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
-    const state = [...inArea("state")].sort((x, y) => (y.tone === "red") - (x.tone === "red"));
-    const care = inArea("care");
+    const head = (g, n) => `<h3 class="foldhd todogrp ${g}">${this.t(`group_${g}`)} <span class="pill ${g === "red" ? "red" : "warn"}">${this.formatNumber(n)}</span></h3>`;
     const sections = [];
-    if (findingRows.length) sections.push(`<h3 class="foldhd">${this.t("areaFindings")}</h3>${findingRows.join("")}`);
-    if (state.length) sections.push(`<h3 class="foldhd">${this.t("areaState")}</h3>${state.map(row).join("")}`);
-    if (care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(care.length) }, care.map(row).join(""), !sections.length));
+    if (groups.red.length) sections.push(`${head("red", groups.red.length)}${groups.red.map(row).join("")}`);
+    if (groups.open.length) sections.push(`${head("open", groups.open.length)}${groups.open.map(row).join("")}`);
+    if (groups.care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(groups.care.length) }, groups.care.map(row).join(""), !sections.length));
+    // The first entries of the findings list: a look at what matters most, not counted as rows of the headline.
+    const top = entries.slice(0, LIMIT).map(entryRow);
+    if (top.length) sections.push(`<h3 class="foldhd">${this.t("topFindings")} <small class="muted">${this.t("topFindingsSub")}</small></h3>${top.join("")}`);
     const body = sections.length ? sections.join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
     return `<section class="panel u-mb14" aria-labelledby="hk-todo" id="hk-todo-card" tabindex="-1"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div>${all}</div>${body}${this.todoFoot()}</section>`;
   }
@@ -316,10 +334,10 @@ class OverviewMixin {
     const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
     const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-filter="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
-    const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.statusHeadline(health))}</button>` : this.t("statusAllGood");
+    const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button>
-      <div class="statustext"><span class="pill ${health.tone}">${this.t(health.label)}</span><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
+      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
       <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "lead", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
