@@ -13,6 +13,7 @@ pytest.importorskip("pytest_homeassistant_custom_component")
 from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
 from pytest_homeassistant_custom_component.common import MockConfigEntry  # noqa: E402
+from scanner_entry import attach_scanner  # noqa: E402
 
 from custom_components.ha_housekeeper import access as module  # noqa: E402
 from custom_components.ha_housekeeper.access import (  # noqa: E402
@@ -105,7 +106,7 @@ async def test_access_needs_an_administrator(
     from custom_components.ha_housekeeper import async_setup
 
     assert await async_setup(hass, {})
-    hass.data[DOMAIN]["scanner"] = InventoryScanner(hass)
+    attach_scanner(hass, InventoryScanner(hass))
     assert await async_setup_component(hass, "websocket_api", {})
     client = await hass_ws_client(hass, hass_read_only_access_token)
     for command in ("access", "system_usage", "system_light"):

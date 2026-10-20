@@ -12,6 +12,7 @@ pytest.importorskip("pytest_homeassistant_custom_component")
 
 from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.setup import async_setup_component  # noqa: E402
+from scanner_entry import attach_scanner  # noqa: E402
 
 from custom_components.ha_housekeeper.runs import (  # noqa: E402
     ALREADY,
@@ -229,7 +230,6 @@ async def test_the_websocket_rates_a_failing_automation_and_hides_secrets(
     hass: HomeAssistant, hass_ws_client
 ) -> None:
     from custom_components.ha_housekeeper import async_setup
-    from custom_components.ha_housekeeper.const import DOMAIN
     from custom_components.ha_housekeeper.inventory import InventoryScanner
 
     assert await async_setup_component(hass, "trace", {})
@@ -252,7 +252,7 @@ async def test_the_websocket_rates_a_failing_automation_and_hides_secrets(
     )
     assert await async_setup(hass, {})
     scanner = InventoryScanner(hass)
-    hass.data[DOMAIN]["scanner"] = scanner
+    attach_scanner(hass, scanner)
     await scanner.async_initialize()
     assert await async_setup_component(hass, "websocket_api", {})
     client = await hass_ws_client(hass)

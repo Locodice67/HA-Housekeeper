@@ -11,7 +11,6 @@ from typing import Any
 
 from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
 from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
@@ -60,6 +59,7 @@ from .maintenance import recorder_costs
 from .outage_levels import thresholds_from_options
 from .queries import REFRESH_AGE, REFRESH_TICK, next_reply
 from .runs import run_key
+from .runtime import HousekeeperConfigEntry
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
 from .scan_trigger import ScanRefused
 from .services import async_register_services
@@ -90,7 +90,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) -> bool:
     """Set up HA Housekeeper from a config entry."""
     scanner = InventoryScanner(hass)
     # Home Assistant reports "started" while slow integrations are still adding entities, so scans
@@ -117,7 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
     scanner.monitor.retention_days = scanner.history.retention_days
     await scanner.async_initialize()
-    hass.data[DOMAIN]["scanner"] = scanner
+    entry.runtime_data = scanner
 
     frontend_dir = Path(__file__).parent / "frontend"
     bundle = frontend_dir / "ha-housekeeper-panel.js"
@@ -453,16 +453,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def _async_options_updated(hass: HomeAssistant, entry: HousekeeperConfigEntry) -> None:
     """Reload so the new thresholds apply."""
     hass.data[DOMAIN]["keep_panel"] = True
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) -> bool:
     """Unload the integration."""
-    scanner = hass.data[DOMAIN].get("scanner")
-    if scanner is not None and scanner.cleanup.running:
+    scanner = entry.runtime_data
+    if scanner.cleanup.running:
         # The run is not tied to the entry: stop it after the current step and let it finish,
         # so the next setup does not load a journal that is still being written.
         scanner.cleanup.cancel()
@@ -471,8 +471,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unloaded:
         if not hass.data[DOMAIN].pop("keep_panel", False):
             frontend.async_remove_panel(hass, PANEL_URL)
-        hass.data[DOMAIN].pop("scanner", None)
-        if scanner is not None:
-            await scanner.cleanup.flush_journal()
+        await scanner.cleanup.flush_journal()
         async_clear_issues(hass)
     return unloaded

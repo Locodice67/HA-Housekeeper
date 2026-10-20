@@ -9,19 +9,18 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 
 from .backup_health import collect
-from .const import DOMAIN
+from .runtime import HousekeeperConfigEntry, loaded_scanner
 
 
 async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, entry: ConfigEntry
+    hass: HomeAssistant, entry: HousekeeperConfigEntry
 ) -> dict[str, Any]:
     """Return anonymous scan statistics."""
-    scanner = hass.data.get(DOMAIN, {}).get("scanner")
+    scanner = loaded_scanner(hass)
     if scanner is None:
         return {"home_assistant": HA_VERSION, "loaded": False}
 

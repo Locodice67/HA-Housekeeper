@@ -27,6 +27,18 @@
           "stale_hours": "Sensoren ohne neue Werte melden nach (Stunden, 0 = aus)",
           "history_days": "Verläufe aufbewahren (Tage)",
           "watch_hours": "Nach Updates beobachten (Stunden, 0 = aus)"
+        },
+        "data_description": {
+          "outage_info_minutes": "Eine Entität oder Integration, die so lange ausgefallen ist, wird ein Befund der Stufe Info.",
+          "outage_low_hours": "Ab dieser Dauer ist der Ausfall ein niedriger Befund.",
+          "outage_medium_hours": "Ab dieser Dauer ist der Ausfall ein mittlerer Befund und zählt in den Sensoren.",
+          "outage_high_hours": "Ab dieser Dauer ist der Ausfall ein hoher Befund; ein Ausfall, der Automationen trifft, ist früher hoch.",
+          "unused_automation_days": "Eine Automation, die ausgeschaltet ist oder so viele Tage nicht gelaufen ist, wird als ungenutzt gemeldet.",
+          "low_battery_percent": "Eine Batterie mit diesem Stand oder weniger wird als schwach gemeldet.",
+          "scan_interval_hours": "Housekeeper scannt in diesem Abstand von selbst; Ausfälle und Updates bringen zusätzliche Scans.",
+          "stale_hours": "Ein Sensor, der so lange keinen neuen Wert geschickt hat, wird als nicht mehr meldend gemeldet.",
+          "history_days": "Wie lange der Verlauf der Scans und der Hausfunktionen aufbewahrt wird.",
+          "watch_hours": "Wie lange nach einem Update zusätzliche Scans laufen, um zu zeigen, was danach nicht mehr geht."
         }
       }
     },

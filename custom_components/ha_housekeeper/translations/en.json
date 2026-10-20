@@ -27,6 +27,18 @@
           "stale_hours": "Report sensors without new values after (hours, 0 = off)",
           "history_days": "Keep histories for (days)",
           "watch_hours": "Watch after updates (hours, 0 = off)"
+        },
+        "data_description": {
+          "outage_info_minutes": "An entity or integration that is down this long becomes an info finding.",
+          "outage_low_hours": "From this duration the outage is a low finding.",
+          "outage_medium_hours": "From this duration the outage is a medium finding and counts in the sensors.",
+          "outage_high_hours": "From this duration the outage is a high finding; an outage that affects automations is high earlier.",
+          "unused_automation_days": "An automation that is switched off or has not run for this many days is reported as unused.",
+          "low_battery_percent": "A battery at or below this level is reported as low.",
+          "scan_interval_hours": "Housekeeper scans by itself at this interval; outages and updates add extra scans.",
+          "stale_hours": "A sensor that has sent no new value for this long is reported as no longer reporting.",
+          "history_days": "How long the history of the scans and of the home functions is kept.",
+          "watch_hours": "How long extra scans run after an update, to show what stopped working with it."
         }
       }
     },

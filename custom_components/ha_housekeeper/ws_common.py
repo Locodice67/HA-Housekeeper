@@ -14,8 +14,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.json import json_bytes
 
 from .automation_analysis import json_safe
-from .const import API_SCHEMA, DOMAIN
+from .const import API_SCHEMA
 from .inventory import InventoryScanner
+from .runtime import loaded_scanner
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 RUNS_TIMEOUT = 20
@@ -29,7 +30,7 @@ _WARNED: set[str] = set()  # cleaned paths already in the log; the panel asks ag
 
 def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
     """Return the configured scanner, or None while the entry is not loaded."""
-    return hass.data.get(DOMAIN, {}).get("scanner")
+    return loaded_scanner(hass)
 
 
 def with_scanner(handler: Callable[..., Any]) -> Callable[..., Any]:

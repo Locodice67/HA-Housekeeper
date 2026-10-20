@@ -16,6 +16,7 @@ pytest.importorskip("pytest_homeassistant_custom_component")
 from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
 from homeassistant.util.yaml import dump, load_yaml  # noqa: E402
+from scanner_entry import attach_scanner  # noqa: E402
 from test_cleanup_exec import fake_backup, make_scanner, run  # noqa: E402
 
 from custom_components.ha_housekeeper.cleanup import (  # noqa: E402
@@ -27,7 +28,6 @@ from custom_components.ha_housekeeper.cleanup_exec import (  # noqa: E402
     CleanupError,
     entity_restorable,
 )
-from custom_components.ha_housekeeper.const import DOMAIN  # noqa: E402
 from custom_components.ha_housekeeper.references import (  # noqa: E402
     mentions,
     preview_replacement,
@@ -774,7 +774,7 @@ async def test_the_panel_never_receives_the_restore_data_of_a_plan(
 
     path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
     assert await async_setup(hass, {})
-    hass.data[DOMAIN]["scanner"] = scanner
+    attach_scanner(hass, scanner)
     assert await async_setup_component(hass, "websocket_api", {})
     client = await hass_ws_client(hass)
     internal = {"file_before", "file_after_hash", "restore"}

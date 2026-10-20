@@ -18,6 +18,7 @@ from homeassistant.helpers import entity_registry as er  # noqa: E402
 from pytest_homeassistant_custom_component.components.recorder.common import (  # noqa: E402
     async_wait_recording_done,
 )
+from scanner_entry import attach_scanner  # noqa: E402
 from test_cleanup_exec import fake_backup, make_scanner, run  # noqa: E402
 
 from custom_components.ha_housekeeper.cleanup import (  # noqa: E402
@@ -348,13 +349,12 @@ async def test_the_panel_commands_plan_a_meter_change_and_report_maintenance(
     from homeassistant.setup import async_setup_component
 
     from custom_components.ha_housekeeper import async_setup
-    from custom_components.ha_housekeeper.const import DOMAIN
 
     two_meters(hass)
     await async_wait_recording_done(hass)
     assert await async_setup(hass, {})
     scanner = await make_scanner(hass)
-    hass.data[DOMAIN]["scanner"] = scanner
+    attach_scanner(hass, scanner)
     assert await async_setup_component(hass, "websocket_api", {})
     client = await hass_ws_client(hass)
     await scanner.async_scan()

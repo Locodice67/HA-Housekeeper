@@ -12,6 +12,7 @@ from homeassistant.helpers.service import async_register_admin_service
 
 from .const import DOMAIN
 from .mcp_api import FUNCTIONS, McpError, run
+from .runtime import loaded_scanner
 from .scan_trigger import ScanRefused
 
 SERVICE_SCAN = "scan"
@@ -21,7 +22,7 @@ def async_register_services(hass: HomeAssistant) -> None:
     """Register the services once; they find the scanner of the loaded entry when they are called."""
 
     async def _scan(call: ServiceCall) -> dict[str, Any]:
-        scanner = hass.data.get(DOMAIN, {}).get("scanner")
+        scanner = loaded_scanner(hass)
         if scanner is None:
             raise ServiceValidationError(translation_domain=DOMAIN, translation_key="not_loaded")
         try:
@@ -33,7 +34,7 @@ def async_register_services(hass: HomeAssistant) -> None:
 
     def ai_service(name: str) -> Any:
         async def _call(call: ServiceCall) -> dict[str, Any]:
-            scanner = hass.data.get(DOMAIN, {}).get("scanner")
+            scanner = loaded_scanner(hass)
             try:
                 return await run(hass, scanner, name, dict(call.data), call.context.user_id)
             except McpError as err:

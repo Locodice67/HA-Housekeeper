@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from homeassistant.components.event import EventEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, NAME, SIGNAL_MONITOR_EVENT
+from .runtime import HousekeeperConfigEntry
 
 EVENT_TYPES = [
     "beeintraechtigt",
@@ -20,7 +20,7 @@ EVENT_TYPES = [
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant, entry: HousekeeperConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Create the single event entity for all monitored functions."""
     async_add_entities([MonitorEvent(entry)])
@@ -34,7 +34,7 @@ class MonitorEvent(EventEntity):
     _attr_event_types = EVENT_TYPES
     _attr_should_poll = False
 
-    def __init__(self, entry: ConfigEntry) -> None:
+    def __init__(self, entry: HousekeeperConfigEntry) -> None:
         self._attr_unique_id = f"{entry.entry_id}_monitor_event"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)}, name=NAME, entry_type=DeviceEntryType.SERVICE

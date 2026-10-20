@@ -15,6 +15,7 @@ from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.data_entry_flow import FlowResultType  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
 from homeassistant.helpers.dispatcher import async_dispatcher_send  # noqa: E402
+from scanner_entry import attach_scanner  # noqa: E402
 
 from custom_components.ha_housekeeper.const import (  # noqa: E402
     API_SCHEMA,
@@ -26,6 +27,7 @@ from custom_components.ha_housekeeper.inventory import (  # noqa: E402
     _device_config_entry_ids,
     _registry_entries,
 )
+from custom_components.ha_housekeeper.runtime import loaded_scanner  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -46,9 +48,9 @@ async def test_config_flow_creates_single_entry(hass: HomeAssistant) -> None:
     assert result["title"] == "HA Housekeeper"
     assert result["data"] == {}
     await hass.async_block_till_done(wait_background_tasks=True)
-    assert "scanner" in hass.data[DOMAIN]
+    assert loaded_scanner(hass) is not None
     # The initial scan ran on the event loop and finished (a plain function would run in a thread).
-    assert hass.data[DOMAIN]["scanner"].snapshot is not None
+    assert loaded_scanner(hass).snapshot is not None
 
 
 async def test_scanner_reads_entity_registry_and_state(hass: HomeAssistant) -> None:
@@ -158,7 +160,7 @@ async def test_scan_payload_omits_attributes_but_details_are_available(hass: Hom
 
 async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
     """The diagnostics download contains counts but no names or entity IDs."""
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
+    from homeassistant.config_entries import ConfigEntryState
 
     from custom_components.ha_housekeeper.diagnostics import (
         async_get_config_entry_diagnostics,
@@ -168,10 +170,9 @@ async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
         domain="sensor", platform="test", unique_id="diag-1", suggested_object_id="secret_name"
     )
     scanner = InventoryScanner(hass)
-    hass.data.setdefault(DOMAIN, {})["scanner"] = scanner
+    config_entry = attach_scanner(hass, scanner)
     await scanner.async_scan()
 
-    config_entry = MockConfigEntry(domain=DOMAIN)
     result = await async_get_config_entry_diagnostics(hass, config_entry)
 
     assert result["loaded"] is True
@@ -180,7 +181,7 @@ async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
     assert entry.entity_id not in repr(result)
     assert "secret_name" not in repr(result)
 
-    hass.data[DOMAIN].pop("scanner")
+    config_entry.mock_state(hass, ConfigEntryState.NOT_LOADED)
     assert (await async_get_config_entry_diagnostics(hass, config_entry))["loaded"] is False
 
 
@@ -202,6 +203,30 @@ async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
     assert entry.options["unused_automation_days"] == 90
     assert entry.options["low_battery_percent"] == 20
     assert entry.options["history_days"] == 30
+
+
+async def test_options_flow_refuses_falling_thresholds_and_a_running_write(
+    hass: HomeAssistant,
+) -> None:
+    """Thresholds out of order keep the form open; while a plan writes, the flow does not open."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.writelock import acquire_write, release_write
+
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"outage_low_hours": 48, "outage_medium_hours": 24}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "thresholds_order"}
+
+    acquire_write(hass, "plan")
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    release_write(hass, "plan")
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "busy"
 
 
 async def test_low_battery_threshold_is_configurable(hass: HomeAssistant) -> None:
@@ -557,7 +582,7 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
     registry.async_get_or_create(
         domain="sensor", platform="test", unique_id="s1", suggested_object_id="ghost"
     )
-    scanner = hass.data[DOMAIN]["scanner"]
+    scanner = loaded_scanner(hass)
     await scanner.async_scan()
     await hass.async_block_till_done(wait_background_tasks=True)
 
@@ -581,7 +606,7 @@ async def test_scan_button_is_available_after_a_scan(hass: HomeAssistant) -> Non
     )
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done(wait_background_tasks=True)
-    scanner = hass.data[DOMAIN]["scanner"]
+    scanner = loaded_scanner(hass)
     await scanner.async_scan()
     await hass.async_block_till_done(wait_background_tasks=True)
     button = next(state for state in hass.states.async_all("button"))
@@ -595,7 +620,7 @@ async def test_scan_button_stays_available_while_a_scan_runs(hass: HomeAssistant
     )
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done(wait_background_tasks=True)
-    scanner = hass.data[DOMAIN]["scanner"]
+    scanner = loaded_scanner(hass)
     scanner.status["running"] = True
     async_dispatcher_send(hass, SIGNAL_SCAN_STARTED)
     await hass.async_block_till_done()
@@ -619,7 +644,7 @@ async def _ws_setup(hass: HomeAssistant, hass_ws_client):
 
     assert await async_setup(hass, {})
     scanner = InventoryScanner(hass)
-    hass.data[DOMAIN]["scanner"] = scanner
+    attach_scanner(hass, scanner)
     await scanner.async_initialize()
     scanner.protection.mode = "full"  # a new install starts read-only
     assert await async_setup_component(hass, "websocket_api", {})
@@ -765,7 +790,7 @@ async def test_a_refused_unload_keeps_the_runtime_objects(hass: HomeAssistant) -
 
         assert await async_unload_entry(hass, entry) is False
 
-    assert "scanner" in hass.data[DOMAIN]
+    assert loaded_scanner(hass) is not None
     assert "ha-housekeeper" in hass.data["frontend_panels"]
 
 
@@ -782,7 +807,7 @@ async def test_an_unload_stops_a_running_plan_and_writes_the_journal_after_it(
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done(wait_background_tasks=True)
     entry = hass.config_entries.async_entries(DOMAIN)[0]
-    runner = hass.data[DOMAIN]["scanner"].cleanup
+    runner = loaded_scanner(hass).cleanup
     order: list[str] = []
 
     async def step() -> None:
@@ -920,7 +945,7 @@ async def test_a_boot_scan_is_followed_by_a_final_scan(hass: HomeAssistant) -> N
     )
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done(wait_background_tasks=True)
-    scanner = hass.data[DOMAIN]["scanner"]
+    scanner = loaded_scanner(hass)
     assert scanner.snapshot is None  # nothing scans before Home Assistant has started
     assert scanner.warming_up and scanner.warmup_seconds_left == WARMUP_SECONDS
 
@@ -1009,7 +1034,7 @@ async def test_a_set_up_after_the_start_has_no_warmup(hass: HomeAssistant) -> No
     )
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done(wait_background_tasks=True)
-    scanner = hass.data[DOMAIN]["scanner"]
+    scanner = loaded_scanner(hass)
     assert not scanner.warming_up
     assert scanner.snapshot["meta"]["preliminary"] is False
 

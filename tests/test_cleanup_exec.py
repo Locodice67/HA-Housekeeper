@@ -11,6 +11,7 @@ pytest.importorskip("pytest_homeassistant_custom_component")
 
 from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
+from scanner_entry import attach_scanner  # noqa: E402
 
 from custom_components.ha_housekeeper.cleanup import build_plan, registry_fingerprint  # noqa: E402
 from custom_components.ha_housekeeper.cleanup_exec import (  # noqa: E402
@@ -26,7 +27,7 @@ async def make_scanner(hass: HomeAssistant) -> InventoryScanner:
     scanner = InventoryScanner(hass)
     await scanner.async_initialize()
     scanner.protection.mode = "full"  # a new install starts read-only; these tests run plans
-    hass.data[DOMAIN]["scanner"] = scanner
+    attach_scanner(hass, scanner)
     return scanner
 
 

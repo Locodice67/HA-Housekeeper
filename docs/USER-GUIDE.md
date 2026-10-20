@@ -74,6 +74,25 @@ config/
         └── ...
 ```
 
+### Removing Housekeeper
+
+1. Open **Settings → Devices & services → HA Housekeeper**, choose the three dots
+   and **Delete**. The sidebar entry, the sensors, the button and the repair hints
+   go away with it.
+2. In HACS, open **HA Housekeeper** and choose **Remove** (for a manual
+   installation, delete `/config/custom_components/ha_housekeeper`), then
+   restart Home Assistant.
+
+What a plan changed stays as it is: disabled entities and devices stay
+disabled, renamed ones keep their new name, and backups that Housekeeper made
+before a plan stay in the backup list. Undo them before deleting the
+integration if you want them back. The labels `housekeeper_ignore`,
+`housekeeper_critical` and `housekeeper_keep` stay as well and can be deleted
+under **Settings → Areas, labels & zones → Labels**. Housekeeper's own data
+(files `ha_housekeeper.*` in `/config/.storage`) is kept, so a new installation
+starts with your decisions and history; delete these files while Home
+Assistant is stopped if you want to start from scratch.
+
 ## Terms and numbers
 
 This section explains how Housekeeper thinks and counts. Once you know it, every number in the panel makes sense.
