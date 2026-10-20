@@ -205,7 +205,8 @@ class CausesMixin {
 
   // Only in the flat view: "Follow-up of Integration Cloud" next to a finding that a cause explains.
   followOf(f) {
-    const c = f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id) ? this.causeList().find(x => x.id === f.cause_id) : null;
+    if (!this.showFollowers) return "";
+    const own = this.causeById(f.cause_id), c = this.isFollowUp(f) ? (CAUSE_OWN_RULES.includes(f.rule_id) ? this.causeById(own?.parent_id) : own) : null;
     return this.showFollowers && c ? ` · ${this.esc(this.t("causeFollowOf", { name: c.name }))}` : "";
   }
 
@@ -219,7 +220,7 @@ class CausesMixin {
 
   findingTotal() { return this.causeEntries().length + this.data.findings.filter(f => !f.cause_id && !f.ignored).length; }
 
-  followerCount() { return this.data.findings.filter(f => f.cause_id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id)).length; }
+  followerCount() { return this.data.findings.filter(f => !f.ignored && this.isFollowUp(f)).length; }
 }
 Object.assign(TEXT.de, {
   causesTitle: "Ausfälle",

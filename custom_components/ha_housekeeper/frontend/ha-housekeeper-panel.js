@@ -1686,7 +1686,7 @@ class StylesMixin {
       @media(min-width:861px){.listbar .sortgroup.table-sort{display:none}}.th-alt{margin-left:8px;padding-left:8px;border-left:1px solid var(--hk-border);color:var(--hk-blue-text)}
       .findings-table td{vertical-align:middle}.findings-table td:nth-child(2){min-width:260px;white-space:normal}.findings-table .finding-link{display:flex;align-items:flex-start;gap:10px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}.findings-table .finding-link .tile{flex:none}.findings-table .finding-name{display:grid;gap:2px;min-width:0}.findings-table .finding-name strong{overflow-wrap:anywhere}.findings-table .finding-name .id{margin:0;overflow-wrap:anywhere}.findings-table .finding-name small{color:var(--hk-muted);white-space:normal;overflow-wrap:anywhere}.findings-table .finding-rule{font-family:var(--hk-mono,monospace);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.findings-table td:nth-child(6) small{display:block;color:var(--hk-muted)}.findings-table .finding-action .rowmenu{margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{padding:0;white-space:normal}.findings-table .finding-group .rowwrap{border-bottom:0}.findings-table .finding-group .fold{border:0}.findings-table .finding-detail .pad{padding:10px 16px}.findings-table.dense-list .finding-name .id,.findings-table.dense-list .finding-name small,.findings-table.dense-list td:nth-child(6) small{display:none}.findings-table.dense-list .finding-link .tile{width:28px;height:28px}.findings-table.dense-list td{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-group>td,.findings-table.dense-list .finding-detail>td{padding:0}@media(max-width:860px){.findings-table tr.finding-data{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 10px;align-items:start}.findings-table tr.finding-data td{grid-column:2;min-width:0}.findings-table tr.finding-data td.selcol{grid-column:1;grid-row:1;width:24px;min-width:24px;max-width:24px;padding:0}.findings-table tr.finding-data td:nth-child(2){grid-column:2;grid-row:1}.findings-table tr.finding-data td.finding-action{grid-column:3;grid-row:1}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){display:inline-block;margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{display:block}.findings-table.dense-list .finding-name .id{display:none}}
       .panel:has(.colpop),.panel:has(.viewform),.panel:has(.rowmenu[open]),.tablewrap:has(.rowmenu[open]){overflow:visible}tr:has(.rowmenu[open]){position:relative;z-index:25}.listbar-actions{display:flex;flex:1 1 auto;justify-content:flex-end;align-items:center;gap:8px;margin-left:auto;min-height:40px}.listbar-actions:empty{display:none}.listbar-actions>.dirbtn,.listbar-actions>.colwrap>.dirbtn{min-height:40px}.listbar-actions .viewwrap{z-index:30}.viewform{position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:grid;gap:10px;width:min(320px,calc(100vw - 32px));box-sizing:border-box;padding:16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 10px 30px rgba(0,0,0,.18)}.viewform strong{font-size:calc(15px*var(--hk-fs,1))}.viewform label{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.viewform input{box-sizing:border-box;width:100%;min-width:0;height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.viewform small{font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.viewform-actions{display:flex;justify-content:flex-end;gap:8px}.viewform-actions .btn{white-space:nowrap}.findings-table .finding-name{flex:1}.findings-table .finding-cause .finding-link>.pill{flex:none;align-self:center}.findings-table .finding-detail .rowwrap{border-bottom:1px solid var(--hk-border)}.findings-table .finding-detail .rowwrap:last-child{border-bottom:0}.findings-table.dense-list .finding-detail .row{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-detail .row-text small{display:none}.findings-table.dense-list .finding-detail .row .tile{width:28px;height:28px}.findings-table.dense-list .finding-detail .rowmenu>summary{width:28px;height:28px}@media(max-width:860px){.listbar-actions{margin-left:auto}.findings-table tr.finding-detail{padding:0}.findings-table .finding-detail>td{padding:0}}@media(max-width:560px){.listbar-actions{margin-left:auto}.listbar .sortgroup:not(.table-sort){margin-left:0}}
-      .findings-table .finding-link-group{display:flex;align-items:flex-start;gap:6px;min-width:0}.findings-table .finding-link-group .finding-link{flex:1;min-width:0}.findings-table .finding-fold{display:flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;padding:0;border:0;background:none;color:var(--hk-muted);cursor:pointer}.findings-table .finding-fold .foldarrow{margin:0}.findings-table .finding-fold:hover{color:var(--hk-text)}.finding-fold-gap{flex:none;width:24px}
+      .findings-table .finding-link-group{display:flex;align-items:flex-start;gap:6px;min-width:0}.findings-table .finding-link-group .finding-link{flex:1;min-width:0}.findings-table .finding-fold{display:flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;padding:0;border:0;background:none;color:var(--hk-muted);cursor:pointer}.findings-table .finding-fold .foldarrow{margin:0}.findings-table .finding-fold:hover{color:var(--hk-text)}.finding-fold-gap{flex:none;width:24px}.findings-table tr.og.lvl1 .finding-link-group{padding-left:22px}.findings-table tr.og.lvl2 .finding-link-group{padding-left:44px}.findings-table tr.og.lvl3 .finding-link-group{padding-left:66px}.findings-table tr.og:not(.finding-cause){background:color-mix(in srgb,var(--hk-soft) 55%,transparent)}.findings-table .ognew{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.chips .seg{display:inline-flex;flex-wrap:wrap;gap:4px}@media(max-width:860px){.findings-table tr.og.lvl1 .finding-link-group,.findings-table tr.og.lvl2 .finding-link-group,.findings-table tr.og.lvl3 .finding-link-group{padding-left:12px}}
       .planfootcol{flex-direction:column;align-items:stretch}.planfootcol>:first-child{flex:none}.planfootcol .planfootbtns{justify-content:flex-end;gap:10px}.planfootcol .planfootbtns .btn{min-width:150px;justify-content:center}.fold .planrow{padding:8px 16px}.fold .planrow small{margin-top:1px}
       .wmx{padding:12px 16px 14px;display:grid;gap:10px}.wmx .wtop{display:flex;gap:10px;align-items:center;color:var(--hk-amber)}.wmx .wtop strong{font-size:calc(15px*var(--hk-fs,1));color:var(--hk-text)}
       .wtr{display:flex;list-style:none;margin:0;padding:0}.wtr li{flex:1;position:relative;padding-top:20px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);text-align:center}
@@ -2760,7 +2760,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.oftenChip(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   // pick = false outside the findings list: there is no bar for the actions on a selection there.
@@ -2777,68 +2777,19 @@ class FindingsMixin {
     };
     const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
     const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRule")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
-    // In the grouped view every row keeps the room of the fold arrow, so that symbols and names stand in one line.
-    const gap = items.some(i => i.members || (i.cause && this.causeTotal(i.cause))) ? `<span class="finding-fold-gap" aria-hidden="true"></span>` : "";
-    const rows = items.map(item => {
-      if (item.cause) return this.causeTableRow(item.cause, gap);
-      if (item.members) return this.brokenGroupTableRow(item);
-      const f = item, { key, object, title, subtitle } = this.findingRowContent(f);
-      const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
-      const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
-      const name = gap ? `<div class="finding-link-group">${gap}${link}</div>` : link;
-      const detail = this.rowDecide(f);
-      return `<tr class="finding-data${f.ignored ? " dim" : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
-    }).join("");
+    // In the grouped view every row is a head of an object; in the flat one every row is a finding.
+    const rows = items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
   }
 
-  causeTableRow(c, gap = "") {
-    const total = this.causeTotal(c), own = c.finding_key && this.data.findings.find(f => f.key === c.finding_key);
-    const id = `cause_${c.id}`, open = total && this.foldOpen(id, false);
-    const link = `${c.object_type}:${c.object_id}`, title = this.t(`cause_${c.kind}`, { name: c.name });
-    const summary = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
-    const fold = total ? `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${Boolean(open)}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: c.name }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>` : gap;
-    const name = `<div class="finding-link-group">${fold}<button type="button" class="finding-link" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(summary)}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button></div>`;
-    const row = `<tr class="finding-data finding-cause"><td class="selcol">${this.causeBox(c)}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(c.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${own?.confidence == null ? "–" : `${Math.round(own.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(own?.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(own?.rule_id || c.kind)}</span><small>${this.t("chip_outage")}</small></td><td class="finding-action">${this.causeMenu(c, own)}</td></tr>`;
-    const decision = this.rowDecide(own);
-    const detail = open || decision ? `<tr class="finding-detail"><td colspan="7">${decision}${open ? this.causeChildren(c, false) : ""}</td></tr>` : "";
-    return row + detail;
-  }
-
-  brokenGroupTableRow(g) {
-    const f = g.members[0], p = f.evidence[0].place, object = this.findObject(this.findingKey(f));
-    const keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
-    (this._findGroups ||= {})[g.group] = keys;
-    const title = `${object?.name || f.object_id}${p.view != null ? ` › ${p.view}` : ""}`;
-    const sub = [...this.placeParts({ card: p.card, section: p.section }), this.t("brokenCount", { n: keys.length })].join(" · ");
-    const name = `<div class="finding-link-group"><button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button><button type="button" class="finding-link" data-object="${this.esc(this.findingKey(f))}">${this.tile(object?.object_type || "dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span><span class="pill red">${keys.length}</span></button></div>`;
-    const row = `<tr class="finding-data finding-cause"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(g.group)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td></td></tr>`;
-    const orphan = this.isOrphan(p);
-    const hint = orphan ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div>` : "";
-    return row + (open ? `<tr class="finding-detail"><td colspan="7">${hint}<div class="kids">${g.members.map(m => this.findingRow(m, true)).join("")}</div></td></tr>` : "");
-  }
-
-  sortFindingEntries(items) {
-    const st = this.lv.findings, { natural, ids } = this.collators(), sign = st.dir === "desc" ? -1 : 1;
-    const findingOf = item => item.cause ? this.data.findings.find(f => f.key === item.cause.finding_key) : item.members ? item.members[0] : item;
-    const value = item => {
-      const c = item.cause, f = findingOf(item);
-      switch (st.sort) {
-        case "name": return c ? c.name : this.findObject(this.findingKey(f))?.name || f.object_id;
-        case "id": return c ? c.object_id : f.object_id;
-        case "since": return f?.first_detected_at;
-        case "rule": return c ? f?.rule_id || c.kind : f.rule_id;
-        case "certainty": return f?.confidence;
-        default: return c ? (IMPACT_RANK[c.impact] ?? 0) + (f?.confidence || 0) / 2 : this.impactScore(f);
-      }
-    };
-    return items.map(item => ({ item, key: value(item) })).sort((a, b) => {
-      const emptyA = a.key == null || a.key === "", emptyB = b.key == null || b.key === "";
-      if (emptyA !== emptyB) return emptyA ? 1 : -1;
-      const order = typeof a.key === "number" && typeof b.key === "number" ? a.key - b.key : natural.compare(String(a.key ?? ""), String(b.key ?? ""));
-      const id = item => item.cause?.id || item.members?.[0]?.key || item.key || item.object_id;
-      return order * sign || ids.compare(String(id(a.item)), String(id(b.item))) * sign;
-    }).map(x => x.item);
+  // One finding as a row of the table; below a head (depth) it is indented and keeps the room of the fold arrow.
+  findingTableRow(f, depth = 0, inGroup = false) {
+    const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
+    const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
+    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
+    const name = depth ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
+    const detail = this.rowDecide(f);
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
@@ -2861,7 +2812,7 @@ class FindingsMixin {
     this.lvState("findings", "impact", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => this.findingType(f) === v, fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
+      filters: { type: (f, v) => (v === "_causes" ? Boolean(f.cause_id) : this.findingType(f) === v), fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -2903,9 +2854,9 @@ class FindingsMixin {
     return this.filterNote([this.findingFilter ? this.reasonLabel(this.findingFilter) : "", this.findingAfter ? this.t("corrTile") : ""].filter(Boolean), "data-finding-reset");
   }
 
-  // Opens or closes every chain and group of the findings list at once.
+  // Opens or closes every head of the grouped list at once, the ones below a closed head too.
   foldAllFindings(open) {
-    const ids = [...this.causeList().filter(c => this.causeTotal(c)).map(c => `cause_${c.id}`), ...Object.keys(this._findGroups || {}).map(g => `bg:${g}`)];
+    const ids = [...(this._nodeFoldIds || []), ...Object.keys(this._findGroups || {}).filter(g => g.startsWith("bg:"))];
     const next = { ...this.folds };
     ids.forEach(id => { next[id] = open; });
     this.folds = next; this.render();
@@ -2919,10 +2870,11 @@ class FindingsMixin {
     return `<section class="panel pad helpcard"><div class="helphead"><strong>${t("helpTitle")}</strong><button class="btn quiet" data-fold="findings_help" aria-expanded="true"><ha-icon icon="mdi:close"></ha-icon>${t("helpClose")}</button></div><div class="helpgrid">${terms}</div><div class="helpnums">${nums}</div></section>`;
   }
 
-  // Grouped (follow-ups under their cause) or one by one; with any filter the list is one by one anyway, so the switch is locked there.
-  viewSwitch(grouped, free) {
-    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}"${free ? "" : " disabled"}>${label}</button>`;
-    return `<span class="viewswitch" role="group" aria-label="${this.esc(this.t("viewLabel"))}"${free ? "" : ` title="${this.esc(this.t("viewLocked"))}"`}>${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
+  // Grouped (every finding below its object, the objects below their causes) or flat (every finding a row of its own).
+  // The choice holds with filters too.
+  viewSwitch(grouped) {
+    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}">${label}</button>`;
+    return `<span class="viewswitch seg" role="group" aria-label="${this.esc(this.t("viewLabel"))}">${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
   }
 
   findingsView() {
@@ -2931,15 +2883,15 @@ class FindingsMixin {
     const classes = [...new Set(all.map(f => this.findingReason(f)))];
     const open = !this.findingStatus && !this.findingFilter && !this.findingAfter && !this.lv.findings?.q && !Object.values(this.lv.findings?.f || {}).some(Boolean);
     const sorted = this.visibleFindings();
-    const grouped = open && !this.showFollowers;
-    const list = this.groupBroken(this.collapseFollowers(sorted, !grouped));
+    const grouped = !this.showFollowers;
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
-    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
+    const causeOption = all.some(f => f.cause_id) ? [["_causes", this.t("causesOnly")]] : [];
+    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: [...causeOption, ...types.map(x => [x, this.t(x)])] }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     const classTone = c => { const tone = c === "outage" ? "red" : this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
     this.ensureCorrelations();
-    const isFollower = f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id);
+    const isFollower = f => this.isFollowUp(f);
     const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
     const afterCount = afterAll.filter(f => !isFollower(f)).length, afterFollows = afterAll.length - afterCount;
     // A reason counts what the list shows under it: the follow-ups of an outage hang on their cause. The number beside them is the whole count.
@@ -2951,15 +2903,19 @@ class FindingsMixin {
     const group = (title, list, make, row) => list.length ? `<div class="sumgroup${row ? ` row${row}` : ""}" style="--n:${list.length};flex:${list.length} 1 ${list.length * 150}px"><div class="sumgrouphead">${this.t(title)}</div>${this.sumTiles(list.map(make))}</div>` : "";
     const tiles = `<div class="sumgroups" style="--cols:${Math.max(1 + tidy.length, urgent.length)}">${group("sumGroupAll", [total], x => x, 1)}${group("sumGroupTidy", tidy, tile, 1)}${group("sumGroupUrgent", urgent, tile, 2)}</div>`;
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
-    const followers = this.followerCount();
     const fixedView = this.findingStatus === "fixed";
-    const entries = this.causeEntries(), withFollowers = entries.filter(c => this.causeTotal(c));
-    // Chains and single findings share the chosen order. Under a filter or in the flat list every finding stands for itself.
-    let items = grouped ? this.sortFindingEntries([...entries.map(cause => ({ cause })), ...list]) : list;
-    if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => CAUSE_OWN_RULES.includes(i.rule_id) && entries.some(c => c.id === i.cause_id && this.causeTotal(c)));
+    // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
+    const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
+    this._nodeFoldIds = this.nodeFoldIds(nodes);
+    const items = grouped ? nodes : sorted;
+    const objects = nodes.filter(n => !n.key.startsWith("cause:")).length + nodes.reduce((s, n) => s + this.nodeFoldIds(n.kids).filter(id => !id.startsWith("og:cause:")).length, 0);
+    const count = grouped ? this.t(objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects) }) : this.t("viewCount", { n: this.formatNumber(sorted.length) });
     const pg = this.paginate("findings", items);
-    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, items.length)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? this.viewSwitch(grouped, open) : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${(followers && grouped) || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, count)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
+    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
+    const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
+    const status = this.statusChips();
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${status ? `<span class="seg">${status}</span>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}<button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -2970,13 +2926,18 @@ class FindingsMixin {
     return picked.length > 0 && picked.every(f => f.classification === "broken_reference");
   }
 
-  findSelBar(pageRows, total = 0) {
+  findSelBar(pageRows, count = "") {
     const n = this.findSel.size;
-    this._findPage = pageRows.flatMap(f => (f.cause ? [{ key: f.cause.finding_key }] : f.members ? f.members : [f])).map(f => f.key).filter(Boolean);
+    this._findPage = pageRows.flatMap(f => (f.findings ? this.nodeFindings(f) : [f])).map(f => f.key).filter(Boolean);
+    const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
+    // A mixed pick: the buttons that fit only some of the findings say how many.
+    const picked = [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean);
+    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type)).length, marks = this.markTargets().size;
+    const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     if (!pageRows.length && !n) return "";
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${this.viewCount(total)}</div>`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}</button>`}${this.markTargets().size ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}${this.viewCount(total)}</div>${this.bulkForm()}`;
+    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>`;
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}${part(labels)}</button>`}${marks ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}${part(marks)}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}${total}</div>${this.bulkForm()}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
@@ -8972,7 +8933,8 @@ class CausesMixin {
 
   // Only in the flat view: "Follow-up of Integration Cloud" next to a finding that a cause explains.
   followOf(f) {
-    const c = f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id) ? this.causeList().find(x => x.id === f.cause_id) : null;
+    if (!this.showFollowers) return "";
+    const own = this.causeById(f.cause_id), c = this.isFollowUp(f) ? (CAUSE_OWN_RULES.includes(f.rule_id) ? this.causeById(own?.parent_id) : own) : null;
     return this.showFollowers && c ? ` · ${this.esc(this.t("causeFollowOf", { name: c.name }))}` : "";
   }
 
@@ -8986,7 +8948,7 @@ class CausesMixin {
 
   findingTotal() { return this.causeEntries().length + this.data.findings.filter(f => !f.cause_id && !f.ignored).length; }
 
-  followerCount() { return this.data.findings.filter(f => f.cause_id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id)).length; }
+  followerCount() { return this.data.findings.filter(f => !f.ignored && this.isFollowUp(f)).length; }
 }
 Object.assign(TEXT.de, {
   causesTitle: "Ausfälle",
@@ -16636,6 +16598,215 @@ class MonitorMixin {
   }
 }
 
+// ObjectGroupsMixin: the grouped findings list. Every finding stands below the object it belongs to (an entity with a
+// device below the device, everything else below itself), from one finding on. A cause (integration, app, device that
+// is down, missing target) is the head of its object, and the objects it explains hang below it:
+// app › integration › device › findings. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
+  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
+  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt",
+  ogNew: "neu: {age}", ogOf: "Gerät {name}", causesOnly: "Nur Ursachen", fselPart: "{n} von {m}",
+});
+Object.assign(TEXT.en, {
+  ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
+  ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
+  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object",
+  ogNew: "new: {age}", ogOf: "Device {name}", causesOnly: "Causes only", fselPart: "{n} of {m}",
+});
+
+const OG_NO_VALUE = ["unavailable", "unknown"];
+
+class ObjectGroupsMixin {
+  // The object a finding belongs to in the grouped list: an entity with a device belongs to the device, all else to itself.
+  ownerKey(f) {
+    const key = this.findingKey(f);
+    if (key.startsWith("entity:")) {
+      const device = this.findObject(key)?.device_id;
+      if (device && this.findObject(`device:${device}`)) return `device:${device}`;
+    }
+    return key;
+  }
+
+  causeById(id) {
+    if (!this._causeMap || this._causeMapOf !== this.data?.causes) { this._causeMapOf = this.data?.causes; this._causeMap = new Map(this.causeList().map(c => [c.id, c])); }
+    return this._causeMap.get(id);
+  }
+
+  // A follow-up is explained by a cause: an outage below it, and also the own finding of a cause that hangs below
+  // another one (a device that is down because its integration is). It is not counted again.
+  isFollowUp(f) {
+    if (!f.cause_id) return false;
+    return !CAUSE_OWN_RULES.includes(f.rule_id) || Boolean(this.causeById(f.cause_id)?.parent_id);
+  }
+
+  // In the flat list a finding of an entity names the device it belongs to.
+  ownerNote(f) {
+    const owner = this.ownerKey(f);
+    if (!this.showFollowers || owner === this.findingKey(f)) return "";
+    return ` · ${this.esc(this.t("ogOf", { name: this.findObject(owner)?.name || owner.slice(7) }))}`;
+  }
+
+  // The tree of the grouped list: the visible findings below their objects, the objects below their causes.
+  // `all` is the list without the filters, for "2 of 6 findings match"; `keepCauses` keeps a cause that explains
+  // nothing visible (the open list without filters shows every outage).
+  objectTree(list, all, keepCauses) {
+    const nodes = new Map();
+    const node = key => {
+      let n = nodes.get(key);
+      if (!n) { n = { key, findings: [], kids: [], parent: null, cause: null, total: 0 }; nodes.set(key, n); }
+      return n;
+    };
+    const causeKey = c => (c.virtual ? `cause:${c.id}` : `${c.object_type}:${c.object_id}`);
+    for (const f of list) node(this.ownerKey(f)).findings.push(f);
+    for (const f of all) node(this.ownerKey(f)).total += 1;
+    for (const c of this.causeList()) node(causeKey(c)).cause = c;
+    for (const n of nodes.values()) {
+      let above = n.cause?.parent_id && this.causeById(n.cause.parent_id);
+      if (!above) {
+        // An object whose findings a cause explains hangs below it; with several, below the one that explains most.
+        const ids = [...new Set(n.findings.map(f => f.cause_id).filter(id => id && id !== n.cause?.id))];
+        above = ids.map(id => this.causeById(id)).filter(Boolean).sort((a, b) => this.causeTotal(b) - this.causeTotal(a))[0];
+      }
+      if (!above) continue;
+      const parent = node(causeKey(above));
+      let up = parent, loop = false;
+      while (up) { if (up === n) { loop = true; break; } up = up.parent; }
+      if (!loop) n.parent = parent;
+    }
+    for (const n of nodes.values()) if (n.parent) n.parent.kids.push(n);
+    const count = n => (n._count ??= n.findings.length + n.kids.reduce((s, k) => s + count(k), 0));
+    const keep = n => count(n) > 0 || (keepCauses && n.cause);
+    const prune = n => { n.kids = n.kids.filter(keep); n.kids.forEach(prune); return n; };
+    return [...nodes.values()].filter(n => !n.parent && keep(n)).map(prune);
+  }
+
+  // Every finding of a node and the nodes below it.
+  nodeFindings(n) { return [...n.findings, ...n.kids.flatMap(k => this.nodeFindings(k))]; }
+  nodeTotal(n) { return n.total + n.kids.reduce((s, k) => s + this.nodeTotal(k), 0); }
+  nodeOwn(n) { return n.cause?.finding_key && this.data.findings.find(f => f.key === n.cause.finding_key); }
+
+  // What the columns of a head show: the worst impact; certainty and since as the own value, the value of the one
+  // finding, or the span. `pick` is the end of a span a sort uses: "desc" the high one, "asc" the low one.
+  nodeFacts(n) {
+    if (n._facts) return n._facts;
+    const list = this.nodeFindings(n), own = this.nodeOwn(n), one = own || (list.length === 1 ? list[0] : null);
+    const rank = Math.max(IMPACT_RANK[n.cause?.impact] ?? 0, ...list.map(f => IMPACT_RANK[f.impact] ?? 0));
+    const impact = Object.keys(IMPACT_RANK).find(k => IMPACT_RANK[k] === rank) || "none";
+    const conf = one ? [one.confidence, one.confidence] : [Math.min(...list.map(f => f.confidence ?? 0)), Math.max(...list.map(f => f.confidence ?? 0))];
+    const times = (one ? [one.first_detected_at] : list.map(f => f.first_detected_at)).filter(Boolean).sort();
+    return (n._facts = { list, own, one, impact, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
+  }
+
+  nodeName(n) { return n.cause ? n.cause.name : this.findObject(n.key)?.name || n.key.slice(n.key.indexOf(":") + 1); }
+
+  // The line below the head: the cause and what it explains, or what the object has, by kind; a filter and a mark say so.
+  nodeSub(n) {
+    const f = this.nodeFacts(n), parts = [];
+    if (n.cause) {
+      const total = this.causeTotal(n.cause);
+      if (total) parts.push(this.t("causeExplains", { n: this.formatNumber(total) }));
+      parts.push(this.causeShort(n.cause));
+    }
+    const own = n.findings.filter(x => x !== f.own && !(n.cause && x.cause_id === n.cause.id));
+    if (!n.cause && f.list.length === 1 && !n.kids.length) {
+      const x = f.list[0], name = this.findObject(this.findingKey(x))?.name;
+      parts.push(this.findingKey(x) !== n.key && name ? `${name}: ${this.findingTitle(x)}` : this.findingTitle(x));
+    } else parts.push(...this.nodeKinds(n, own));
+    const total = this.nodeTotal(n);
+    if (total > f.list.length) parts.push(this.t("ogMatch", { n: this.formatNumber(f.list.length), m: this.formatNumber(total) }));
+    const object = this.findObject(n.key);
+    if (object?.mark) {
+      const hidden = this.data.findings.filter(x => x.ignored_by === "mark" && this.ownerKey(x) === n.key).length;
+      parts.push(hidden ? this.t(hidden === 1 ? "ogMarkHides1" : "ogMarkHides", { mark: this.markLine(object.mark), n: this.formatNumber(hidden) }) : this.markLine(object.mark));
+    }
+    return parts.filter(Boolean).join(" · ");
+  }
+
+  // "3 of 8 entities without a value · Orphaned (2) · Duplicate (1)": the outages of a device against the entities
+  // that say something about it, the rest by kind.
+  nodeKinds(n, list) {
+    const parts = [], rest = new Map();
+    let blank = list;
+    if (n.key.startsWith("device:")) {
+      const id = n.key.slice(7);
+      blank = list.filter(x => x.rule_id.startsWith("entity.") && OG_NO_VALUE.includes(x.classification));
+      if (blank.length) {
+        const m = (this.data.objects || []).filter(o => o.object_type === "entity" && o.device_id === id && ["active", "unavailable", "unknown"].includes(o.status)).length;
+        parts.push(this.t(blank.length === 1 ? "ogNoValue1" : "ogNoValue", { n: this.formatNumber(blank.length), m: this.formatNumber(Math.max(m, blank.length)) }));
+      }
+      blank = list.filter(x => !blank.includes(x));
+    }
+    for (const x of blank) { const label = this.reasonLabel(this.findingReason(x)); rest.set(label, (rest.get(label) || 0) + 1); }
+    for (const [label, count] of rest) parts.push(this.t("ogKind", { label, n: this.formatNumber(count) }));
+    return parts;
+  }
+
+  // Sort the nodes of one level by the column the list is sorted by; a span gives the end that fits the direction.
+  sortNodes(nodes) {
+    const st = this.lv.findings, desc = st.dir === "desc", sign = desc ? -1 : 1, { natural, ids } = this.collators();
+    const value = n => {
+      const f = this.nodeFacts(n);
+      switch (st.sort) {
+        case "name": return this.nodeName(n);
+        case "id": return n.key;
+        case "since": return f.since[desc ? 1 : 0];
+        case "certainty": return f.conf[desc ? 1 : 0];
+        case "rule": return f.own?.rule_id || f.list[0]?.rule_id || n.cause?.kind;
+        default: return (IMPACT_RANK[f.impact] ?? 0) + (f.conf[1] || 0) / 2;
+      }
+    };
+    return nodes.map(n => ({ n, v: value(n) })).sort((a, b) => {
+      const emptyA = a.v == null || a.v === "", emptyB = b.v == null || b.v === "";
+      if (emptyA !== emptyB) return emptyA ? 1 : -1;
+      const order = typeof a.v === "number" && typeof b.v === "number" ? a.v - b.v : natural.compare(String(a.v ?? ""), String(b.v ?? ""));
+      return order * sign || ids.compare(a.n.key, b.n.key);
+    }).map(x => x.n);
+  }
+
+  // Every fold id of the tree, for "Open all": also those below a closed head.
+  nodeFoldIds(nodes) { return nodes.flatMap(n => [`og:${n.key}`, ...this.nodeFoldIds(n.kids)]); }
+
+  // The rows of a node in the findings table: its head, and while open the nodes and findings below it, indented.
+  nodeRows(n, depth = 0) {
+    const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
+    const keys = f.list.map(x => x.key);
+    (this._findGroups ||= {})[id] = keys;
+    const title = n.cause ? this.t(`cause_${n.cause.kind}`, { name: n.cause.name }) : this.nodeName(n);
+    const tone = n.cause ? "red" : this.tone(f.list[0]?.classification);
+    const type = n.cause ? n.cause.object_type : n.key.split(":")[0];
+    const pick = keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}">` : this.causeBox(n.cause || {});
+    const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.nodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
+    const total = n.cause ? this.causeTotal(n.cause) : 0;
+    const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}`;
+    const link = object ? `<button type="button" class="finding-link" data-object="${this.esc(n.key)}">${label}</button>` : `<button type="button" class="finding-link" data-fold="${this.esc(id)}">${label}</button>`;
+    const conf = f.conf[0] == null ? "–" : f.conf[0] === f.conf[1] ? `${Math.round(f.conf[0] * 100)} %` : `${Math.round(f.conf[0] * 100)}–${Math.round(f.conf[1] * 100)} %`;
+    const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);
+    const rule = f.own ? `<span class="finding-rule">${this.esc(f.own.rule_id)}</span><small>${this.t("chip_outage")}</small>` : `<span class="finding-rule">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
+    const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object && MARK_TYPES.includes(type) ? this.objectMenu(n.key) : "";
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRule")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
+    const decision = n.cause && f.own ? this.rowDecide(f.own) : "";
+    const decide = decision ? `<tr class="finding-detail"><td colspan="7">${decision}</td></tr>` : "";
+    if (!open) return head + decide;
+    const own = n.findings.filter(x => x !== f.own);
+    const cards = n.key.startsWith("dashboard:") ? this.groupBroken(own) : own;
+    const below = cards.map(x => (x.members ? this.cardRows(x, depth + 1) : this.findingTableRow(x, depth + 1))).join("");
+    return head + decide + this.sortNodes(n.kids).map(k => this.nodeRows(k, depth + 1)).join("") + below;
+  }
+
+  // A card of a dashboard with several broken references: a head of its own, the references below it.
+  cardRows(g, depth) {
+    const f = g.members[0], p = f.evidence[0].place, keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
+    (this._findGroups ||= {})[id] = keys;
+    const title = [...this.placeParts(p)].join(" › ") || f.object_id;
+    const sub = [this.t("brokenCount", { n: keys.length }), this.isOrphan(p) ? this.t("brokenOrphanShort") : ""].filter(Boolean).join(" · ");
+    const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td><div class="finding-link-group">${fold}<button type="button" class="finding-link" data-fold="${this.esc(id)}">${this.tile("dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button></div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span></td><td class="finding-action"></td></tr>`;
+    const hint = open && this.isOrphan(p) ? `<tr class="finding-detail"><td colspan="7"><div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div></td></tr>` : "";
+    return head + hint + (open ? g.members.map(m => this.findingTableRow(m, depth + 1, true)).join("") : "");
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -16643,7 +16814,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.findingWithFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -17589,7 +17760,6 @@ class HAHousekeeperPanel extends HTMLElement {
       this.render();
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
-    root.querySelector("[data-with-followers]")?.addEventListener("click", () => { this.findingWithFollowers = !this.findingWithFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
@@ -17856,7 +18026,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

@@ -78,7 +78,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.oftenChip(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   // pick = false outside the findings list: there is no bar for the actions on a selection there.
@@ -95,68 +95,19 @@ class FindingsMixin {
     };
     const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
     const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRule")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
-    // In the grouped view every row keeps the room of the fold arrow, so that symbols and names stand in one line.
-    const gap = items.some(i => i.members || (i.cause && this.causeTotal(i.cause))) ? `<span class="finding-fold-gap" aria-hidden="true"></span>` : "";
-    const rows = items.map(item => {
-      if (item.cause) return this.causeTableRow(item.cause, gap);
-      if (item.members) return this.brokenGroupTableRow(item);
-      const f = item, { key, object, title, subtitle } = this.findingRowContent(f);
-      const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
-      const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
-      const name = gap ? `<div class="finding-link-group">${gap}${link}</div>` : link;
-      const detail = this.rowDecide(f);
-      return `<tr class="finding-data${f.ignored ? " dim" : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
-    }).join("");
+    // In the grouped view every row is a head of an object; in the flat one every row is a finding.
+    const rows = items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
   }
 
-  causeTableRow(c, gap = "") {
-    const total = this.causeTotal(c), own = c.finding_key && this.data.findings.find(f => f.key === c.finding_key);
-    const id = `cause_${c.id}`, open = total && this.foldOpen(id, false);
-    const link = `${c.object_type}:${c.object_id}`, title = this.t(`cause_${c.kind}`, { name: c.name });
-    const summary = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
-    const fold = total ? `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${Boolean(open)}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: c.name }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>` : gap;
-    const name = `<div class="finding-link-group">${fold}<button type="button" class="finding-link" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(summary)}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button></div>`;
-    const row = `<tr class="finding-data finding-cause"><td class="selcol">${this.causeBox(c)}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(c.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${own?.confidence == null ? "–" : `${Math.round(own.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(own?.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(own?.rule_id || c.kind)}</span><small>${this.t("chip_outage")}</small></td><td class="finding-action">${this.causeMenu(c, own)}</td></tr>`;
-    const decision = this.rowDecide(own);
-    const detail = open || decision ? `<tr class="finding-detail"><td colspan="7">${decision}${open ? this.causeChildren(c, false) : ""}</td></tr>` : "";
-    return row + detail;
-  }
-
-  brokenGroupTableRow(g) {
-    const f = g.members[0], p = f.evidence[0].place, object = this.findObject(this.findingKey(f));
-    const keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
-    (this._findGroups ||= {})[g.group] = keys;
-    const title = `${object?.name || f.object_id}${p.view != null ? ` › ${p.view}` : ""}`;
-    const sub = [...this.placeParts({ card: p.card, section: p.section }), this.t("brokenCount", { n: keys.length })].join(" · ");
-    const name = `<div class="finding-link-group"><button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button><button type="button" class="finding-link" data-object="${this.esc(this.findingKey(f))}">${this.tile(object?.object_type || "dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span><span class="pill red">${keys.length}</span></button></div>`;
-    const row = `<tr class="finding-data finding-cause"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(g.group)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td></td></tr>`;
-    const orphan = this.isOrphan(p);
-    const hint = orphan ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div>` : "";
-    return row + (open ? `<tr class="finding-detail"><td colspan="7">${hint}<div class="kids">${g.members.map(m => this.findingRow(m, true)).join("")}</div></td></tr>` : "");
-  }
-
-  sortFindingEntries(items) {
-    const st = this.lv.findings, { natural, ids } = this.collators(), sign = st.dir === "desc" ? -1 : 1;
-    const findingOf = item => item.cause ? this.data.findings.find(f => f.key === item.cause.finding_key) : item.members ? item.members[0] : item;
-    const value = item => {
-      const c = item.cause, f = findingOf(item);
-      switch (st.sort) {
-        case "name": return c ? c.name : this.findObject(this.findingKey(f))?.name || f.object_id;
-        case "id": return c ? c.object_id : f.object_id;
-        case "since": return f?.first_detected_at;
-        case "rule": return c ? f?.rule_id || c.kind : f.rule_id;
-        case "certainty": return f?.confidence;
-        default: return c ? (IMPACT_RANK[c.impact] ?? 0) + (f?.confidence || 0) / 2 : this.impactScore(f);
-      }
-    };
-    return items.map(item => ({ item, key: value(item) })).sort((a, b) => {
-      const emptyA = a.key == null || a.key === "", emptyB = b.key == null || b.key === "";
-      if (emptyA !== emptyB) return emptyA ? 1 : -1;
-      const order = typeof a.key === "number" && typeof b.key === "number" ? a.key - b.key : natural.compare(String(a.key ?? ""), String(b.key ?? ""));
-      const id = item => item.cause?.id || item.members?.[0]?.key || item.key || item.object_id;
-      return order * sign || ids.compare(String(id(a.item)), String(id(b.item))) * sign;
-    }).map(x => x.item);
+  // One finding as a row of the table; below a head (depth) it is indented and keeps the room of the fold arrow.
+  findingTableRow(f, depth = 0, inGroup = false) {
+    const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
+    const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
+    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
+    const name = depth ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
+    const detail = this.rowDecide(f);
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
@@ -179,7 +130,7 @@ class FindingsMixin {
     this.lvState("findings", "impact", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => this.findingType(f) === v, fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
+      filters: { type: (f, v) => (v === "_causes" ? Boolean(f.cause_id) : this.findingType(f) === v), fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -221,9 +172,9 @@ class FindingsMixin {
     return this.filterNote([this.findingFilter ? this.reasonLabel(this.findingFilter) : "", this.findingAfter ? this.t("corrTile") : ""].filter(Boolean), "data-finding-reset");
   }
 
-  // Opens or closes every chain and group of the findings list at once.
+  // Opens or closes every head of the grouped list at once, the ones below a closed head too.
   foldAllFindings(open) {
-    const ids = [...this.causeList().filter(c => this.causeTotal(c)).map(c => `cause_${c.id}`), ...Object.keys(this._findGroups || {}).map(g => `bg:${g}`)];
+    const ids = [...(this._nodeFoldIds || []), ...Object.keys(this._findGroups || {}).filter(g => g.startsWith("bg:"))];
     const next = { ...this.folds };
     ids.forEach(id => { next[id] = open; });
     this.folds = next; this.render();
@@ -237,10 +188,11 @@ class FindingsMixin {
     return `<section class="panel pad helpcard"><div class="helphead"><strong>${t("helpTitle")}</strong><button class="btn quiet" data-fold="findings_help" aria-expanded="true"><ha-icon icon="mdi:close"></ha-icon>${t("helpClose")}</button></div><div class="helpgrid">${terms}</div><div class="helpnums">${nums}</div></section>`;
   }
 
-  // Grouped (follow-ups under their cause) or one by one; with any filter the list is one by one anyway, so the switch is locked there.
-  viewSwitch(grouped, free) {
-    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}"${free ? "" : " disabled"}>${label}</button>`;
-    return `<span class="viewswitch" role="group" aria-label="${this.esc(this.t("viewLabel"))}"${free ? "" : ` title="${this.esc(this.t("viewLocked"))}"`}>${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
+  // Grouped (every finding below its object, the objects below their causes) or flat (every finding a row of its own).
+  // The choice holds with filters too.
+  viewSwitch(grouped) {
+    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}">${label}</button>`;
+    return `<span class="viewswitch seg" role="group" aria-label="${this.esc(this.t("viewLabel"))}">${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
   }
 
   findingsView() {
@@ -249,15 +201,15 @@ class FindingsMixin {
     const classes = [...new Set(all.map(f => this.findingReason(f)))];
     const open = !this.findingStatus && !this.findingFilter && !this.findingAfter && !this.lv.findings?.q && !Object.values(this.lv.findings?.f || {}).some(Boolean);
     const sorted = this.visibleFindings();
-    const grouped = open && !this.showFollowers;
-    const list = this.groupBroken(this.collapseFollowers(sorted, !grouped));
+    const grouped = !this.showFollowers;
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
-    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
+    const causeOption = all.some(f => f.cause_id) ? [["_causes", this.t("causesOnly")]] : [];
+    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: [...causeOption, ...types.map(x => [x, this.t(x)])] }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     const classTone = c => { const tone = c === "outage" ? "red" : this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
     this.ensureCorrelations();
-    const isFollower = f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id);
+    const isFollower = f => this.isFollowUp(f);
     const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
     const afterCount = afterAll.filter(f => !isFollower(f)).length, afterFollows = afterAll.length - afterCount;
     // A reason counts what the list shows under it: the follow-ups of an outage hang on their cause. The number beside them is the whole count.
@@ -269,15 +221,19 @@ class FindingsMixin {
     const group = (title, list, make, row) => list.length ? `<div class="sumgroup${row ? ` row${row}` : ""}" style="--n:${list.length};flex:${list.length} 1 ${list.length * 150}px"><div class="sumgrouphead">${this.t(title)}</div>${this.sumTiles(list.map(make))}</div>` : "";
     const tiles = `<div class="sumgroups" style="--cols:${Math.max(1 + tidy.length, urgent.length)}">${group("sumGroupAll", [total], x => x, 1)}${group("sumGroupTidy", tidy, tile, 1)}${group("sumGroupUrgent", urgent, tile, 2)}</div>`;
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
-    const followers = this.followerCount();
     const fixedView = this.findingStatus === "fixed";
-    const entries = this.causeEntries(), withFollowers = entries.filter(c => this.causeTotal(c));
-    // Chains and single findings share the chosen order. Under a filter or in the flat list every finding stands for itself.
-    let items = grouped ? this.sortFindingEntries([...entries.map(cause => ({ cause })), ...list]) : list;
-    if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => CAUSE_OWN_RULES.includes(i.rule_id) && entries.some(c => c.id === i.cause_id && this.causeTotal(c)));
+    // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
+    const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
+    this._nodeFoldIds = this.nodeFoldIds(nodes);
+    const items = grouped ? nodes : sorted;
+    const objects = nodes.filter(n => !n.key.startsWith("cause:")).length + nodes.reduce((s, n) => s + this.nodeFoldIds(n.kids).filter(id => !id.startsWith("og:cause:")).length, 0);
+    const count = grouped ? this.t(objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects) }) : this.t("viewCount", { n: this.formatNumber(sorted.length) });
     const pg = this.paginate("findings", items);
-    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, items.length)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? this.viewSwitch(grouped, open) : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${(followers && grouped) || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, count)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
+    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
+    const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
+    const status = this.statusChips();
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${status ? `<span class="seg">${status}</span>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}<button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -288,13 +244,18 @@ class FindingsMixin {
     return picked.length > 0 && picked.every(f => f.classification === "broken_reference");
   }
 
-  findSelBar(pageRows, total = 0) {
+  findSelBar(pageRows, count = "") {
     const n = this.findSel.size;
-    this._findPage = pageRows.flatMap(f => (f.cause ? [{ key: f.cause.finding_key }] : f.members ? f.members : [f])).map(f => f.key).filter(Boolean);
+    this._findPage = pageRows.flatMap(f => (f.findings ? this.nodeFindings(f) : [f])).map(f => f.key).filter(Boolean);
+    const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
+    // A mixed pick: the buttons that fit only some of the findings say how many.
+    const picked = [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean);
+    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type)).length, marks = this.markTargets().size;
+    const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     if (!pageRows.length && !n) return "";
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${this.viewCount(total)}</div>`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}</button>`}${this.markTargets().size ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}${this.viewCount(total)}</div>${this.bulkForm()}`;
+    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>`;
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}${part(labels)}</button>`}${marks ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}${part(marks)}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}${total}</div>${this.bulkForm()}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.

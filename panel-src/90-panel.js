@@ -5,7 +5,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.findingWithFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -951,7 +951,6 @@ class HAHousekeeperPanel extends HTMLElement {
       this.render();
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
-    root.querySelector("[data-with-followers]")?.addEventListener("click", () => { this.findingWithFollowers = !this.findingWithFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);

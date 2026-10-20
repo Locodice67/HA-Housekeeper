@@ -805,24 +805,24 @@ test("cause and dashboard groups use the findings table columns in both densitie
   const { el } = panel("en");
   const cause = { id: "outage-z", kind: "integration_down", object_type: "config_entry", object_id: "z", name: "Cloud", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high" };
   const follower = { key: "follower", rule_id: "entity.state_unavailable", object_id: "sensor.b", classification: "unavailable", confidence: 0.9, impact: "medium", cause_id: cause.id, ignored: false };
-  el.data = { ...DATA, causes: [cause], findings: [follower] };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "z", name: "Cloud" }], causes: [cause], findings: [follower] };
   let html = el.findingsView();
-  assert.match(html, /class="finding-data finding-cause"/);
-  assert.match(html, /data-fold="cause_outage-z"/);
-  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="cause_outage-z"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="config_entry:z"/, "the arrow folds while the cause name opens its details");
+  assert.match(html, /class="finding-data finding-cause og lvl0"/);
+  assert.match(html, /data-fold="og:config_entry:z"/);
+  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="og:config_entry:z"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="config_entry:z"/, "the arrow folds while the cause name opens its details");
   assert.doesNotMatch(html, /class="finding-group"/);
-  el.folds = { "cause_outage-z": true };
+  el.folds = { "og:config_entry:z": true };
   el.denseLists().findings = true;
   html = el.findingsView();
   assert.match(html, /class="tablewrap lt findings-table dense-list"/);
-  assert.match(html, /class="finding-detail"/);
+  assert.match(html, /class="finding-data finding-cause og lvl1"/, "the object below the cause is indented");
   const place = { view: "Archive", card: "Card", card_path: "views/0/cards/0", card_refs: 3, card_missing: 2 };
   const broken = i => ({ key: `broken-${i}`, rule_id: "dashboard.missing_entity", object_id: "dash", classification: "broken_reference", confidence: 0.9, impact: "low", affected_object: `sensor.${i}`, evidence: [{ location: `views/0/cards/0/${i}`, place }] });
-  el.data = { ...DATA, causes: [], findings: [broken(1), broken(2)] };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "dashboard", object_id: "dash", name: "Dash" }], causes: [], findings: [broken(1), broken(2)] };
+  el.folds = { "og:dashboard:dash": true };
   html = el.findingsView();
-  assert.match(html, /class="finding-data finding-cause"/);
-  assert.match(html, /data-fsel-group="dash\|views\/0\/cards\/0"/);
-  assert.match(html, /class="finding-fold"[^>]*data-fold="bg:dash\|views\/0\/cards\/0"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="dashboard:dash"/, "dashboard groups also keep separate fold and detail buttons");
+  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="og:dashboard:dash"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="dashboard:dash"/, "the dashboard is the head");
+  assert.match(html, /data-fsel-group="bg:dash\|views\/0\/cards\/0"/, "a card with several references is a head below it");
 });
 
 test("grouped causes and single findings obey the same table sort", () => {
@@ -834,10 +834,10 @@ test("grouped causes and single findings obey the same table sort", () => {
   el.lvState("findings", "impact", "desc");
   el.lv.findings.sort = "name"; el.lv.findings.dir = "asc";
   let html = el.findingsView();
-  assert.ok(html.indexOf('data-fsel="single"') < html.indexOf("Integration Zulu is not loaded"));
+  assert.ok(html.indexOf('data-fsel-group="og:entity:sensor.a"') < html.indexOf("Integration Zulu is not loaded"));
   el.lv.findings.dir = "desc";
   html = el.findingsView();
-  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fsel="single"'));
+  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fsel-group="og:entity:sensor.a"'));
 });
 
 test("batteries and unreferenced lists filter by area and sort", () => {
@@ -2196,7 +2196,7 @@ test("the sort and filter of a list come back, the search text does not; finding
   el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1" }] };
   el.view = "findingsNav"; el.findSel = new Set(["k1"]);
   el.render();
-  assert.ok(shadow.innerHTML.includes('data-fsel="k1" checked') && shadow.innerHTML.includes("data-fsel-hide"));
+  assert.ok(/data-fsel-group="og:[^"]+" checked/.test(shadow.innerHTML) && shadow.innerHTML.includes("data-fsel-hide"), "the head of its object is ticked");
   assert.equal(el.exportRows().length, 1);
 });
 
@@ -3318,17 +3318,19 @@ test("the findings page has an info button that opens the help with every number
   assert.ok(help.includes("helpcard") && help.includes("Certainty") && help.includes("n incidents"));
 });
 
-test("the follow-ups of a chain sit indented in one block, and one button opens or closes all chains", () => {
+test("the follow-ups of a chain sit indented below it, and one button opens or closes all heads", () => {
   const { el } = panel("en");
   const cause = { id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Keypad", follower_count: 2, total_followers: 2, consumers: {}, impact: "high", parent_id: null, child_ids: [], finding_key: "own" };
   const f = (key, extra = {}) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "high", impact_facts: [], first_detected_at: new Date().toISOString(), ...extra });
   el.data = { ...DATA, objects: [], edges: [], causes: [cause], findings: [f("own", { rule_id: "device.down", cause_id: "device_down:d1" }), f("x", { cause_id: "device_down:d1" }), f("y", { cause_id: "device_down:d1" })] };
-  assert.ok(!el.causeTableRow(cause).includes('class="kids"') && el.causeTableRow(cause).includes("mdi:chevron-right"));
+  el.render = () => {};
+  const closed = el.findingsView();
+  assert.ok(!closed.includes("og lvl1") && closed.includes("mdi:chevron-right") && closed.includes('data-fold-all="open"'));
   el.foldAllFindings(true);
-  const open = el.causeTableRow(cause);
-  assert.ok(open.includes("mdi:chevron-down") && /class="kids"/.test(open));
+  const open = el.findingsView();
+  assert.ok(open.includes("mdi:chevron-down") && /og lvl1/.test(open) && open.includes('data-fold-all="close"'), "one button, it closes once a head is open");
   el.foldAllFindings(false);
-  assert.ok(!el.causeTableRow(cause).includes('class="kids"'));
+  assert.ok(!el.findingsView().includes("og lvl1"));
 });
 
 test("labels are always a row: the own ones, or a note that none are assigned", () => {
@@ -3346,9 +3348,11 @@ test("the selection row of the findings list names the size of the view at its r
   const f = key => ({ key, rule_id: "entity.stale", object_id: key, classification: "unused", confidence: 0.7, ignored: false, impact: "info", impact_facts: [] });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c")] };
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
-  assert.ok(/viewcount" role="status">3 in this view/.test(el.findingsView()));
+  assert.ok(/viewcount" role="status">3 findings on 3 objects/.test(el.findingsView()));
   el.findSel = new Set(["a"]);
-  assert.ok(/1 selected.*viewcount" role="status">3 in this view/s.test(el.findingsView()));
+  assert.ok(/1 selected.*viewcount" role="status">3 findings on 3 objects/s.test(el.findingsView()));
+  el.showFollowers = true;
+  assert.ok(/viewcount" role="status">3 in this view/.test(el.findingsView()), "the flat list counts findings only");
 });
 
 test("a reason tile shows the grouped count and names the whole count and the follow-ups below it", () => {
@@ -3368,7 +3372,7 @@ test("the button for findings after an update counts what the list shows and nam
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
   el.findingAfter = true;
   const html = el.findingsView();
-  assert.ok(html.includes("2 findings began together with an update") && html.includes("plus 1 follow-ups") && html.includes("2 in this view"));
+  assert.ok(html.includes("2 findings began together with an update") && html.includes("plus 1 follow-ups") && html.includes("3 findings on 3 objects"));
 });
 
 test("the detail page rates a finding: level with reasons, certainty, and what the next level takes", () => {
@@ -3556,15 +3560,16 @@ test("the findings list is one list: a chain is one entry with a counter and ope
   const integ = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "MQTT", follower_count: 2, total_followers: 2, child_ids: [], parent_id: app.id, consumers: {}, impact: "high" };
   el.data = { ...DATA, findings: [f("sensor.a", integ.id), f("sensor.b", integ.id), f("sensor.c")], causes: [app, integ] };
   assert.equal(el.findingTotal(), 2, "the chain is one entry, the single finding another");
-  el.folds = { [`cause_${app.id}`]: true, [`cause_${integ.id}`]: true };
+  el.folds = { "og:app:a": true, "og:config_entry:e1": true };
   const html = el.findingsView();
   assert.ok(html.includes("App Zigbee2MQTT is stopped") && html.includes("2 follow-ups") && html.includes("Integration MQTT is not loaded") && html.includes("sensor.a") && html.includes("sensor.c"));
   assert.ok(!html.includes("Single findings"), "no separate groups");
   el.data = { ...el.data, findings: [...el.data.findings, { ...f("x", "integration_down:e1"), rule_id: "config_entry.not_loaded", key: "own1" }], causes: [app, { ...integ, finding_key: "own1" }] };
-  assert.ok(el.findingsView().includes('data-fsel="own1"'), "an outage with a finding of its own can be picked");
-  el.findingWithFollowers = true;
-  assert.ok(!el.findingsView().includes("sensor.c"), "the filter keeps only entries with follow-ups");
-  el.findingWithFollowers = false; el.showFollowers = true;
+  el.findingsView();
+  assert.ok(el._findGroups["og:app:a"].includes("own1"), "an outage with a finding of its own is picked with its head");
+  el.lvState("findings", "impact", "desc"); el.lv.findings.f.type = "_causes";
+  assert.ok(!el.findingsView().includes("sensor.c"), "the filter keeps only the chains");
+  el.lv.findings.f.type = ""; el.showFollowers = true;
   assert.ok(el.findingsView().includes("Follow-up of MQTT"));
 });
 
@@ -5648,14 +5653,16 @@ test("an integration outage is a reason of its own, with a tile and a filter of 
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
 });
 
-test("the finding of an outage is a row of its own as soon as a status or a filter is set", () => {
+test("the finding of an outage is the head of its integration, with a filter too, and a row of its own in the flat list", () => {
   const { el } = panel("en");
   const own = { rule_id: "config_entry.not_loaded", object_id: "e1", classification: "problem", confidence: 0.9, key: "config_entry.not_loaded|e1", ignored: false, evidence: [], impact: "low", cause_id: "integration_down:e1" };
   const c = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hue", finding_key: own.key, follower_count: 0, total_followers: 0, child_ids: [], consumers: {}, impact: "low", parent_id: null };
   el.data = { ...DATA, objects: [], causes: [c], findings: [own] };
-  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "once in the grouped list");
+  assert.equal((el.findingsView().match(/data-fsel-group="og:config_entry:e1"/g) || []).length, 1, "the head of its integration in the grouped list");
   el.findingFilter = "outage";
-  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "and once under a filter");
+  assert.equal((el.findingsView().match(/data-fsel-group="og:config_entry:e1"/g) || []).length, 1, "and under a filter too");
+  el.showFollowers = true;
+  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "a row of its own in the flat list");
 });
 
 test("object lists share one table: device entities, integration entries, reminders and backups sort, filter and show the state", () => {
@@ -6044,18 +6051,34 @@ test("the inventory filters by label and the labels block counts what carries ea
   assert.ok(html.includes("not created"), "the other two labels are not created yet");
 });
 
-test("the grouped findings list keeps the room of the fold arrow, offers the device mark in the menu and counts open findings grouped", () => {
+test("the grouped findings list indents the rows below a head, offers the device mark in the menu and counts open findings grouped", () => {
   const { el } = panel("en");
   const device = { object_type: "device", object_id: "d1", name: "Echo", status: "active" };
-  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unavailable" });
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unavailable", device_id: id === "sensor.c" ? null : "d1" });
   const f = (id, extra = {}) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.9, evidence: [], impact: "high", key: `k:${id}`, ...extra });
   el.data = { ...DATA, objects: [device, ent("sensor.a"), ent("sensor.b"), ent("sensor.c")], causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Echo", impact: "high", follower_count: 2 }],
     findings: [f("sensor.a", { cause_id: "device_down:d1" }), f("sensor.b", { cause_id: "device_down:d1" }), f("sensor.c")] };
   el.lvState("findings", "impact", "desc");
-  const html = el.findingsTable([{ cause: el.causeList()[0] }, el.data.findings[2]]);
-  assert.ok(html.includes("finding-fold-gap"), "a row without an arrow keeps its room");
+  el.folds = { "og:device:d1": true };
+  const html = el.findingsView();
+  assert.ok(/og lvl1[^]*finding-fold-gap/.test(html), "a row below a head keeps the room of the arrow");
   assert.ok(html.includes('class="menuitem" data-watch-mark="device:d1"') && !html.includes('class="btn" data-watch-mark'), "the mark on the device is an item of the row menu");
   assert.ok(!el.findingsTable([el.data.findings[2]]).includes("finding-fold-gap"), "without a fold no room is kept");
   el.findingStatus = ""; el.statusCount = () => 1;
   assert.ok(el.statusChips().includes(`Open (${el.findingTotal()})`) && el.findingTotal() === 2, "open counts the cause once, not its follow-ups");
+});
+
+test("every finding stands below its object: a device gathers all kinds of its entities, one finding is named in the head", () => {
+  const { el } = panel("en");
+  const ent = (id, status = "unavailable") => ({ object_type: "entity", object_id: id, name: id, status, device_id: "avr" });
+  const f = (id, extra = {}) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.75, ignored: false, impact: "medium", key: `k:${id}`, first_detected_at: "2026-10-01T00:00:00+00:00", ...extra });
+  el.data = { ...DATA, causes: [], edges: [], objects: [{ object_type: "device", object_id: "avr", name: "Receiver" }, { object_type: "device", object_id: "car", name: "Audi" }, ent("sensor.a"), ent("sensor.b"), ent("sensor.on", "active"), ent("select.old", "orphaned"), { object_type: "entity", object_id: "lock.car", name: "Lock", device_id: "car", status: "orphaned" }],
+    findings: [f("sensor.a"), f("sensor.b", { impact: "high", first_detected_at: "2026-10-10T00:00:00+00:00" }), f("select.old", { rule_id: "entity.not_provided", classification: "orphaned", confidence: 0.98, impact: "info" }), f("lock.car", { rule_id: "entity.not_provided", classification: "orphaned", confidence: 0.98, impact: "info" })] };
+  el.lvState("findings", "impact", "desc");
+  const html = el.findingsView();
+  assert.ok(html.includes("2 of 3 entities without a value · Orphaned (1)") && html.includes("75–98 %") && html.includes("new: "), "summary, span of certainty, the newest beside the oldest");
+  assert.ok(html.includes("Audi</strong><small>Lock: "), "a single finding is named in the head");
+  assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
+  el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
+  assert.ok(el.findingsView().includes("1 of 3 findings match the filter"));
 });
