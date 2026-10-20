@@ -4789,9 +4789,9 @@ test("battery shopping list includes current low levels without a forecast and l
   assert.equal(rows.length, 3);
   assert.equal(rows.filter(r => r.state === "low").map(r => r.entity_id).join(), "sensor.empty,sensor.volt");
   const html = el.batteryNeed();
-  assert.ok(html.includes("Low now") && html.includes("In 0 to 13 days") && html.includes('data-battery-filter="low"'), "the low ones are one row that filters the list, not a fold of their own");
+  assert.ok(html.includes("Low now") && html.includes("In 0 to 13 days") && html.includes('data-fold="bt_now"'), "the low ones are a fold of their own");
   assert.ok(html.includes("2×") && html.includes("AAA") && html.includes("CR2450"));
-  assert.ok(!html.includes("sensor.empty"), "the low ones are not listed twice");
+  assert.ok(html.includes("sensor.empty") && html.includes("sensor.volt") && !html.includes("sensor.future"), "the low fold is open first, the window after it closed");
   el.batteryTrend = { available: false, busy: false, rows: [], types: {} };
   assert.ok(el.batteryNeed().includes("Low now") && el.batteryNeed().includes("no forecast without a recorder"));
 });
