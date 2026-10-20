@@ -6751,3 +6751,18 @@ test("a decision whose finding is away rests in the list of statuses, says how l
   assert.ok(html.includes("not seen for 41 days – still needed?") && html.includes(">rests<") && html.includes("object is gone"));
   assert.ok(html.includes('data-ignore="device.down|cloud|" data-ignore-value="0"') && html.includes("Remove decision"), "a resting one is removed from its menu");
 });
+
+test("a reminder keeps Done in its row, changes and deletes through its menu, and several are done at once from the selection", async () => {
+  const { el } = panel("en");
+  const r = (id, name) => ({ id, name, interval_days: 30, last_done: "", history: [], due: "2026-11-01", days_left: 5, state: "soon", note: "" });
+  el.data = { ...DATA, reminders: [r("r1", "Filter"), r("r2", "Descale")] };
+  const html = el.remindersCard();
+  assert.ok(html.includes('data-rem-done="r1"') && html.includes('class="menuitem" data-rem-edit="r1"') && html.includes('class="menuitem" data-rem-del="r1"') && html.includes('data-rem-sel="r2"'));
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.reminder_id); return { reminders: el.data.reminders }; } };
+  el.render = () => {};
+  el.remSel = new Set(["r1", "r2"]);
+  await el.remDonePicked();
+  assert.deepEqual(calls, ["r1", "r2"]);
+  assert.equal(el.remSel.size, 0);
+});
