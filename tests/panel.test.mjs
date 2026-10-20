@@ -2525,7 +2525,10 @@ test("the reliability view lists the worst integration first with numbers, words
   assert.ok(html.indexOf("Dead Gate") < html.indexOf("Cloud &lt;b&gt;") && html.indexOf("Cloud &lt;b&gt;") < html.indexOf("Local Box"), "the dead one first");
   assert.ok(!html.includes("<b>Hub</b>"));
   assert.ok(html.includes("Down all the time") && html.includes("6 entities, the whole window") && html.includes("Avg per integration"));
-  assert.ok(!html.includes("Re-authentication open</button>") && html.includes('data-jump="findingsNav" data-filter="config_entry.reauth"'));
+  assert.ok(!html.includes("Re-authentication open</button>") && html.includes('data-jump="findingsNav" data-filter="config_entry.reauth"'), "without the integration in the inventory: the findings asking for a login");
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "e1", name: "Cloud Hub", domain: "hue", status: "problem" }] };
+  el.render();
+  assert.ok(shadow.innerHTML.includes('role="link" tabindex="0" data-object="config_entry:e1"'), "the pill of an integration opens that integration, not every login");
 });
 
 test("reliability rows open the integration, and its detail page shows the numbers with the affected entities", async () => {
