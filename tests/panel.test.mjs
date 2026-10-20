@@ -5928,6 +5928,7 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   let html = el.dbCard();
   assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
   assert.ok(html.includes("Automatic purging is off") && html.includes("2 gaps from restarts (normal)"), "the sentences stay as notes");
+  assert.ok(html.includes('data-exp-menu="recdb"'), "the export button is there on the first render");
   el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };
   html = el.dbCard();
   assert.ok(!html.includes("Growth per day") && html.includes("Size not measurable (database: MariaDB/MySQL)") && html.includes("Growth is being observed"));
