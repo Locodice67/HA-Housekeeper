@@ -9258,10 +9258,10 @@ const GOAL_JUMPS = {
   backup_age: { view: "maintenance", tab: "backup" },
   restore_test_age: { view: "maintenance", tab: "backup" },
   recorder_growth: { view: "recorder", tab: "db" },
-  weak_batteries: { view: "batteries", battery: "low" },
+  weak_batteries: { view: "batteries", battery: "low", clear: "batteries" },
   devices_without_area: { view: "policies", tab: "violations", lf: "polviol|rule|device_area" },
-  recurring_devices: { view: "cleanup", tab: "devices" },
-  orphaned_statistics: { view: "cleanup", tab: "stats" },
+  recurring_devices: { view: "cleanup", tab: "devices", clear: "cleanup" },
+  orphaned_statistics: { view: "cleanup", tab: "stats", clear: "orphanstats" },
   automation_errors: { view: "runs", tab: "overview", lf: "overview|runs|errors" },
 };
 const GOAL_TONES = { met: "ok", missed: "red", unknown: "mute", off: "mute" };
@@ -9296,7 +9296,7 @@ class GoalsMixin {
 
   goalJump(id) {
     const j = GOAL_JUMPS[id];
-    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}"` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}`;
+    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}"` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}${j.clear ? ` data-jump-clear="${j.clear}"` : ""}`;
   }
 
   goalRow(g, editable = true) {

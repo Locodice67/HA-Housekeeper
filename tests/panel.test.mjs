@@ -6368,3 +6368,10 @@ test("a missing target in the overview opens the findings filtered to it and wha
   assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "automation.a,automation.b");
   assert.ok(el.findingsView().includes('data-fclear="cause"'));
 });
+
+test("the goals of batteries and statistics land on their lists without filters kept from before", () => {
+  const { el } = panel("en");
+  assert.ok(el.goalJump("weak_batteries").includes('data-jump-battery="low" data-jump-clear="batteries"'));
+  assert.ok(el.goalJump("orphaned_statistics").includes('data-jump-tab="stats" data-jump-clear="orphanstats"'));
+  assert.ok(el.goalJump("recurring_devices").includes('data-jump-clear="cleanup"'));
+});
