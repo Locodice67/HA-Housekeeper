@@ -6671,3 +6671,10 @@ test("a tile that clears the filters of a list is never marked itself", () => {
   const html = el.sumTiles([{ label: "All", value: "3", lf: ["x", "", ""] }, { label: "Low", value: "1", lf: ["x", "level", "low"] }]);
   assert.ok(!html.includes('aria-pressed="true"'));
 });
+
+test("an integration row of the write load has a greyed box that says only its entities can be excluded", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const html = el.stormGroupsList([{ key: "integrations:Hub", type: "integrations", items: [{ kind: "integration_share", title: "Hub", entry_id: "e1", load_share: 40, per_day: 10 }] }]);
+  assert.ok(html.includes("disabled") && html.includes("An integration cannot be excluded"));
+});

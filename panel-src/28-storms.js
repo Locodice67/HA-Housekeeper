@@ -59,7 +59,7 @@ class StormsMixin {
     const kindsOf = g => g.items.map(f => f.kind);
     const present = ["storm", "attribute_flood", "no_new_state", "integration_share", "event_burst"].filter(k => groups.some(g => kindsOf(g).includes(k)));
     const columns = [
-      { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.filter(g => g.type === "entities").map(g => g.items[0].entity_id)), cell: g => (g.type === "entities" ? this.excludeBox(g.items[0].entity_id) : "") },
+      { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.filter(g => g.type === "entities").map(g => g.items[0].entity_id)), cell: g => (g.type === "entities" ? this.excludeBox(g.items[0].entity_id) : `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t(g.type === "integrations" ? "stormSelIntegration" : "stormSelEvent", { button: this.t("stormShowEntities") }))}" aria-label="${this.esc(this.t(g.type === "integrations" ? "stormSelIntegration" : "stormSelEvent", { button: this.t("stormShowEntities") }))}">`) }, // only entities can be excluded; a greyed box says why
       { key: "name", label: "utName", cell: g => { const chain = g.items.map(f => this.stormFollowers(f.followers)).find(Boolean); return `${this.nameCell(title(g), g.type === "entities" && g.items[0].entity_id !== title(g) ? g.items[0].entity_id : "")}${chain ? `<small class="muted">${this.esc(chain)}</small>` : ""}`; } },
       { key: "kinds", label: "stormColKinds", sortable: false, cell: g => g.items.map(f => `<span class="pill ${tone(f)}">${this.t(`stormKind_${f.kind}`)}</span>`).join(" ") },
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: g => num(perDay(g)) },
