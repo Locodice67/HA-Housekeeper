@@ -169,7 +169,7 @@ class BatteryTableMixin {
     const columns = [
       { key: "name", label: "btColName", sortable: false, cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
       { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item) || "—") },
-      { key: "type", label: "btColType", sortable: false, cell: r => (r.type ? `<span class="pill">${this.esc(r.type)}</span>` : `<span class="muted">${this.t("btTypeNone")}</span>`) },
+      { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
       { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },
       { key: "left", label: "btColLeft", sortable: false, cell: r => this.batteryLeftCell(r) },
