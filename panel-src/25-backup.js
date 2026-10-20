@@ -64,7 +64,13 @@ class BackupMixin {
       case "targets":
         if (v.at && !v.remote?.length) return t("bhTargetsConfirmed", { local: this.bhAgents(v.local), date: this.bhDay(v.at) });
         if (v.at) return t("bhTargetsOkConfirmed", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote), date: this.bhDay(v.at) });
-        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : c.level === "note" ? t("bhTargetsNote", { local: this.bhAgents(v.local) }) : "";
+        if (c.level === "note") {
+          // A remote target is set up, but the newest backup did not reach it: say so instead of "local only".
+          const set = (this.backup?.checks || []).find(x => x.id === "setup")?.values?.agents || [];
+          const missed = set.filter(a => !this.bhAgent(a).local);
+          return missed.length ? t("bhTargetsMissed", { remote: this.bhAgents(missed), local: this.bhAgents(v.local) }) : t("bhTargetsNote", { local: this.bhAgents(v.local) });
+        }
+        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : "";
       case "size":
         if (c.level === "unknown") return t("bhSizeUnknown");
         return t(c.level === "ok" ? "bhSizeOk" : "bhSizeNote", { size: this.formatBytes(v.size), expected: this.formatBytes(v.expected), percent: Math.round(v.ratio * 100) });

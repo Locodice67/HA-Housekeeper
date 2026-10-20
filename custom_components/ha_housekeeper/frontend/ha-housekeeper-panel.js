@@ -845,7 +845,7 @@ Object.assign(TEXT.de, {
   bhNewestNone: "Es gibt noch kein Backup.", bhNewestText: "Vor {age} · Grenze für den Zeitplan: {limit}",
   bhRunOk: "Zuletzt erfolgreich: {completed}", bhRunUnknown: "Noch kein automatischer Lauf bekannt.",
   bhRunFailed: "Der letzte Versuch ({attempted}) hat kein Backup ergeben; letzter Erfolg: {completed}.", bhRunAgents: "Ziele mit Fehler: {agents}",
-  bhTargetsOk: "Lokal: {local} · extern: {remote}", bhTargetsNote: "Nur lokal ({local}). Eine zweite, externe Kopie schützt vor dem Verlust des Geräts. Ob ein Ziel lokal oder extern ist, richtet sich nach seinem Namen.", bhTargetsConfirmed: "Externen Ablageort am {date} bestätigt. Home Assistant meldet nur {local}; die automatische Zuordnung erfolgt nach dem Namen des Ziels.", bhTargetsOkConfirmed: "Lokal: {local} · extern: {remote} · bestätigt am {date}",
+  bhTargetsOk: "Lokal: {local} · extern: {remote}", bhTargetsMissed: "Eingestellt ist auch {remote}, das neueste Backup liegt aber nur lokal ({local}). Prüfe, ob das Hochladen geklappt hat.", bhTargetsNote: "Nur lokal ({local}). Eine zweite, externe Kopie schützt vor dem Verlust des Geräts. Ob ein Ziel lokal oder extern ist, richtet sich nach seinem Namen.", bhTargetsConfirmed: "Externen Ablageort am {date} bestätigt. Home Assistant meldet nur {local}; die automatische Zuordnung erfolgt nach dem Namen des Ziels.", bhTargetsOkConfirmed: "Lokal: {local} · extern: {remote} · bestätigt am {date}",
   bhSizeOk: "{size} (erwartet etwa {expected})", bhSizeNote: "{size} statt etwa {expected} ({percent} %): ungewöhnlich klein oder groß.", bhSizeUnknown: "Zu wenige Backups für einen Vergleich.",
   bhRetentionOk: "Aufbewahrung: {limit} · vorhanden: {count}, das älteste vor {oldest} Tagen", bhRetentionNote: "Keine Aufbewahrungsgrenze eingestellt (vorhanden: {count}). Der Speicher kann volllaufen.",
   bhRetCopies: "{n} Backups", bhRetDays: "{n} Tage",
@@ -877,7 +877,7 @@ Object.assign(TEXT.en, {
   bhNewestNone: "There is no backup yet.", bhNewestText: "{age} ago · limit for the schedule: {limit}",
   bhRunOk: "Last success: {completed}", bhRunUnknown: "No automatic run known yet.",
   bhRunFailed: "The last attempt ({attempted}) produced no backup; last success: {completed}.", bhRunAgents: "Targets with errors: {agents}",
-  bhTargetsOk: "Local: {local} · remote: {remote}", bhTargetsNote: "Local only ({local}). A second, remote copy protects against losing the device. Whether a target is local or remote depends on its name.", bhTargetsConfirmed: "Remote storage confirmed on {date}. Home Assistant reports only {local}; automatic classification uses the target name.", bhTargetsOkConfirmed: "Local: {local} · remote: {remote} · confirmed on {date}",
+  bhTargetsOk: "Local: {local} · remote: {remote}", bhTargetsMissed: "{remote} is set up as well, but the newest backup is only local ({local}). Check whether the upload worked.", bhTargetsNote: "Local only ({local}). A second, remote copy protects against losing the device. Whether a target is local or remote depends on its name.", bhTargetsConfirmed: "Remote storage confirmed on {date}. Home Assistant reports only {local}; automatic classification uses the target name.", bhTargetsOkConfirmed: "Local: {local} · remote: {remote} · confirmed on {date}",
   bhSizeOk: "{size} (expected about {expected})", bhSizeNote: "{size} instead of about {expected} ({percent} %): unusually small or large.", bhSizeUnknown: "Too few backups to compare.",
   bhRetentionOk: "Retention: {limit} · present: {count}, the oldest {oldest} days old", bhRetentionNote: "No retention limit set (present: {count}). The storage can fill up.",
   bhRetCopies: "{n} backups", bhRetDays: "{n} days",
@@ -6382,7 +6382,13 @@ class BackupMixin {
       case "targets":
         if (v.at && !v.remote?.length) return t("bhTargetsConfirmed", { local: this.bhAgents(v.local), date: this.bhDay(v.at) });
         if (v.at) return t("bhTargetsOkConfirmed", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote), date: this.bhDay(v.at) });
-        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : c.level === "note" ? t("bhTargetsNote", { local: this.bhAgents(v.local) }) : "";
+        if (c.level === "note") {
+          // A remote target is set up, but the newest backup did not reach it: say so instead of "local only".
+          const set = (this.backup?.checks || []).find(x => x.id === "setup")?.values?.agents || [];
+          const missed = set.filter(a => !this.bhAgent(a).local);
+          return missed.length ? t("bhTargetsMissed", { remote: this.bhAgents(missed), local: this.bhAgents(v.local) }) : t("bhTargetsNote", { local: this.bhAgents(v.local) });
+        }
+        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : "";
       case "size":
         if (c.level === "unknown") return t("bhSizeUnknown");
         return t(c.level === "ok" ? "bhSizeOk" : "bhSizeNote", { size: this.formatBytes(v.size), expected: this.formatBytes(v.expected), percent: Math.round(v.ratio * 100) });

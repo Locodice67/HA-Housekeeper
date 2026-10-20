@@ -1695,7 +1695,7 @@ test("the backup card puts text and a word next to every level and escapes what 
   await el.loadBackup();
   const html = shadow.innerHTML;
   for (const text of ["Targets and schedule", "Targets: Local, Nabu Casa · schedule: daily", "3 days ago · limit for the schedule: 36 h",
-    "The last attempt", "no backup; last success", "Targets with errors: &lt;b&gt;", "Local only (Local)", "500 MB instead of about 1,000 MB (50 %)",
+    "The last attempt", "no backup; last success", "Targets with errors: &lt;b&gt;", "Nabu Casa is set up as well, but the newest backup is only local (Local)", "500 MB instead of about 1,000 MB (50 %)",
     "Retention: 3 backups · present: 2, the oldest 6 days old", "No backup password set.", "Not confirmed yet", "Last on", "37 days ago",
     "not found any more", "Latest backups", "How to test a restore", "Housekeeper never performs a restore itself"]) assert.ok(html.includes(text), text);
   for (const word of [">OK<", ">Note<", ">Problem<"]) assert.ok(html.includes(word), word);
@@ -6579,4 +6579,12 @@ test("a backup age reads vor 3 Tagen after vor and 3 Tage as a plain span", () =
   const { el } = panel("de");
   assert.equal(el.t("backupAgo", { age: el.bhAge(72, true) }), "vor 3 Tagen");
   assert.equal(el.bhAge(72), "3 Tage");
+});
+
+test("a remote target that the newest backup did not reach is named instead of local only", () => {
+  const { el } = panel("en");
+  el.backup = { available: true, checks: [{ id: "setup", level: "ok", values: { agents: ["backup.local", "cloud.cloud"] } }] };
+  assert.ok(el.bhText({ id: "targets", level: "note", values: { local: ["backup.local"], remote: [] } }).includes("Nabu Casa is set up as well"));
+  el.backup.checks[0].values.agents = ["backup.local"];
+  assert.ok(el.bhText({ id: "targets", level: "note", values: { local: ["backup.local"], remote: [] } }).startsWith("Local only"));
 });
