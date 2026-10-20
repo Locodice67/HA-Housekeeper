@@ -6514,3 +6514,14 @@ test("a grouped findings list pages the rows it shows, keeps a group whole, and 
   const head = second.indexOf('data-fold="og:device:dbig"');
   assert.ok(head > 0 && second.indexOf('data-fsel="big-', head) > head, "its head stands again on top of the second page, its rows below");
 });
+
+test("the details of missing hours stand folded below the largest tables, with a link from the finding", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._dbRequested = true;
+  el.dbHealth = { ...DBH, tables: [{ name: "states", bytes: 1024 }], findings: [{ kind: "missing_hours", level: "hint", series_total: 2, own_series: 2, gap_hours: 0, gaps_total: 0, series: [{ statistic_id: "sensor.c", name: "C", own: 9, missing: 9 }] }] };
+  let html = el.dbCard();
+  assert.ok(html.includes('data-fold="db_extra_missing_hours"') && html.indexOf("Largest tables") < html.indexOf("Details: Missing hours"), "the fold stands below the tables");
+  assert.ok(!html.includes("sensor.c"), "closed at first");
+  el.folds = { db_extra_missing_hours: true };
+  assert.ok(el.dbCard().includes("sensor.c"));
+});

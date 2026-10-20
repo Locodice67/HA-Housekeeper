@@ -104,7 +104,7 @@ class DbHealthMixin {
   // What to do stays folded: the finding reads first, the advice is one click away.
   dbFindingRow(f) {
     const tone = f.level === "problem" ? "red" : "warn", text = this.dbFindingText(f, true), advice = this.dbKindText("dbAdvice_", f.kind);
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.dbKindText("dbKind_", f.kind) ?? this.esc(f.kind)}</strong>${text ? `<small>${text}</small>` : ""}${advice ? `<details class="rowdetails"><summary>${this.t("dbWhatToDo")}</summary><small>${advice}</small></details>` : ""}</span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.dbKindText("dbKind_", f.kind) ?? this.esc(f.kind)}</strong>${text ? `<small>${text}</small>` : ""}${advice ? `<details class="rowdetails"><summary>${this.t("dbWhatToDo")}</summary><small>${advice}</small></details>` : ""}${this.dbFindingExtra(f) ? `<button type="button" class="link dbmore" data-fold="db_extra_${this.esc(f.kind)}">${this.t(this.foldOpen(`db_extra_${f.kind}`, false) ? "dbDetailsHide" : "dbDetailsBelow")}</button>` : ""}</span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>`;
   }
 
   // The full integrity check on demand: a button, and the result of the last run.
@@ -157,7 +157,16 @@ class DbHealthMixin {
     const th = r.thresholds || {};
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
     const figures = this.dbFigures(r), tiles = this.sumTiles(figures.tiles), notes = figures.notes;
-    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>${this.dbTablesCard(r)}</div>`;
+    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>${this.dbTablesCard(r)}${this.dbExtrasCard(r)}</div>`;
+  }
+
+  // What lies behind a finding (the periods and sensors of missing hours) as a fold below everything else, closed at first.
+  dbExtrasCard(r) {
+    const folds = r.findings.map(f => {
+      const body = this.dbFindingExtra(f);
+      return body ? this.fold(`db_extra_${f.kind}`, { tone: f.level === "problem" ? "red" : "warn", title: this.t("dbDetailsOf", { kind: this.dbKindText("dbKind_", f.kind) ?? f.kind }), pill: f.series_total ? this.formatNumber(f.series_total) : "" }, body, false) : "";
+    }).join("");
+    return folds ? `<div class="panel">${folds}</div>` : "";
   }
 
   // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog.
