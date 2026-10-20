@@ -6456,4 +6456,3 @@ test("All findings stands over both rows of reason tiles and names the follow-up
   assert.ok(all.includes("data-finding-followers") && all.includes('data-finding-filter=""'), "the follow-ups link sits in the tile");
   assert.ok(html.includes('style="--r:2"') && html.includes('style="--r:4"'), "faults in the first row, tidying up in the second");
 });
-

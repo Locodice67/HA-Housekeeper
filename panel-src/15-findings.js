@@ -287,7 +287,7 @@ class FindingsMixin {
     const group = (title, list, tone, id, row) => {
       const n = openAll.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
       const text = this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }));
-      const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}">${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
+      const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}"><ha-icon icon="mdi:filter-variant"></ha-icon>${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
       return `<div class="sumhead" style="grid-row:${row}">${head}</div><div class="sumrow" style="--r:${row + 1}">${this.sumTileCells(list.map(c => ({ ...tile(c), hint: this.reasonLabel(c) })))}</div>`;
     };
     // "All findings" stands left over both rows; the follow-ups are named inside it. The whole tile clears the filters,
