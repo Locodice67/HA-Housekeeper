@@ -114,7 +114,7 @@ const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script"
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];
 // The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
 const FINDING_URGENT = ["problem", "unavailable", "outage", "broken_reference", "run_error", "recurring"];
-const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
+const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate", "orphaned"];
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];

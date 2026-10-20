@@ -6138,3 +6138,12 @@ test("the headline names what is urgent, the to-do card has the same groups, and
   items.push({ key: "disk", tone: "red", area: "state", text: "Disk" });
   assert.equal(el.statusHeadline(), "Outages (5) and 2 more urgent items");
 });
+
+test("the reason tiles are grouped by their colour: orphaned is tidying up, not a fault", () => {
+  const { el } = panel("en");
+  const f = (key, classification) => ({ key, rule_id: "entity.x", object_id: key, classification, confidence: 0.9, ignored: false, impact: "low" });
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a", "orphaned"), f("b", "unavailable")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  const html = el.findingsView(), tidy = html.indexOf(">Tidying up<"), faults = html.indexOf(">Faults<"), orphaned = html.indexOf(`>${el.statusLabel("orphaned")}<`);
+  assert.ok(tidy > 0 && faults > tidy && orphaned > tidy && orphaned < faults, "orphaned sits under tidying up, before the faults");
+});
