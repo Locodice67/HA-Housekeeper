@@ -5931,6 +5931,8 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   assert.ok(html.includes('data-exp-menu="recdb"'), "the export button is there on the first render");
   el.dbHealth = { ...DBH, computed_at: Date.now() / 1000 - 600, age_seconds: 600 };
   assert.equal((el.dbCard().match(/As of/g) || []).length, 1, "an older result has one time only, in the bar");
+  el.dbHealth = { ...DBH, integrity: { state: "damaged", at: "2026-10-01T10:00:00+00:00" } };
+  assert.ok(el.dbCard().includes("found damage (finding above)"));
   el.dbHealth = { ...DBH, growth: { known: true, per_day: -50 * 1024 ** 2 } };
   assert.ok(el.dbCard().includes("−50 MB"), "a database that shrank shows minus, not +0 B");
   el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };

@@ -105,7 +105,7 @@ class DbHealthMixin {
     const note = c.running ? this.t("dbChecking")
       : c.state === "ok" ? this.t("dbCheckOk", { at: this.formatDate(c.at) })
       : c.state === "failed" ? this.t("dbCheckFailed", { at: this.formatDate(c.at) })
-      : c.state === "damaged" ? "" : this.t("dbCheckNever");
+      : c.state === "damaged" ? this.t("dbCheckDamaged", { at: this.formatDate(c.at) }) : this.t("dbCheckNever");
     return `<div class="row"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
   }
 

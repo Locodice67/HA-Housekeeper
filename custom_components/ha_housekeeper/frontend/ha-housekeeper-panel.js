@@ -1284,7 +1284,7 @@ Object.assign(TEXT.de, {
   dbAdvice_integrity: "Lege zuerst ein Backup an. Betroffene Indizes lassen sich mit REINDEX neu aufbauen (zum Beispiel in SQLite Web), sonst hilft ein Backup. Housekeeper löscht nichts, solange die Datenbank beschädigt ist.",
   dbCheck: "Datenbank prüfen", dbChecking: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank Minuten dauern, die Seite bleibt benutzbar.",
   dbCheckHint: "Prüft mit SQLite (integrity_check), ob Tabellen und Indizes zusammenpassen. Liest nur, belastet die Datenbank aber einige Minuten.",
-  dbCheckOk: "Zuletzt geprüft am {at}: in Ordnung.", dbCheckFailed: "Die Prüfung vom {at} ist nicht fertig geworden.", dbCheckNever: "Noch nie geprüft.",
+  dbCheckOk: "Zuletzt geprüft am {at}: in Ordnung.", dbCheckFailed: "Die Prüfung vom {at} ist nicht fertig geworden.", dbCheckNever: "Noch nie geprüft.", dbCheckDamaged: "Die Prüfung vom {at} hat Schäden gefunden (Befund oben).",
 });
 Object.assign(TEXT.en, {
   dbKind_disk_low: "Little free disk space", dbDiskLow: "Only {free} of {total} are free on the database's disk.",
@@ -1296,7 +1296,7 @@ Object.assign(TEXT.en, {
   dbAdvice_integrity: "Make a backup first. Affected indexes can be rebuilt with REINDEX (for example in SQLite Web), otherwise restore a backup. Housekeeper deletes nothing while the database is damaged.",
   dbCheck: "Check database", dbChecking: "Checking the database. On a large database this can take minutes; the page stays usable.",
   dbCheckHint: "Uses SQLite (integrity_check) to see whether tables and indexes match. Reads only, but loads the database for a few minutes.",
-  dbCheckOk: "Last checked {at}: fine.", dbCheckFailed: "The check of {at} did not finish.", dbCheckNever: "Never checked.",
+  dbCheckOk: "Last checked {at}: fine.", dbCheckFailed: "The check of {at} did not finish.", dbCheckNever: "Never checked.", dbCheckDamaged: "The check of {at} found damage (finding above).",
 });
 
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -7325,7 +7325,7 @@ class DbHealthMixin {
     const note = c.running ? this.t("dbChecking")
       : c.state === "ok" ? this.t("dbCheckOk", { at: this.formatDate(c.at) })
       : c.state === "failed" ? this.t("dbCheckFailed", { at: this.formatDate(c.at) })
-      : c.state === "damaged" ? "" : this.t("dbCheckNever");
+      : c.state === "damaged" ? this.t("dbCheckDamaged", { at: this.formatDate(c.at) }) : this.t("dbCheckNever");
     return `<div class="row"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
   }
 
