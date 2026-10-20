@@ -18,8 +18,14 @@ class DbHealthMixin {
     setTimeout(() => this.loadDbHealth(), 0);
   }
 
-  dbSeriesList(series) {
-    return series.map(s => this.esc(s.name || s.statistic_id)).join(", ");
+  // A series that is a known entity opens it on the page; the export gets plain names.
+  dbSeriesName(s, links) {
+    const key = `entity:${s.statistic_id}`, name = this.esc(s.name || s.statistic_id);
+    return links && this.findObject(key) ? `<button type="button" class="linklike" data-object="${this.esc(key)}">${name}</button>` : name;
+  }
+
+  dbSeriesList(series, links) {
+    return series.map(s => this.dbSeriesName(s, links)).join(", ");
   }
 
   // The recorder names MariaDB "mysql"; the panel names both.
@@ -27,16 +33,16 @@ class DbHealthMixin {
     return { sqlite: "SQLite", mysql: "MariaDB/MySQL", postgresql: "PostgreSQL" }[dialect] || dialect || "?";
   }
 
-  dbFindingText(f) {
+  dbFindingText(f, links = false) {
     const n = v => this.formatNumber(v), size = v => this.formatBytes(v);
     if (f.kind === "wal_large") return this.t("dbWal", { wal: size(f.wal_bytes), db: size(f.db_bytes) });
     if (f.kind === "growth") return this.t("dbGrowth", { recent: size(f.recent_bytes), base: size(f.base_bytes) });
-    if (f.kind === "duplicates") return this.t("dbDuplicates", { n: n(f.groups), more: f.capped ? "+" : "", list: this.dbSeriesList(f.series) });
+    if (f.kind === "duplicates") return this.t("dbDuplicates", { n: n(f.groups), more: f.capped ? "+" : "", list: this.dbSeriesList(f.series, links) });
     if (f.kind === "missing_hours") {
       if (!f.gap_hours) return this.t("dbMissingOwnOnly", { n: n(f.series_total) });
       return `${this.t("dbMissingShared", { n: n(f.series_total), hours: n(f.gap_hours), count: n(f.gaps_total) })} ${f.own_series ? this.t("dbMissingOwn", { n: n(f.own_series) }) : this.t("dbMissingOnlyShared")}`;
     }
-    if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
+    if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.dbSeriesName(s, links)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
     if (f.kind === "disk_low") return this.t("dbDiskLow", { free: size(f.free_bytes), total: size(f.total_bytes) });
     if (f.kind === "corrupt_files") return this.t("dbCorruptFiles", { n: n(f.files), size: size(f.bytes), list: f.names.map(x => this.esc(x)).join(", ") });
     if (f.kind === "integrity") return this.t("dbIntegrity", { at: this.formatDate(f.at), lines: f.lines.map(l => this.esc(l)).join("; ") }) + (f.unclean_starts ? ` ${this.t("dbIntegrityCrash", { n: n(f.unclean_starts) })}` : "");
@@ -82,7 +88,7 @@ class DbHealthMixin {
 
   dbFindingRow(f) {
     const tone = f.level === "problem" ? "red" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f, true)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
   }
 
   // The full integrity check on demand: a button, and the result of the last run.

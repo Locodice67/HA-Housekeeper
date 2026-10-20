@@ -5940,6 +5940,14 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   assert.ok(html.includes("Largest tables") && html.includes("states") && html.includes("73 %") && html.includes("2 more tables"));
 });
 
+test("a series named in a database finding opens its entity on the page and stays plain text in the export", () => {
+  const { el } = panel("en");
+  el.findObject = key => (key === "entity:sensor.a" ? { object_type: "entity" } : null);
+  const f = { kind: "duplicates", level: "problem", groups: 2, capped: false, series: [{ statistic_id: "sensor.a", name: "Energy" }, { statistic_id: "sensor.gone", name: "Gone" }] };
+  assert.ok(el.dbFindingRow(f).includes('data-object="entity:sensor.a"') && !el.dbFindingRow(f).includes("entity:sensor.gone"));
+  assert.ok(!el.dbFindingText(f).includes("<button"));
+});
+
 test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {
   const { el, shadow } = panel("en");
   const tabs = el.searchPages().filter(page => page.view === "maintenance" && page.viewTab).map(page => page.viewTab);
