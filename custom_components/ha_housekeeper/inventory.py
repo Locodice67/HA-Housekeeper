@@ -1662,6 +1662,9 @@ class InventoryScanner:
             finding["key"] = finding_key(finding)
             self._mark_ignored(finding, entity_registry_entries)
         findings.extend(blocked)
+        # A preliminary scan misses findings: it says nothing about what is away.
+        if not preliminary:
+            self.ignored.note_seen({f["key"] for f in findings}, datetime.now(UTC))
         # A blocked automation may be switched off by a plan, though its entity is "working".
         stuck = {
             f["object_id"]
@@ -1926,7 +1929,11 @@ class InventoryScanner:
             until = now + timedelta(days=days) if days else None
             return self.ignored.decide(key, kind, now, reason=reason, until=until, by=by, via=via)
 
-        if key.startswith(POLICY_KEY_PREFIX):
+        # A decision whose finding is away right now (it rests) can be changed or taken away as well.
+        if key.startswith(POLICY_KEY_PREFIX) or (
+            self.ignored.entry(key) is not None
+            and not any(f["key"] == key for f in (self._snapshot or {}).get("findings", []))
+        ):
             return store()
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None

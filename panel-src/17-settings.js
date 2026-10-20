@@ -101,7 +101,7 @@ class SettingsMixin {
   // The numbers of the tab, one per card: findings with a status, marks, rules and labelled objects; each jumps to its card.
   decisionsBar() {
     const findings = this.data?.findings || [], objects = this.data?.objects || [];
-    const status = findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), statusDue = status.filter(f => !f.ignored).length;
+    const status = [...findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), ...this.restingDecisions()], statusDue = status.filter(f => !f.ignored).length;
     const marks = objects.filter(o => o.mark), marksDue = marks.filter(o => o.mark_due).length;
     const rules = this.exc?.rules?.length ?? this.data?.meta?.exception_rules ?? 0, byRule = findings.filter(f => f.ignored_by === "rule").length;
     const labelled = this.invObjects().filter(o => (o.labels || []).some(l => HK_LABELS.includes(l))).length;
@@ -109,32 +109,77 @@ class SettingsMixin {
     return `<div class="kpis decbar">${kpi("status", "decStatusKpi", status.length, statusDue ? this.t("decDue", { n: this.formatNumber(statusDue) }) : "", true)}${kpi("marks", "decMarksKpi", marks.length, marksDue ? this.t("decReviewDue", { n: this.formatNumber(marksDue) }) : "", true)}${kpi("rules", "decRulesKpi", rules, byRule ? this.t("decRuleHides", { n: this.formatNumber(byRule) }) : "")}${kpi("labels", "decLabelsKpi", labelled, "housekeeper_*")}</div>`;
   }
 
-  // The findings with a status of their own: known, snoozed, hidden, and the ones whose time ran out (due), those first.
-  // Marks, rules and labels have their own cards.
+  // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
+  // in the shape of a finding, from its key (rule|object|affected), with what was decided and when it was last seen.
+  restingDecisions() {
+    return (this.data?.resting_decisions || []).map(d => {
+      const [rule_id, object_id = "", affected_object = ""] = d.key.split("|");
+      return { key: d.key, rule_id, object_id, affected_object, ignored: true, ignored_by: "user", resting: true, seen: d.seen, ignore_info: { kind: d.kind, reason: d.reason, until: d.until } };
+    });
+  }
+
+  // What a decision does right now: hides its finding, is due again, rests (finding away), has rested a month (still
+  // needed?) or belongs to an object that is gone.
+  decisionNow(f) {
+    if (!f.resting) return f.ignored ? "hides" : "due";
+    if (!this.findObject(this.findingKey(f))) return "gone";
+    const days = f.seen ? Math.floor((Date.now() - Date.parse(f.seen)) / 864e5) : null;
+    return days !== null && days >= MARK_QUIET_DAYS ? "quiet" : "rests";
+  }
+
+  // The findings with a status of their own, as a list: the ones whose time ran out (due) first, then the ones that hide
+  // their finding, then the resting ones under a head of their own. Marks, rules and labels have their own cards.
   statusCard() {
-    const list = (this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored));
-    const state = f => (f.ignored ? this.decidedState(f) : "due");
+    const resting = this.restingDecisions();
+    const list = [...(this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), ...resting];
+    const sel = (this.decSel ||= new Set());
+    for (const key of [...sel]) if (!list.some(f => f.key === key)) sel.delete(key);
+    const state = f => (f.ignored ? this.decidedState(f) : "due"), now = f => this.decisionNow(f);
     const objectName = f => this.findObject(this.findingKey(f))?.name || f.object_id;
     const until = f => (f.ignore_info?.until ? this.t("decideUntil", { date: this.formatDate(f.ignore_info.until) }) : f.ignored ? this.t("decideForever") : "");
+    const quietDays = f => Math.floor((Date.now() - Date.parse(f.seen)) / 864e5);
+    const nowText = f => ({ hides: this.t("decNowHides"), due: this.t("decNowDue"), rests: this.t("decNowRests"), quiet: this.t("decNowQuiet", { n: this.formatNumber(quietDays(f)) }), gone: this.t("decNowGone") })[now(f)];
+    const nowTone = { hides: "mute", due: "warn", rests: "mute", quiet: "warn", gone: "warn" };
     const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }, { key: "until", label: "decColUntil", dir: "asc", get: f => f.ignore_info?.until || "9999" }];
-    const filters = [{ name: "state", all: this.t("decAllStates"), options: ["known", "snoozed", "hidden", "due"].map(s => [s, this.t(s === "due" ? "dueLabel" : `state_${s}`)]) }];
+    const filters = [
+      { name: "state", all: this.t("decAllStates"), options: ["known", "snoozed", "hidden", "due"].map(s => [s, this.t(s === "due" ? "dueLabel" : `state_${s}`)]) },
+      { name: "now", all: this.t("decNowAll"), options: ["hides", "due", "rests", "quiet", "gone"].filter(n => list.some(f => now(f) === n)).map(n => [n, this.t(`decNowFilter_${n}`)]) },
+    ];
     const st = this.lvState("decided", "name", "asc");
-    this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f)]));
+    this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil"), this.t("decColNow")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f), nowText(f)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("decided", { sorts, filters }) : "";
-    const sorted = this.refine("decided", list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v }, sorts, tie: f => f.key });
-    const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored)];
+    const sorted = this.refine("decided", this.selOnly?.decided ? list.filter(f => sel.has(f.key)) : list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v, now: (f, v) => now(f) === v }, sorts, tie: f => f.key });
+    const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored && !f.resting), ...sorted.filter(f => f.resting)];
     const pg = this.paginate("decided", refined);
     st.shown = refined.length;
     const tone = { known: "ok", snoozed: "warn", hidden: "mute", due: "warn" };
-    const row = f => {
-      const key = this.findingKey(f), object = this.findObject(key), s = state(f);
-      const facts = [this.findingTitle(f), f.ignore_info?.reason, until(f)].filter(Boolean).map(x => this.esc(x)).join(" · ");
-      const back = f.ignored ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : "";
-      const form = this.decide?.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : "";
-      return `<div class="row${s === "due" ? " duerow" : ""}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text">${object ? `<button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(objectName(f))}</button>` : `<strong>${this.esc(objectName(f))}</strong>`}<small>${facts}</small></span><span class="pill ${tone[s]}">${this.t(s === "due" ? "dueLabel" : `state_${s}`)}</span><span class="rowacts"><button class="btn quiet" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "keep"}"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t(f.ignored ? "decChange" : "fselStatus")}</button>${back}</span></div>${form}`;
+    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const menu = f => {
+      const key = this.findingKey(f), object = this.findObject(key);
+      const open = object ? item("mdi:open-in-new", "decOpenObject", `data-object="${this.esc(key)}"`) : "";
+      const change = item(FSEL_ICONS.status, f.ignored ? "fselStatusChange" : "fselStatus", `data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "keep"}"`);
+      const back = f.ignored && !f.resting ? item("mdi:eye-outline", "showFinding", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`) : item("mdi:delete-outline", "decRemove", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`);
+      return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${open}${change}<hr class="menusep">${back}</div></details>`;
     };
-    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
-    return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
+    const visible = pg.rows.map(f => f.key);
+    const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = visible.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-dec-page ${n && n === visible.length ? "checked" : ""} ${n && n < visible.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: f => `<input type="checkbox" class="selbox" data-dec-sel="${this.esc(f.key)}" ${sel.has(f.key) ? "checked" : ""} aria-label="${this.esc(objectName(f))}">` },
+      { key: "name", label: "hidColObject", sortKeys: ["finding"], cell: f => { const key = this.findingKey(f), object = this.findObject(key); return `<div class="statcell">${this.tile(object?.object_type || key.split(":")[0], f.resting ? "mute" : this.tone(f.classification))}<div>${object ? `<button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(objectName(f))}</button>` : `<code>${this.esc(f.object_id)}</code>`}<small class="muted u-block">${this.esc(this.findingTitle(f))}</small></div></div>`; } },
+      { key: "until", label: "decColStatus", cell: f => `<span class="pill ${tone[state(f)]}">${this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`)}</span>${until(f) ? `<small class="muted u-block">${this.esc(until(f))}</small>` : ""}` },
+      { key: "reason", label: "decideReason", sortable: false, cell: f => (f.ignore_info?.reason ? this.esc(f.ignore_info.reason) : "–") },
+      { key: "now", label: "decColNow", sortable: false, cell: f => `<span class="pill ${nowTone[now(f)]}">${this.esc(nowText(f))}</span>${f.resting && f.seen && now(f) !== "gone" ? `<small class="muted u-block">${this.esc(this.t("decLastSeen", { when: this.formatDate(f.seen) }))}</small>` : ""}` },
+      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+    ];
+    const restN = refined.filter(f => f.resting).length;
+    let table = refined.length ? this.listTable("decided", columns, pg.rows, { cls: "objs", rowAttrs: f => `class="static${f.resting ? " restrow" : ""}${now(f) === "due" ? " duerow" : ""}"${f.resting ? ' data-rest="1"' : ""}`, after: f => (this.decide?.key === f.key ? `<tr class="static"><td colspan="${columns.length}"><div class="pad">${this.decideForm(f)}</div></td></tr>` : "") }) : "";
+    // The resting ones stand under a head of their own: they do nothing right now.
+    table = table.replace(/<tr class="static restrow/, `<tr class="static grprow"><td colspan="${columns.length}">${this.t("decRestHead", { n: this.formatNumber(restN) })}</td></tr>$&`);
+    const n = sel.size;
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("decided", n, "data-dec-clear")}<span class="toolgap"></span><button type="button" class="btn" data-dec-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("decRemoveN", { n: this.formatNumber(n) })}</button></div>` : "";
+    const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${tools}${body}${pg.footer}</section>`;
   }
 
   // Every mark, also one that hides nothing right now: what it says, when it applies and what it does at the moment.

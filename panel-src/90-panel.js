@@ -1173,6 +1173,17 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
+    // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.
+    const decSel = () => (this.decSel ||= new Set());
+    root.querySelectorAll("[data-dec-sel]").forEach(el => el.onchange = () => { this.pickRows("decided", el.dataset.decSel, el.checked, decSel(), [...root.querySelectorAll("[data-dec-sel]")].map(x => x.dataset.decSel)); this.render(); });
+    const decPage = root.querySelector("[data-dec-page]");
+    if (decPage) { decPage.indeterminate = decPage.hasAttribute("data-partial"); decPage.onchange = ev => { root.querySelectorAll("[data-dec-sel]").forEach(x => (ev.target.checked ? decSel().add(x.dataset.decSel) : decSel().delete(x.dataset.decSel))); this.render(); }; }
+    root.querySelector("[data-dec-clear]")?.addEventListener("click", () => { decSel().clear(); this.render(); });
+    root.querySelector("[data-dec-remove]")?.addEventListener("click", async () => {
+      await this.runBulk([...decSel()], async key => { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); decSel().delete(key); });
+      this.render();
+      await this.reloadAfterDecision();
+    });
     // An incident row opens its details below it; a click on its menu or a link inside does not.
     root.querySelectorAll("[data-inc-more], [data-inc-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label, summary, .menupop");

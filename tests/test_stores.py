@@ -97,6 +97,24 @@ async def test_ignored_findings_survive_a_reload(hass: HomeAssistant, hass_stora
     assert not third.is_ignored("rule|a")
 
 
+async def test_a_decision_rests_while_its_finding_is_away_and_knows_when_it_was_last_seen(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = IgnoreStore(hass)
+    await store.async_load()
+    then = datetime(2026, 9, 1, tzinfo=UTC)
+    store.decide("rule|a|", "keep", then, reason="off on purpose")
+    store.decide("policy.x|b|", "ignore", then)
+    store.note_seen({"rule|a|", "other|c|"}, then + timedelta(minutes=10))
+    assert store.entry("rule|a|")["seen"] == then.isoformat(), "within the hour nothing is written"
+    store.note_seen({"rule|a|"}, then + timedelta(days=2))
+    assert store.entry("rule|a|")["seen"] == (then + timedelta(days=2)).isoformat()
+    assert store.resting({"rule|a|"}) == []
+    assert [e["key"] for e in store.resting(set())] == ["rule|a|"], (
+        "a policy violation is no finding"
+    )
+
+
 async def test_decisions_keep_their_reason_run_out_and_read_old_entries(
     hass: HomeAssistant, hass_storage
 ) -> None:

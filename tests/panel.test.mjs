@@ -6738,3 +6738,16 @@ test("a mark on an object that has run without a gap for a month asks whether it
   assert.equal(el.markQuietDays(el.data.objects[1]), null, "a short run asks nothing");
   assert.ok(el.marksCard().includes("no outage for 40 days – still needed?"));
 });
+
+test("a decision whose finding is away rests in the list of statuses, says how long it has been away and can be removed", () => {
+  const { el } = panel("en");
+  const long = new Date(Date.now() - 41 * 864e5).toISOString(), short = new Date(Date.now() - 3 * 864e5).toISOString();
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "cloud", name: "Cloud", status: "active" }, { object_type: "device", object_id: "hue", name: "Hue", status: "active" }],
+    findings: [{ key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "keep", reason: "", until: null } }],
+    resting_decisions: [{ key: "device.down|cloud|", kind: "keep", reason: "cancelled", until: null, seen: long }, { key: "device.down|hue|", kind: "keep", reason: "", until: null, seen: short }, { key: "entity.state_unavailable|sensor.gone|", kind: "ignore", reason: "", until: null, seen: long }] };
+  const html = el.statusCard();
+  assert.ok(html.includes("(4)") && html.includes("Resting · finding away right now (3)"), "the resting ones count and stand under a head");
+  assert.ok(html.indexOf('data-dec-sel="h2"') < html.indexOf("Resting ·"), "the ones that hide come first");
+  assert.ok(html.includes("not seen for 41 days – still needed?") && html.includes(">rests<") && html.includes("object is gone"));
+  assert.ok(html.includes('data-ignore="device.down|cloud|" data-ignore-value="0"') && html.includes("Remove decision"), "a resting one is removed from its menu");
+});

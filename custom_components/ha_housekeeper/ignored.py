@@ -3,11 +3,14 @@
 Stored by Housekeeper only; Home Assistant objects stay untouched. Each entry says what was decided
 (``kind``), why (``reason``), until when (``until``, optional) and by whom. An entry whose time has
 passed no longer hides the finding; it stays so the finding can be shown as due again.
+A decision outlives its finding: when the object works again, the entry rests and holds again the
+next time. ``seen`` is when a full scan last found the finding, so a resting entry can say how long
+its finding has been away.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -18,6 +21,7 @@ from .const import IGNORED_STORAGE_KEY, STORAGE_VERSION
 SAVE_DELAY = 10
 KINDS = ("ignore", "keep", "snooze")
 REASON_LIMIT = 200  # characters
+SEEN_STEP = timedelta(hours=1)  # "last seen" moves on at most once an hour, so a scan rarely writes
 VIAS = ("mcp",)  # how a decision was made when it was not the panel
 ITEM_LIMIT = 5000
 
@@ -30,6 +34,7 @@ def _clean(value: Any) -> dict[str, Any] | None:
         return None
     until = value.get("until")
     by = value.get("by")
+    seen = value.get("seen")
     return {
         "kind": value["kind"],
         "at": value["at"] if isinstance(value.get("at"), str) else "",
@@ -37,6 +42,7 @@ def _clean(value: Any) -> dict[str, Any] | None:
         "until": until if isinstance(until, str) else None,
         "by": by if isinstance(by, str) else None,
         "via": value["via"] if value.get("via") in VIAS else None,
+        "seen": seen if isinstance(seen, str) else None,
     }
 
 
@@ -101,6 +107,7 @@ class IgnoreStore:
             "until": until.isoformat() if until else None,
             "by": by,
             "via": via,
+            "seen": now.isoformat(),
         }
         self._save()
         return True
@@ -123,6 +130,29 @@ class IgnoreStore:
             self.decide(key, "ignore", now)
         elif self._items.pop(key, None) is not None:
             self._save()
+
+    def note_seen(self, keys: set[str], now: datetime) -> None:
+        """Note that a full scan found these findings: their decisions hold for something that is there."""
+        changed = False
+        for key in keys & self._items.keys():
+            entry = self._items[key]
+            try:
+                fresh = entry["seen"] and now - datetime.fromisoformat(entry["seen"]) < SEEN_STEP
+            except ValueError:
+                fresh = False
+            if not fresh:
+                entry["seen"] = now.isoformat()
+                changed = True
+        if changed:
+            self._save()
+
+    def resting(self, present: set[str]) -> list[dict[str, Any]]:
+        """The decisions whose finding is not there right now, with their key; policy violations stay out."""
+        return [
+            {"key": key, **entry}
+            for key, entry in self._items.items()
+            if key not in present and not key.startswith("policy.")
+        ]
 
     def _save(self) -> None:
         self._store.async_delay_save(lambda: {"items": self._items}, SAVE_DELAY)
