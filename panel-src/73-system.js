@@ -622,8 +622,9 @@ class SystemMixin {
     root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = () => {
       const [tab, list, value] = SEC_SHOWS[el.dataset.secShow] || SEC_SHOWS[""];
       (this.viewTab ||= {}).secrets = tab;
+      // A tile shows what it counts: the list starts without the search and the other filters kept before.
       const st = this.lvState(list, "name", "asc");
-      st.f = value ? { ...st.f, state: value } : {};
+      st.q = ""; st.f = value ? { state: value } : {};
       this.persistLv(list); this.pages = {}; this.render();
     });
     root.querySelector("[data-ha-menu]")?.addEventListener("click", () => this.toggleHaSidebar());

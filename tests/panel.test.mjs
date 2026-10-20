@@ -5260,8 +5260,10 @@ test("the credential page shows the accounts with role and two-factor, and its t
   assert.ok(html.includes("Admins ohne Zwei-Faktor") && html.includes("von 2 Admins") && html.includes('data-sec-show="nomfa"'));
   assert.equal((html.match(/class="sumtiles even"/g) || []).length, 2, "two even rows of tiles");
   const tile = { dataset: { secShow: "nomfa" } };
+  const kept = el.lvState("secusers", "name", "asc"); kept.q = "zzz"; kept.f = { role: "user" };
   el.bindSystem({ querySelectorAll: selector => (selector === "[data-sec-show]" ? [tile] : []), querySelector: () => null });
   tile.onclick();
+  assert.equal(`${kept.q}|${Object.keys(kept.f).join()}`, "|state", "the tile starts without the search and other filters kept before");
   html = shadow.innerHTML;
   assert.ok(html.includes("&lt;b&gt;Partner&lt;/b&gt;") && !html.includes("Roberto</strong>") && !html.includes("Gast</strong>"), "only the admin without two-factor, escaped");
   assert.ok(html.includes('data-ha-path="/config/users"'), "a row opens the users in Home Assistant");
