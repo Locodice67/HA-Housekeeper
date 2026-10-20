@@ -3356,16 +3356,16 @@ test("the selection row of the findings list names the size of the view at its r
   assert.ok(/viewcount" role="status">3 in this view/.test(el.findingsView()), "the flat list counts findings only");
 });
 
-test("a reason tile shows the grouped count and names the whole count and the follow-ups below it", () => {
+test("a reason tile counts every finding of its reason and names the follow-ups below it", () => {
   const { el } = panel("en");
   const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", cause_id: cause });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x"), f("d", "device:x")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
   const html = el.findingsView();
-  assert.ok(html.includes("Unavailable") && /sumvalue">2<\/b><small>4 in total, of which 2 follow-ups/.test(html));
+  assert.ok(html.includes("Unavailable") && /sumvalue">4<\/b><small>2 of them follow-ups/.test(html));
 });
 
-test("the button for findings after an update counts what the list shows and names the follow-ups beside it", () => {
+test("the button for findings after an update counts every finding and names the follow-ups among them", () => {
   const { el } = panel("en");
   const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", impact_facts: [], cause_id: cause });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x")] };
@@ -3373,7 +3373,7 @@ test("the button for findings after an update counts what the list shows and nam
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
   el.findingAfter = true;
   const html = el.findingsView();
-  assert.ok(html.includes("2 findings began together with an update") && html.includes("plus 1 follow-ups") && html.includes("3 findings on 3 objects"));
+  assert.ok(html.includes("3 findings began together with an update") && html.includes("1 of them follow-ups") && html.includes("3 findings on 3 objects"));
 });
 
 test("the detail page rates a finding: level with reasons, certainty, and what the next level takes", () => {
@@ -3560,7 +3560,7 @@ test("the findings list is one list: a chain is one entry with a counter and ope
   const app = { id: "app_down:a", kind: "app_down", object_type: "app", object_id: "a", name: "Zigbee2MQTT", follower_count: 0, total_followers: 2, child_ids: ["integration_down:e1"], parent_id: null, consumers: {}, impact: "high" };
   const integ = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "MQTT", follower_count: 2, total_followers: 2, child_ids: [], parent_id: app.id, consumers: {}, impact: "high" };
   el.data = { ...DATA, findings: [f("sensor.a", integ.id), f("sensor.b", integ.id), f("sensor.c")], causes: [app, integ] };
-  assert.equal(el.findingTotal(), 2, "the chain is one entry, the single finding another");
+  assert.equal(el.findingTotal(), 3, "every open finding counts, the follow-ups of the chain too");
   el.folds = { "og:app:a": true, "og:config_entry:e1": true };
   const html = el.findingsView();
   assert.ok(html.includes("App Zigbee2MQTT is stopped") && html.includes("2 follow-ups") && html.includes("Integration MQTT is not loaded") && html.includes("sensor.a") && html.includes("sensor.c"));
@@ -6062,7 +6062,7 @@ test("the inventory filters by label and the labels block counts what carries ea
   assert.ok(html.includes("not created"), "the other two labels are not created yet");
 });
 
-test("the grouped findings list indents the rows below a head, offers the device mark in the menu and counts open findings grouped", () => {
+test("the grouped findings list indents the rows below a head, offers the device mark in the menu and counts every open finding", () => {
   const { el } = panel("en");
   const device = { object_type: "device", object_id: "d1", name: "Echo", status: "active" };
   const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unavailable", device_id: id === "sensor.c" ? null : "d1" });
@@ -6076,7 +6076,7 @@ test("the grouped findings list indents the rows below a head, offers the device
   assert.ok(html.includes('class="menuitem" data-watch-mark="device:d1"') && !html.includes('class="btn" data-watch-mark'), "the mark on the device is an item of the row menu");
   assert.ok(!el.findingsTable([el.data.findings[2]]).includes("finding-fold-gap"), "without a fold no room is kept");
   el.findingStatus = ""; el.statusCount = () => 1;
-  assert.ok(el.statusChips().includes(`Open (${el.findingTotal()})`) && el.findingTotal() === 2, "open counts the cause once, not its follow-ups");
+  assert.ok(el.statusChips().includes(`Open (${el.findingTotal()})`) && el.findingTotal() === 3, "open counts every finding, the follow-ups too, as the list head does");
 });
 
 test("every finding stands below its object: a device gathers all kinds of its entities, one finding is named in the head", () => {
