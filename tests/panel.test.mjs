@@ -6456,3 +6456,13 @@ test("All findings stands over both rows of reason tiles and names the follow-up
   assert.ok(all.includes("data-finding-followers") && all.includes('data-finding-filter=""'), "the follow-ups link sits in the tile");
   assert.ok(html.includes('style="--r:2"') && html.includes('style="--r:4"'), "faults in the first row, tidying up in the second");
 });
+
+test("another status than open puts a note above the list: the tiles count the open findings, one button goes back", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el.view = "findingsNav";
+  assert.ok(!el.findingsView().includes("statusnote"));
+  el.findingStatus = "hidden";
+  const html = el.findingsView();
+  assert.ok(html.includes("statusnote") && html.includes("“Hidden”") && html.includes('data-fstatus="open"'));
+});
+

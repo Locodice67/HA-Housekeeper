@@ -3043,7 +3043,15 @@ class FindingsMixin {
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
     return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
-      ${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
+      ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
+  }
+
+  // Another status than open: the list shows it, the tiles above still count the open findings. One button goes back.
+  statusNote() {
+    const s = this.findingStatus;
+    if (!s) return "";
+    const name = s === "new" ? this.t("freshNew", { days: NEW_FINDING_DAYS }) : s === "inwork" ? this.t("freshInwork") : s === "due" ? this.t("stateDue") : this.t(`state_${s}`);
+    return `<div class="filteron statusnote" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.esc(this.t("statusNoteText", { status: name }))}</span><span class="spacer"></span><button class="btn quiet" data-fstatus="open">${this.t("statusNoteBack")}</button></div>`;
   }
 
   // The objects of a grouped list: every head that is an object, the ones below a cause too, not the causes themselves.
@@ -3178,6 +3186,12 @@ class FindingsMixin {
     return rows;
   }
 }
+Object.assign(TEXT.de, {
+  statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen",
+});
+Object.assign(TEXT.en, {
+  statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones",
+});
 
 // Texts for the findings that began together with an update or restart; merged into TEXT.
 Object.assign(TEXT.de, {
