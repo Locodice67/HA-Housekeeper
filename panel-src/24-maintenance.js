@@ -246,7 +246,9 @@ class MaintenanceMixin {
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok" })), open, this.t("maintenance"), true);
+    // A tab whose numbers are there and show nothing open says so, as on Clean up; while they load it stays plain.
+    const loaded = { backup: Boolean(this.backup?.available), updates: Boolean(pf), blueprints: Boolean(bp), goals: Boolean(this.goals) };
+    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok", facts: !tab.pill && loaded[tab.id] ? [{ text: this.t("cleanupNothing"), tone: "ok" }] : [] })), open, this.t("maintenance"), true);
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
   }
 }
