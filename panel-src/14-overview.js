@@ -332,15 +332,15 @@ class OverviewMixin {
     this.ensureSeries();
     this.ensureBackup();
     const quiet = this.quietCount();
-    // As on the findings page: everything open with this reason, the follow-ups of an outage counted in and named beside it.
-    const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
-    const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
+    // The two groups of the findings page: faults (red reasons) and tidying up; the follow-ups of an outage are counted in.
+    const faults = (this.data.findings || []).filter(f => !f.ignored && this.findingTileGroup(f) === "red"), tidy = total - faults.length;
+    const faultFollows = faults.filter(f => this.isFollowUp(f)).length;
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["sumGroupUrgent", faults.length, faults.length ? "red" : "", "findingsNav", "", "group:red", "bad", faultFollows ? this.t("findingsOfFollow", { n: this.formatNumber(faultFollows) }) : "", "group:red"], ["sumGroupTidy", tidy, tidy ? "warn" : "", "findingsNav", "", "group:tidy", "bad", "", "group:tidy"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }

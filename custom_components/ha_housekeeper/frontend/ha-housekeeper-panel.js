@@ -1654,7 +1654,7 @@ class StylesMixin {
       .statushead .ring{width:84px;height:84px;flex:none;box-shadow:inset 0 0 0 1px var(--hk-border),var(--hk-sh1);background:radial-gradient(circle at center,var(--hk-surface) 66%,transparent 68%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}
       .statushead .ring b{font-size:calc(22px*var(--hk-fs,1));font-weight:600}.ring b small{font-size:.55em;margin-left:1px}
       .statustext{min-width:0;flex:1 1 220px}.statustext>.pill{margin-bottom:6px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
-      .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;gap:8px}}
+      .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}}
       .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
       .cfgout{display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word}.bhsizes{display:flex;align-items:flex-end;gap:3px;height:48px;padding:6px 16px 0}.bhsizes i{flex:1;min-width:0;background:color-mix(in srgb,var(--hk-blue) 45%,transparent);border-radius:3px 3px 0 0}.bhsizes i.last{background:var(--hk-blue)}.bhsizes i.last.warn{background:var(--hk-amber)}.spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
@@ -2593,15 +2593,15 @@ class OverviewMixin {
     this.ensureSeries();
     this.ensureBackup();
     const quiet = this.quietCount();
-    // As on the findings page: everything open with this reason, the follow-ups of an outage counted in and named beside it.
-    const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
-    const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
+    // The two groups of the findings page: faults (red reasons) and tidying up; the follow-ups of an outage are counted in.
+    const faults = (this.data.findings || []).filter(f => !f.ignored && this.findingTileGroup(f) === "red"), tidy = total - faults.length;
+    const faultFollows = faults.filter(f => this.isFollowUp(f)).length;
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["sumGroupUrgent", faults.length, faults.length ? "red" : "", "findingsNav", "", "group:red", "bad", faultFollows ? this.t("findingsOfFollow", { n: this.formatNumber(faultFollows) }) : "", "group:red"], ["sumGroupTidy", tidy, tidy ? "warn" : "", "findingsNav", "", "group:tidy", "bad", "", "group:tidy"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }
@@ -14032,7 +14032,10 @@ class SparklineMixin {
     // "class:<name>" reads the open findings of one class, "lead:<name>" the same without follow-ups; a day that stored
     // classes without it had none, and a day from before the follow-ups were told apart has no such series at all.
     // "reason:<name>" reads the open findings of one tile of the findings page (all of them, the outage rules as one).
-    const read = p => key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
+    // "group:red" and "group:tidy" add up the reasons of one group of the findings page.
+    const group = p => Object.entries(p.reasons).reduce((sum, [r, n]) => sum + ((this.reasonTone(r) === "red") === (key === "group:red") ? n : 0), 0);
+    const read = p => key.startsWith("group:") ? (p.reasons ? group(p) : undefined)
+      : key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
       : key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
       : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
     const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
