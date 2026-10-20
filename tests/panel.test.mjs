@@ -6574,3 +6574,9 @@ test("the cleanup list offers its selection tools only with the first tick", () 
   el.cleanupSel = new Set(["x"]);
   assert.ok(el.cleanupView().includes("data-sel-clear") && el.cleanupView().includes("1 selected"));
 });
+
+test("a backup age reads vor 3 Tagen after vor and 3 Tage as a plain span", () => {
+  const { el } = panel("de");
+  assert.equal(el.t("backupAgo", { age: el.bhAge(72, true) }), "vor 3 Tagen");
+  assert.equal(el.bhAge(72), "3 Tage");
+});

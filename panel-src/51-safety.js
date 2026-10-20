@@ -13,7 +13,7 @@ class SafetyMixin {
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
-    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
+    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours, true) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
     if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal"]);
     if (this.scanCoverageComplete()) items.push(["coverage", "ok", this.t("covBar"), "settings"]);

@@ -840,7 +840,7 @@ Object.assign(TEXT.de, {
   bhRemoteOk: "Neueste Kopie: {items}", bhRemoteStale: "Zu alt (Grenze {limit}): {items}",
   bhSpaceOk: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceNote: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceProblem: "Nur {free} frei, das letzte Backup war {size} groß", bhSpaceUnknown: "Freier Platz oder Backup-Größe nicht bekannt", bhVerdict_ok: "Belastbar", bhVerdict_note: "Erst ansehen", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unbekannt", bhCheckFirst: "Zu prüfen: {items}", bhTileLast: "Letztes Backup", bhTileCount: "Backups", bhTileRemote: "Externe Kopie", bhTileOpen: "Zu prüfen", bhGroup_running: "Sicherung läuft", bhGroup_storage: "Ablage und Inhalt", bhGroup_restore: "Wiederherstellbarkeit", bhGroup_house: "Housekeeper", backupsTab: "Backups",
   bhRec_daily: "täglich", bhRec_custom_days: "an bestimmten Tagen", bhRec_never: "ohne Zeitplan", bhNone: "keine", bhNever: "nie",
-  bhAgeHours: "{n} Std.", bhAgeDays: "{n} Tagen",
+  bhAgeHours: "{n} Std.", bhAgeDays: "{n} Tage", bhAgeDaysAgo: "{n} Tagen",
   bhSetupOk: "Ziele: {agents} · Zeitplan: {recurrence}", bhSetupNote: "Kein Ziel für automatische Backups gewählt, ältere Backups sind aber vorhanden.", bhSetupProblem: "Weder ein Backup-Ziel noch ein vorhandenes Backup.",
   bhNewestNone: "Es gibt noch kein Backup.", bhNewestText: "Vor {age} · Grenze für den Zeitplan: {limit}",
   bhRunOk: "Zuletzt erfolgreich: {completed}", bhRunUnknown: "Noch kein automatischer Lauf bekannt.",
@@ -872,7 +872,7 @@ Object.assign(TEXT.en, {
   bhRemoteOk: "Newest copy: {items}", bhRemoteStale: "Too old (limit {limit}): {items}",
   bhSpaceOk: "{free} free, the next backup needs about {need}", bhSpaceNote: "{free} free, the next backup needs about {need}", bhSpaceProblem: "Only {free} free, the last backup was {size}", bhSpaceUnknown: "Free space or backup size not known", bhVerdict_ok: "Reliable", bhVerdict_note: "Look first", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unknown", bhCheckFirst: "To check: {items}", bhTileLast: "Latest backup", bhTileCount: "Backups", bhTileRemote: "External copy", bhTileOpen: "To check", bhGroup_running: "Backup runs", bhGroup_storage: "Storage and content", bhGroup_restore: "Restorability", bhGroup_house: "Housekeeper", backupsTab: "Backups",
   bhRec_daily: "daily", bhRec_custom_days: "on chosen days", bhRec_never: "no schedule", bhNone: "none", bhNever: "never",
-  bhAgeHours: "{n} h", bhAgeDays: "{n} days",
+  bhAgeHours: "{n} h", bhAgeDays: "{n} days", bhAgeDaysAgo: "{n} days",
   bhSetupOk: "Targets: {agents} · schedule: {recurrence}", bhSetupNote: "No target chosen for automatic backups, but older backups exist.", bhSetupProblem: "Neither a backup target nor an existing backup.",
   bhNewestNone: "There is no backup yet.", bhNewestText: "{age} ago · limit for the schedule: {limit}",
   bhRunOk: "Last success: {completed}", bhRunUnknown: "No automatic run known yet.",
@@ -2650,7 +2650,7 @@ class OverviewMixin {
     const fact = (label, value, level) => `<div class="fact"><span>${this.t(label)}</span><b>${value}${level ? ` <span class="pill ${tone(level)}">${this.t(`bhLevel_${level}`)}</span>` : ""}</b></div>`;
     const age = newest?.values?.age_hours;
     const rows = [
-      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age) })), newest?.level),
+      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
       fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");
@@ -6335,7 +6335,8 @@ class BackupMixin {
     setTimeout(() => this.loadBackup(), 0);
   }
 
-  bhAge(hours) { return hours >= 48 ? this.t("bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
+  // A span of hours or days. `ago` gives the form after "vor" ("vor 3 Tagen"); without it a plain span ("3 Tage").
+  bhAge(hours, ago = false) { return hours >= 48 ? this.t(ago ? "bhAgeDaysAgo" : "bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
 
   bhDay(iso) {
     if (!iso) return "—";
@@ -6370,7 +6371,7 @@ class BackupMixin {
         if (c.level === "note") return t("bhSetupNote");
         return t("bhSetupOk", { agents: this.bhAgents(v.agents), recurrence: t(`bhRec_${v.recurrence}`) });
       case "newest":
-        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours), limit: this.bhAge(v.limit_hours) });
+        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours, true), limit: this.bhAge(v.limit_hours) });
       case "last_run": {
         if (c.level === "unknown") return t("bhRunUnknown");
         const parts = [];
@@ -6405,7 +6406,7 @@ class BackupMixin {
         if (c.level === "note") return t(v.scheduled === false ? "bhContentNoDbSet" : "bhContentNoDb");
         return t("bhContentOk", { apps: this.formatNumber(v.apps ?? 0), folders: this.formatNumber(v.folders ?? 0) });
       case "remote_age": {
-        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.bhAge(a.age_hours)}`;
+        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.esc(this.t("backupAgo", { age: this.bhAge(a.age_hours, true) }))}`;
         return c.level === "note"
           ? t("bhRemoteStale", { items: (v.agents || []).filter(a => (v.stale || []).includes(a.agent)).map(row).join(", "), limit: this.bhAge(v.limit_hours) })
           : t("bhRemoteOk", { items: (v.agents || []).map(row).join(", ") });
@@ -6535,7 +6536,7 @@ class BackupMixin {
     const age = by.newest?.age_hours, remote = by.targets?.remote?.length || by.targets?.at;
     const open = (b.counts?.note || 0) + (b.counts?.problem || 0);
     return this.sumTiles([
-      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.bhAge(age)), tone: "mute" },
+      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), tone: "mute" },
       { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
       { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
       { label: this.t("bhTileOpen"), value: this.formatNumber(open), tone: open ? "warn" : "ok" },
@@ -10408,7 +10409,7 @@ class SafetyMixin {
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
-    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
+    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours, true) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
     if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal"]);
     if (this.scanCoverageComplete()) items.push(["coverage", "ok", this.t("covBar"), "settings"]);

@@ -361,7 +361,7 @@ class OverviewMixin {
     const fact = (label, value, level) => `<div class="fact"><span>${this.t(label)}</span><b>${value}${level ? ` <span class="pill ${tone(level)}">${this.t(`bhLevel_${level}`)}</span>` : ""}</b></div>`;
     const age = newest?.values?.age_hours;
     const rows = [
-      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age) })), newest?.level),
+      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
       fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");

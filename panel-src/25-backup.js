@@ -17,7 +17,8 @@ class BackupMixin {
     setTimeout(() => this.loadBackup(), 0);
   }
 
-  bhAge(hours) { return hours >= 48 ? this.t("bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
+  // A span of hours or days. `ago` gives the form after "vor" ("vor 3 Tagen"); without it a plain span ("3 Tage").
+  bhAge(hours, ago = false) { return hours >= 48 ? this.t(ago ? "bhAgeDaysAgo" : "bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
 
   bhDay(iso) {
     if (!iso) return "—";
@@ -52,7 +53,7 @@ class BackupMixin {
         if (c.level === "note") return t("bhSetupNote");
         return t("bhSetupOk", { agents: this.bhAgents(v.agents), recurrence: t(`bhRec_${v.recurrence}`) });
       case "newest":
-        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours), limit: this.bhAge(v.limit_hours) });
+        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours, true), limit: this.bhAge(v.limit_hours) });
       case "last_run": {
         if (c.level === "unknown") return t("bhRunUnknown");
         const parts = [];
@@ -87,7 +88,7 @@ class BackupMixin {
         if (c.level === "note") return t(v.scheduled === false ? "bhContentNoDbSet" : "bhContentNoDb");
         return t("bhContentOk", { apps: this.formatNumber(v.apps ?? 0), folders: this.formatNumber(v.folders ?? 0) });
       case "remote_age": {
-        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.bhAge(a.age_hours)}`;
+        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.esc(this.t("backupAgo", { age: this.bhAge(a.age_hours, true) }))}`;
         return c.level === "note"
           ? t("bhRemoteStale", { items: (v.agents || []).filter(a => (v.stale || []).includes(a.agent)).map(row).join(", "), limit: this.bhAge(v.limit_hours) })
           : t("bhRemoteOk", { items: (v.agents || []).map(row).join(", ") });
@@ -217,7 +218,7 @@ class BackupMixin {
     const age = by.newest?.age_hours, remote = by.targets?.remote?.length || by.targets?.at;
     const open = (b.counts?.note || 0) + (b.counts?.problem || 0);
     return this.sumTiles([
-      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.bhAge(age)), tone: "mute" },
+      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), tone: "mute" },
       { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
       { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
       { label: this.t("bhTileOpen"), value: this.formatNumber(open), tone: open ? "warn" : "ok" },
