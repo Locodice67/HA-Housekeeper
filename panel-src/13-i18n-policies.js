@@ -1,6 +1,6 @@
 // Texts for the policies view; merged into TEXT.
 Object.assign(TEXT.de, {
-  polAllRules: "Alle Regeln", polColRule: "Regel", polColNote: "Hinweis", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
+  polAllRules: "Alle Regeln", polColRule: "Regel", polColNote: "Hinweis", polSelHidden: "Ausgeblendet; erst wieder einblenden", polSelOnlyArea: "Gemeinsam bearbeiten lassen sich nur Entitäten und Geräte (Bereich zuweisen)", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
   policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.", polOverviewViolations: "Richtlinienverstöße", polOverviewRules: "{n} Regeln aktiv", polOverviewRuleOne: "1 Regel aktiv",
   polObjTitle: "Richtlinien · {n} Verstöße", polObjTitleOne: "Richtlinien · 1 Verstoß", polObjHint: "Regeln, gegen die dieses Objekt verstößt. Ausgeblendete Verstöße stehen nicht hier.", polObjAll: "Alle Richtlinien",
   polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
@@ -19,7 +19,7 @@ Object.assign(TEXT.de, {
   polRule_state_rate: "Zustandsänderungen pro Tag", polDesc_state_rate: "Entitäten, die in den zuletzt berechneten Last-Zahlen mindestens so oft am Tag ihren Zustand geändert haben, wie die Grenze sagt. Die Regel startet keine Recorder-Abfrage.", polLimit: "Grenze (Änderungen pro Entität und Tag)", polLimitSave: "Speichern", polPending: "Noch nicht berechnet: Öffne Recorder → Last einmal, dann prüft die Regel diese Zahlen.", polRate: "{n} Änderungen pro Tag",
 });
 Object.assign(TEXT.en, {
-  polAllRules: "All rules", polColRule: "Rule", polColNote: "Note", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
+  polAllRules: "All rules", polColRule: "Rule", polColNote: "Note", polSelHidden: "Hidden; show it again first", polSelOnlyArea: "Only entities and devices can be handled together (assign an area)", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
   policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.", polOverviewViolations: "Policy violations", polOverviewRules: "{n} active rules", polOverviewRuleOne: "1 active rule",
   polObjTitle: "Policies · {n} violations", polObjTitleOne: "Policies · 1 violation", polObjHint: "Rules this object breaks. Hidden violations are not shown here.", polObjAll: "All policies",
   polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",

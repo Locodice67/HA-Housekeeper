@@ -6618,3 +6618,9 @@ test("the policies list shows its note and status columns only while a row has s
   el.policyShowHidden = true;
   assert.ok(heads(el.policiesView()).includes("Status"));
 });
+
+test("a policy row that cannot be ticked has a greyed box that says why", () => {
+  const { el } = panel("en");
+  const box = el.polSelBox({ object_type: "automation", object_id: "automation.a", name: "A", key: "k", ignored: false });
+  assert.ok(box.includes("disabled") && box.includes("Only entities and devices"));
+});

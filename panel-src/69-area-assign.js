@@ -27,8 +27,12 @@ class AreaAssignMixin {
     return `<div class="toolbar${n ? "" : " nosel"}">${n ? `<button class="btn quiet" data-pol-sel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span>` : ""}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
   }
 
+  // Only entities and devices can be ticked: the action for several at once assigns an area. A greyed box says why.
   polSelBox(item) {
-    if (item.ignored || !["entity", "device"].includes(item.object_type)) return "";
+    if (item.ignored || !["entity", "device"].includes(item.object_type)) {
+      const why = this.t(item.ignored ? "polSelHidden" : "polSelOnlyArea");
+      return `<input type="checkbox" class="selbox" disabled title="${this.esc(why)}" aria-label="${this.esc(`${item.name}: ${why}`)}">`;
+    }
     return `<input type="checkbox" class="selbox" data-pol-sel="${this.esc(item.key)}" ${this.polSel?.has(item.key) ? "checked" : ""} aria-label="${this.esc(item.name)}">`;
   }
 
