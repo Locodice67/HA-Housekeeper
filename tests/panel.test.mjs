@@ -6703,3 +6703,15 @@ test("after a decision the list reads the findings again, so a device marked as 
   assert.deepEqual(calls, ["ha_housekeeper/ignore", "ha_housekeeper/inventory"]);
   assert.equal(el.data.causes.length, 0, "the outages come from the server again");
 });
+
+test("a decided finding has the same row menu as an open one; only its top block offers the way back", () => {
+  const { el } = panel("en");
+  const device = { object_type: "device", object_id: "d1", name: "Hub", status: "active" };
+  el.data = { ...DATA, objects: [device], findings: [] };
+  const f = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false };
+  el.findingKey = () => "device:d1";
+  const open = el.rowMenu(f), known = el.rowMenu({ ...f, ignored: true, ignored_by: "user", ignore_info: { kind: "keep" } });
+  assert.ok(open.includes("Set status …") && !open.includes("Show again"));
+  assert.ok(known.includes("Show again") && known.includes("Change status …") && !known.includes("Set status …"));
+  for (const part of ["data-watch-mark", "data-finding-note"]) assert.ok(open.includes(part) && known.includes(part), part);
+});
