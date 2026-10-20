@@ -3,6 +3,9 @@ const REL_GREEN = 99.5, REL_YELLOW = 95; // availability in percent: green from,
 class ReliabilityMixin {
   // Slow recorder views: an old reply is shown at once and renewed once; when another calculation holds the
   // query lock, the panel asks again by itself a few times instead of asking the user to click.
+  // The state of a config entry in words ("Retrying setup"), the raw one where no text exists.
+  entryStateLabel(state) { const key = `cs_${state}`, text = this.t(key); return text === key ? state : text; }
+
   followUp(name, view, result, reload, refresh) {
     if (!result) return;
     if (!refresh && result.stale) { reload(true); return; }
@@ -57,7 +60,7 @@ class ReliabilityMixin {
     if (layer) lines.push(layer);
     const flags = [];
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
-    if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn">${this.esc(item.state)}</span>`);
+    if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn" title="${this.esc(item.state)}">${this.esc(this.entryStateLabel(item.state))}</span>`);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
     return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
   }
@@ -132,7 +135,7 @@ class ReliabilityMixin {
   // One row per integration entry: the numbers sit in columns so the list sorts by them; the sentences live on the detail page.
   relSetupCell(setup) {
     if (!setup) return "–";
-    const now = setup.state ? `<small>${this.t("relSetupNow", { state: this.esc(setup.state) })}</small>` : "";
+    const now = setup.state ? `<small>${this.t("relSetupNow", { state: this.esc(this.entryStateLabel(setup.state)) })}</small>` : "";
     const last = setup.last ? `<small>${this.t("relSetupLast", { date: this.formatDate(setup.last) })}</small>` : "";
     return `${setup.count ? this.t("relSetupCount", { n: setup.count, days: setup.days }) : ""}${last}${now}`;
   }

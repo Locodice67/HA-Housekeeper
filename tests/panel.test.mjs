@@ -6636,3 +6636,9 @@ test("a run finding keeps its figure and its hint apart", () => {
   const line = el.runsFindingLines({ findings: [{ kind: "failing", level: "warn", errors: 2, runs: 4, step: "action/1", step_count: 2 }] });
   assert.ok(/<\/span> <span class="fnote">/.test(line));
 });
+
+test("the state of an integration in the reliability view is named in words", () => {
+  const { el } = panel("en");
+  assert.equal(el.entryStateLabel("setup_retry"), "Retrying setup");
+  assert.equal(el.entryStateLabel("something_new"), "something_new");
+});
