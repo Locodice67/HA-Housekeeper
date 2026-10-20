@@ -403,7 +403,10 @@ def evaluate(
         if backups is not None
         else None
     )
-    checks = [_setup_check(config, selected)]
+    # Housekeeper's own safety copies before a plan say nothing about the backup strategy, whatever
+    # they hold: they count for space, the plans and the clean-up only.
+    strategy = [item for item in selected if not item.get("own")] if selected is not None else None
+    checks = [_setup_check(config, strategy)]
     if selected is None:
         checks.append(_check("newest", "unknown"))
         listing: list[dict[str, Any]] = []
@@ -413,8 +416,7 @@ def evaluate(
         # tools (e.g. Google Drive Backup) have None and count too. The Supervisor's app-update
         # backups hold no Home Assistant (``ha_included`` False) and are left out.
         everything = sorted(selected, key=lambda item: item["date"] or "", reverse=True)
-        # The safety copies before a plan say nothing about the backup strategy.
-        listing = [item for item in everything if not item.get("partial")]
+        listing = [item for item in everything if not item.get("own")]
         newest = listing[0] if listing and listing[0]["date"] else None
         checks.append(_newest_check(config, listing, now))
         checks.append(_last_run_check(config, newest, state.get("agent_errors") or []))

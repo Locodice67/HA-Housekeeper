@@ -449,3 +449,12 @@ def test_the_next_backup_must_fit_on_the_local_target() -> None:
     assert judge(state(newest, disk_free=900))[1]["space"]["level"] == "problem"
     assert judge(state(newest, disk_free=None))[1]["space"]["level"] == "unknown"
     assert "space" not in judge(state([backup(5, agents=("cloud.cloud",))]))[1]
+
+
+def test_housekeeper_backups_never_count_as_the_backup_strategy() -> None:
+    own = backup(1, own=True, database=True, agents=("backup.local",))
+    report, checks = judge({**state([own]), "config": config(agent_ids=[])})
+    assert checks["setup"]["level"] == "problem" and checks["newest"]["level"] == "problem"
+    assert report["backup_count"] == 0 and report["backups"][0]["own"] is True
+    _, checks = judge(state([own, backup(10)]))
+    assert checks["newest"]["values"]["age_hours"] == 10
