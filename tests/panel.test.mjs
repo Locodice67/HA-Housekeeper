@@ -5926,7 +5926,7 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   el.data = DATA; el._dbRequested = true;
   el.dbHealth = { ...DBH, keep_days: 10, auto_purge: false };
   let html = el.dbCard();
-  assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
+  assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("0.7 % of the size a day") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
   assert.ok(html.includes("Automatic purging is off") && html.includes("2 gaps from restarts (normal)"), "the sentences stay as notes");
   assert.ok(html.includes('data-exp-menu="recdb"'), "the export button is there on the first render");
   el.dbHealth = { ...DBH, growth: { known: true, per_day: -50 * 1024 ** 2 } };
