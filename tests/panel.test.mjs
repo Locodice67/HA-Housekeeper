@@ -6294,7 +6294,8 @@ test("a jump from the overview into the findings starts from the plain open list
 
 test("the rows of the overview land where they counted: low batteries, the quarantine tab, the backup tab", () => {
   const { el, shadow } = panel("en");
-  el.data = { ...DATA, quarantine: [{ object_id: "sensor.q", object_type: "entity", since: "2020-01-01T00:00:00+00:00" }] };
+  const low = { object_type: "entity", object_id: "sensor.low_battery", name: "Low", status: "active", device_class: "battery", state: "5", unit: "%" };
+  el.data = { ...DATA, meta: { ...DATA.meta, low_battery_percent: 20 }, objects: [...DATA.objects, low], quarantine: [{ object_id: "sensor.q", object_type: "entity", since: "2020-01-01T00:00:00+00:00" }] };
   const card = el.cleanupCard();
   assert.ok(card.includes('data-jump-battery="low" data-jump-clear="batteries"') && card.includes('data-jump-tab="quarantine" data-jump-clear="cleanup"') && card.includes('data-jump-tab="unused" data-jump-clear="unreferenced"'));
   assert.ok(el.todoItems().find(i => i.key === "quarantine").jump.includes('data-jump-tab="quarantine" data-jump-lf="cleanup|readiness|ready"'), "ready for removal opens the quarantine filtered to the ready ones");
@@ -6551,4 +6552,12 @@ test("a top finding of the overview says what it is and since when, without the 
   el.data = { ...DATA, findings: [f] };
   const row = el.overviewFinding(f);
   assert.ok(row.includes("Refers to entity sensor.gone") && row.includes("found ") && !row.includes("actions[2]") && row.includes("High"));
+});
+
+test("a hint row with nothing to show is a quiet line without a jump", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [] };
+  const html = el.cleanupCard();
+  const dup = html.slice(html.lastIndexOf("<", html.indexOf("Possible duplicate")) - 400, html.indexOf("Possible duplicate"));
+  assert.ok(dup.includes('class="row zero"') && !dup.slice(dup.lastIndexOf('class="row')).includes("data-jump"));
 });

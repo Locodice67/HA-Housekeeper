@@ -467,7 +467,11 @@ class OverviewMixin {
     ];
     // Each row lands where it counted: the low batteries, the unused tab and the quarantine tab, with their lists cleared.
     const land = { batteries: ' data-jump-battery="low" data-jump-clear="batteries"', unreferenced: ' data-jump-tab="unused" data-jump-clear="unreferenced"', quarantine: ' data-jump-tab="quarantine" data-jump-clear="cleanup"' };
-    const rows = items.map(([label, icon, view, count, filter, hint]) => `<button class="row" data-jump="${view}"${land[label] || ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong>${hint ? `<small>${this.esc(hint)}</small>` : ""}</span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
+    // A row with nothing to show is a quiet line that leads nowhere, like a tile with 0 on the findings page.
+    const rows = items.map(([label, icon, view, count, filter, hint]) => {
+      const inner = `<span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong>${hint ? `<small>${this.esc(hint)}</small>` : ""}</span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span>`;
+      return count ? `<button class="row" data-jump="${view}"${land[label] || ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}>${inner}</button>` : `<div class="row zero">${inner}</div>`;
+    }).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("hintsTitle")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 }
