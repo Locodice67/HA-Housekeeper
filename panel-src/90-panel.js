@@ -911,11 +911,13 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = ev => {
       ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
-      this.view = el.dataset.jump; this.pages = {}; this.findingScanNew = el.dataset.jumpScanNew !== undefined;
+      this.view = el.dataset.jump; this.pages = {};
+      // A jump into the findings starts from the plain list of open findings, then sets its own filter: what was
+      // left from before (a status, a search, a filter of the list bar) would change the number the row said.
+      if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
+      this.findingScanNew = el.dataset.jumpScanNew !== undefined;
       this.findingOutages = el.dataset.jumpOutages !== undefined;
-      if (this.findingScanNew || this.findingOutages) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
-      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
@@ -1132,7 +1134,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-levels-ok]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.render(); });
     root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     this.bindOften(root);
-    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.findingFilter = ""; this.findingAfter = false; this._impactOnce = el.dataset.whyLevel; this.render(); });
+    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });

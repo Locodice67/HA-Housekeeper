@@ -6234,3 +6234,17 @@ test("the outages row of the overview jumps to exactly the chains it counts, qui
   assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "own_loud,s1");
   assert.ok(el.findingsView().includes("Outages from the overview (1)"));
 });
+
+test("a jump from the overview into the findings starts from the plain open list, then sets its own filter", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "u1", rule_id: "automation.never_triggered", object_id: "automation.a", classification: "unused", confidence: 0.8, ignored: false }] };
+  el.view = "overview"; el.render();
+  el.findingStatus = "hidden"; el.findingAfter = true;
+  const st = el.lvState("findings", "impact", "desc"); st.q = "kitchen"; st.f.area = "Kitchen";
+  assert.ok(shadow.innerHTML.includes('data-jump="findingsNav" data-filter="unused"'), "the overview offers the jump");
+  const jump = { dataset: { jump: "findingsNav", filter: "unused" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [jump] : []);
+  el.bind();
+  jump.onclick();
+  assert.equal(`${el.view}|${el.findingStatus}|${el.findingAfter}|${el.findingFilter}|${el.lv.findings.q}|${Object.keys(el.lv.findings.f).length}`, "findingsNav||false|unused||0");
+});
