@@ -5905,7 +5905,7 @@ test("an open request for a new login is a pinned row of the to-do card", () => 
   el.findObject = key => (key === "config_entry:e1" ? { name: "Tibber" } : null);
   const row = el.todoItems().find(i => i.key === "reauth");
   assert.equal(row.text, "Anmeldung nötig: Tibber");
-  assert.equal(row.hintText, "14 Entitäten fallen aus");
+  assert.equal(row.hintText, el.t("secSumReauthSub"), "the follow-ups are not named: the jump does not show them");
   assert.equal(row.filter, "config_entry.reauth");
   el.data = { ...el.data, findings: [finding("e1"), finding("e2")] };
   assert.equal(el.todoItems().find(i => i.key === "reauth").text, "Anmeldung nötig: 2 Integrationen");
@@ -6249,7 +6249,7 @@ test("the jump to new critical findings is a filter: outage heads without a matc
   el.findingScanNew = true;
   const html = el.findingsView();
   assert.ok(!html.includes("Echo Office is down completely") && !html.includes("match the filter"), "no head of an outage that has nothing new");
-  assert.ok(html.includes("1 of 3 findings"));
+  assert.ok(html.includes("1 finding on 1 object") && !html.includes("1 of 3 findings") && html.includes("New critical findings (1)"), "counted as the overview row, named like it");
 });
 
 test("the vacation bar says why nothing is held back and offers no empty list", () => {

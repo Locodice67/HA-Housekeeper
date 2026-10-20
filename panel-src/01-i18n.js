@@ -43,7 +43,7 @@ const TEXT = {
     healthBad: "Dringend", healthHint: "Zustand in Punkten von 100, nach den Befunden der Objekte", healthTip: "Zustand in Punkten. Betroffen: {affected} von {base} Objekten.",
     openFindings: "Befunde",
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
-    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neu kritisch seit dem letzten Scan", outagesFilter: "Ausfälle aus der Übersicht ({n})", outagesFilterHigh: "Ausfälle ({n})", outagesFilterMedium: "Weitere Ausfälle ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
+    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neue kritische Befunde ({n})", outagesFilter: "Ausfälle aus der Übersicht ({n})", outagesFilterHigh: "Ausfälle ({n})", outagesFilterMedium: "Weitere Ausfälle ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
    
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
@@ -228,7 +228,7 @@ const TEXT = {
     healthBad: "Urgent", healthHint: "State in points out of 100, by the findings of the objects", healthTip: "State in points. Affected: {affected} of {base} objects.",
     openFindings: "Findings",
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
-    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical since the last scan", outagesFilter: "Outages from the overview ({n})", outagesFilterHigh: "Outages ({n})", outagesFilterMedium: "Further outages ({n})", heldFilter: "Held back for the vacation ({n})",
+    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical findings ({n})", outagesFilter: "Outages from the overview ({n})", outagesFilterHigh: "Outages ({n})", outagesFilterMedium: "Further outages ({n})", heldFilter: "Held back for the vacation ({n})",
    
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
