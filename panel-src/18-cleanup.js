@@ -784,7 +784,7 @@ class CleanupMixin {
       { key: "since", label: open === "quarantine" ? "cleanupColHeld" : "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.ageCell(v) : "–"; } },
       ...(all.some(r => r.finding) ? [{ key: "certainty", label: "sortCertainty", dir: "desc", cell: r => (r.finding?.confidence == null ? "–" : `${Math.round(r.finding.confidence * 100)} %`) }] : []),
       ...(recorderCol ? [{ key: "recorder", label: "cleanupColRecorder", sortable: false, cell: r => this.recorderOwn(r.item) || "–" }] : []),
-      ...(open === "quarantine" ? [{ key: "release", label: "releaseAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
+      ...(open === "quarantine" ? [{ key: "release", label: "cleanupColAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
     ];
     const table = shownList.length ? this.listTable("cleanup", columns, pg.rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(`${r.item.object_type}:${r.item.object_id}`)}" tabindex="0" role="button" aria-label="${this.esc(r.item.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`;
     const n = this.cleanupSel.size;
