@@ -1748,3 +1748,95 @@ async def test_one_unreadable_saved_file_starts_only_that_part_empty(hass: HomeA
         pytest.raises(UnsupportedStorageVersionError),
     ):
         await scanner.async_initialize()
+
+
+async def _set_up(hass: HomeAssistant) -> InventoryScanner:
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    return loaded_scanner(hass)
+
+
+async def _later(hass: HomeAssistant, when: datetime) -> None:
+    from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+    async_fire_time_changed(hass, when)
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def test_a_gap_is_scanned_again_later_but_not_while_a_plan_runs(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import custom_components.ha_housekeeper as integration
+    from custom_components.ha_housekeeper.scan_coverage import RETRY_MINUTES
+
+    monkeypatch.setattr(integration, "retryable_gaps", lambda report: True)
+    scanner = await _set_up(hass)
+    assert scanner.retry_runs == 0
+    now, step = datetime.now(UTC), timedelta(minutes=RETRY_MINUTES, seconds=1)
+    await _later(hass, now + step)
+    assert scanner.retry_runs == 1
+    scanner.paused = True  # a plan scans itself; the retry waits
+    await _later(hass, now + 2 * step)
+    assert scanner.retry_runs == 1
+    scanner.paused = False
+    await _later(hass, now + 3 * step)
+    assert scanner.retry_runs == 2
+
+
+async def test_the_vacation_switch_and_the_end_of_its_grace_period_look_at_the_findings_again(
+    hass: HomeAssistant,
+) -> None:
+    hass.states.async_set("input_boolean.vacation", "off")
+    scanner = await _set_up(hass)
+    looked = []
+    original = scanner.vacation_changed
+
+    def counted() -> None:
+        looked.append(datetime.now(UTC))
+        original()
+
+    scanner.vacation_changed = counted
+    assert scanner.set_vacation("input_boolean.vacation", 2) is None
+    looked.clear()
+    hass.states.async_set("input_boolean.vacation", "on")
+    await hass.async_block_till_done()
+    assert len(looked) == 1 and scanner.exceptions.active()
+    hass.states.async_set("input_boolean.vacation", "off")
+    await hass.async_block_till_done()
+    assert len(looked) == 2 and scanner.exceptions.ended_at is not None
+    await _later(hass, datetime.now(UTC) + timedelta(hours=2, seconds=5))
+    assert len(looked) == 3  # the grace period is over
+
+
+async def test_kept_recorder_views_are_renewed_in_the_background_and_a_failing_one_waits(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import time
+
+    import custom_components.ha_housekeeper as integration
+    from custom_components.ha_housekeeper.queries import REFRESH_TICK
+
+    scanner = await _set_up(hass)
+    asked = []
+
+    async def costs(*args, **kwargs):
+        asked.append("costs")
+        raise RuntimeError("recorder gone")
+
+    async def health(*args, **kwargs):
+        asked.append("db_health")
+
+    monkeypatch.setattr(integration, "recorder_costs", costs)
+    monkeypatch.setattr(integration.db_health_module, "db_health", health)
+    scanner.replies.replies = {
+        "costs": {"computed_at": time.time() - 30 * 3600},
+        "db_health": {"computed_at": time.time() - 4 * 3600},
+    }
+    now = datetime.now(UTC)
+    await _later(hass, now + timedelta(seconds=REFRESH_TICK + 60))
+    assert asked == ["costs"]  # the most overdue first; it fails without disturbing anything
+    await _later(hass, now + timedelta(seconds=2 * REFRESH_TICK + 120))
+    assert asked[:2] == ["costs", "db_health"] and asked.count("costs") == 1
