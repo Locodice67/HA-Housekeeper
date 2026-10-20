@@ -15,7 +15,7 @@ Object.assign(TEXT.en, {
 });
 
 Object.assign(TEXT.de, {
-  incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incNoFindings: "keine Befunde", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
+  incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incColWhat: "Ereignis", incColAt: "Zeitpunkt", incColFindings: "Befunde", incColWatch: "Beobachtung", incOpen: "Details zeigen", incClose: "Details ausblenden", corrShowN: "{n} Befunde in der Liste zeigen", corrFilterOne: "{what} ({n})", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
   viewCount: "{n} in dieser Ansicht", foldAll: "Alle aufklappen", foldNone: "Alle zuklappen", foldGroupOpen: "Unterobjekte von {name} aufklappen", foldGroupClose: "Unterobjekte von {name} zuklappen",
   openEntity: "Entität öffnen", helpOpen: "Was die Zahlen auf dieser Seite bedeuten", helpClose: "Schließen", helpTitle: "Was du hier siehst",
   helpFindingT: "Befund", helpFinding: "Etwas ist jetzt auffällig, zum Beispiel ein ausgefallenes Gerät, ein Duplikat oder eine fehlende Referenz. Jedes Objekt zählt je Regel einmal.",
@@ -35,7 +35,7 @@ Object.assign(TEXT.de, {
 });
 
 Object.assign(TEXT.en, {
-  incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incNoFindings: "no findings", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
+  incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incColWhat: "Event", incColAt: "When", incColFindings: "Findings", incColWatch: "Watch", incOpen: "Show details", incClose: "Hide details", corrShowN: "Show {n} findings in the list", corrFilterOne: "{what} ({n})", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
   viewCount: "{n} in this view", foldAll: "Open all", foldNone: "Close all", foldGroupOpen: "Expand items under {name}", foldGroupClose: "Collapse items under {name}",
   openEntity: "Open entity", helpOpen: "What the numbers on this page mean", helpClose: "Close", helpTitle: "What you see here",
   helpFindingT: "Finding", helpFinding: "Something is conspicuous right now, for example a failed device, a duplicate or a missing reference. Each object counts once per rule.",

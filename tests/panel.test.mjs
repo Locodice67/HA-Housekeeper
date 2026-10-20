@@ -3325,7 +3325,11 @@ test("findings that began with an update get a line, a tile and a filter", () =>
   assert.ok(!el.corrGroupsCard().includes("Update of hue"));
   el.folds = { corr: true, "corr_g": true };
   const card = el.corrGroupsCard();
-  assert.ok(card.includes("Update of hue 1 → 2") && card.includes("1× ") && card.includes('data-object="entity:light.a"'));
+  assert.ok(card.includes("Update of hue 1 → 2") && card.includes("1× ") && card.includes('data-inc-row="corr_g"') && card.includes('data-corr-show="g"'), "a row of the list, its details below it");
+  assert.ok(!card.includes('data-object="entity:light.a"'), "the findings are not listed again in the card");
+  el.findingAfter = false; el.findingCorr = "g";
+  assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
+  assert.ok(el.findingsView().includes('data-fclear="corr"') && el.findingsView().includes("Update of hue 1 → 2 (1)"), "the button narrows the list and the note names the incident");
 });
 
 test("the findings page has an info button that opens the help with every number named", () => {
@@ -3449,7 +3453,7 @@ test("a watch joins the incident that holds the same update, and ending it asks 
   assert.equal(el.incidentFoldId("w1"), "corr_g1");
   el.folds = { corr: true, corr_g1: true };
   const card = el.corrGroupsCard();
-  assert.ok(card.includes("3 findings") && card.includes("Running") && card.includes("data-watch-end") && card.includes("incsec obs"));
+  assert.ok(card.includes("began with it · 3") && card.includes("Running") && card.includes("data-watch-end") && card.includes("incsec obs"));
   el.askEndWatch();
   assert.ok(el.confirmState && el.confirmState.text.includes("judged now"));
 });

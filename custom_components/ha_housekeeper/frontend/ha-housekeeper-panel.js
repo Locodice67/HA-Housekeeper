@@ -1568,7 +1568,7 @@ class StylesMixin {
       .viewcount{margin-left:auto;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));white-space:nowrap}.toolgap+.viewcount{margin-left:0}
       .kids{margin:4px 0 6px 40px;padding-left:16px;border-left:2px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 45%,transparent);border-radius:0 0 8px 0}.kids .tile{width:28px;height:28px}.foldarrow{--mdc-icon-size:18px;color:var(--hk-muted);flex:none;margin-right:2px}
       .alsopill{margin-left:6px;vertical-align:1px}.corralso{display:grid;gap:6px;padding:8px 12px;border-left:3px solid var(--hk-amber);background:var(--hk-soft);border-radius:0 8px 8px 0}.corralso strong{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.corralso ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}.corralso li{display:flex;align-items:center;gap:8px}.corralso ha-icon{--mdc-icon-size:18px;color:var(--hk-amber);flex:none}
-      .incidenthead{display:flex;align-items:center;gap:8px;padding-right:12px}.incidenthead .foldhead{flex:1;min-width:0}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.incsec.obs{border-left-color:var(--hk-amber)}.incsec h4{margin:0 0 6px;font-size:calc(12px*var(--hk-fs,1));font-weight:500;color:var(--hk-muted)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
+      .incicon{--mdc-icon-size:18px;color:var(--hk-muted);flex:none}.incdetail{display:grid;gap:4px;padding:4px 0 8px}.incdetail .btn{justify-self:start}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.incsec.obs{border-left-color:var(--hk-amber)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
       .sumgroups{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px;align-items:stretch}.sumgroup{min-width:0;display:flex;flex-direction:column}@media(min-width:1000px){.sumgroups{display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:6px 10px;grid-auto-rows:1fr}.sumgroup{grid-column:span var(--n,1);flex:none}.sumgroup.row2{grid-column:1/span var(--n,1)}}.sumgroup .sumtiles{margin-bottom:0;flex:1}.sumgroup .sumtile .spark-row{margin-top:auto;padding-top:4px}.sumgrouphead{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));margin:0 0 6px 2px}.tilerows{display:grid;gap:10px}.tilerows .sumgrouphead{margin-bottom:-4px}.sumtiles.even{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;margin-bottom:0}.sumtiles.even .sumlabel,.sumtiles.even small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:640px){.sumtiles.even{grid-template-columns:repeat(2,minmax(0,1fr))}}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.sumtile{position:relative}button.sumtile .sumlabel{padding-right:20px}.sumcue{position:absolute;top:10px;right:10px;--mdc-icon-size:16px;color:var(--hk-muted)}div.sumtile,div.sumtile:hover{box-shadow:none;background:var(--hk-soft)}.sumtile.filter[aria-pressed=true]{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));box-shadow:0 0 0 1px var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumcue{color:var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumlabel{color:var(--hk-blue-text)}.sumtile.filter[aria-pressed=true] .sumlabel:before{content:"\\2713";margin-right:.4em}.filteron{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);background:color-mix(in srgb,var(--hk-blue) 7%,var(--hk-surface));border-bottom:1px solid var(--hk-border)}.filteron ha-icon{--mdc-icon-size:16px;color:var(--hk-blue)}.filteron b{color:var(--hk-text);font-weight:600}.filteron .btn{margin-left:auto}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}.todofoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px}.visitline{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.visitline ha-icon{--mdc-icon-size:16px}
@@ -2890,7 +2890,8 @@ class FindingsMixin {
     const outages = this.findingOutages ? this.outageKeys(this.findingOutages === true ? "" : this.findingOutages) : null;
     const held = this.findingHeld ? this.heldKeys() : null;
     const cause = this.findingCause ? this.causeKeys(this.findingCause) : null;
-    const byClass = [scanNew, outages, held, cause].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
+    const corr = this.findingCorr ? this.corrKeys(this.findingCorr) : null;
+    const byClass = [scanNew, outages, held, cause, corr].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
     const kept = this.lvState("findings", "impact", "desc").f;
     delete kept.fresh; // new and in work are chips of the status row now
     if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
@@ -2952,6 +2953,8 @@ class FindingsMixin {
     if (this.findingAfter) notes.push(["after", this.t("corrTile")]);
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter", { n: this.formatNumber(this.scanNewKeys().size) })]);
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
+    // The findings of one incident: the note names it, as its row in the card does.
+    if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
@@ -2964,7 +2967,7 @@ class FindingsMixin {
 
   // Back to the plain list of the chosen status: the tiles, the notes and the list bar start empty.
   clearFindingFilters() {
-    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = "";
+    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = "";
     const st = this.lvState("findings", "impact", "desc");
     st.q = ""; st.f = {}; this.persistLv("findings");
   }
@@ -2997,7 +3000,7 @@ class FindingsMixin {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
-    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !this.findingHeld && !this.findingCause && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !this.findingHeld && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
@@ -3056,7 +3059,7 @@ class FindingsMixin {
     // The same count in both views: findings and the objects they belong to.
     const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingScanNew ? all.filter(f => this.scanNewKeys().has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
+    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingScanNew ? all.filter(f => this.scanNewKeys().has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : this.findingCorr ? all.filter(f => this.corrKeys(this.findingCorr).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
     const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
@@ -3241,7 +3244,7 @@ Object.assign(TEXT.en, {
 });
 
 Object.assign(TEXT.de, {
-  incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incNoFindings: "keine Befunde", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
+  incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incColWhat: "Ereignis", incColAt: "Zeitpunkt", incColFindings: "Befunde", incColWatch: "Beobachtung", incOpen: "Details zeigen", incClose: "Details ausblenden", corrShowN: "{n} Befunde in der Liste zeigen", corrFilterOne: "{what} ({n})", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
   viewCount: "{n} in dieser Ansicht", foldAll: "Alle aufklappen", foldNone: "Alle zuklappen", foldGroupOpen: "Unterobjekte von {name} aufklappen", foldGroupClose: "Unterobjekte von {name} zuklappen",
   openEntity: "Entität öffnen", helpOpen: "Was die Zahlen auf dieser Seite bedeuten", helpClose: "Schließen", helpTitle: "Was du hier siehst",
   helpFindingT: "Befund", helpFinding: "Etwas ist jetzt auffällig, zum Beispiel ein ausgefallenes Gerät, ein Duplikat oder eine fehlende Referenz. Jedes Objekt zählt je Regel einmal.",
@@ -3261,7 +3264,7 @@ Object.assign(TEXT.de, {
 });
 
 Object.assign(TEXT.en, {
-  incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incNoFindings: "no findings", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
+  incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incColWhat: "Event", incColAt: "When", incColFindings: "Findings", incColWatch: "Watch", incOpen: "Show details", incClose: "Hide details", corrShowN: "Show {n} findings in the list", corrFilterOne: "{what} ({n})", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
   viewCount: "{n} in this view", foldAll: "Open all", foldNone: "Close all", foldGroupOpen: "Expand items under {name}", foldGroupClose: "Collapse items under {name}",
   openEntity: "Open entity", helpOpen: "What the numbers on this page mean", helpClose: "Close", helpTitle: "What you see here",
   helpFindingT: "Finding", helpFinding: "Something is conspicuous right now, for example a failed device, a duplicate or a missing reference. Each object counts once per rule.",
@@ -8314,11 +8317,15 @@ class CorrelationMixin {
     return list.length ? `<div class="corralso u-mb14"><strong>${this.t("corrAlsoLabel")}</strong><ul>${list.join("")}</ul></div>` : "";
   }
 
+  // The findings of an incident are not listed again here: one button narrows the findings list below to them.
   corrGroupBody(group) {
-    const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
-    const pg = this.paginate(`corr_${group.id}`, findings);
-    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${pg.rows.map(f => this.findingRow(f, false, false)).join("")}${pg.footer}`;
+    const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), n = this.corrKeys(group.id).size;
+    const show = n ? `<button type="button" class="btn" data-corr-show="${this.esc(group.id)}"><ha-icon icon="mdi:filter-variant"></ha-icon>${this.t("corrShowN", { n: this.formatNumber(n) })}</button>` : "";
+    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${show}`;
   }
+
+  // The open findings that began with one incident: the filter its button sets.
+  corrKeys(id) { const by = this.corr?.by_key || {}; return new Set((this.data?.findings || []).filter(f => !f.ignored && by[f.key] === id).map(f => f.key)); }
 
   // The incidents of the findings page: every update or restart that has findings, and every watch after a system
   // update. A watch belongs to the incident that holds the same update (kind, from, to); one without findings stands alone.
@@ -8350,27 +8357,12 @@ class CorrelationMixin {
 
   incidentBody(item) {
     const parts = [];
-    if (item.watch) parts.push(`<div class="incsec obs"><h4>${this.t("incObs")}</h4>${this.watchBody(item.watch)}</div>`);
-    if (item.group) parts.push(`<div class="incsec"><h4>${this.t("incFindings", { n: this.formatNumber(item.group.total) })}</h4>${this.corrGroupBody(item.group)}</div>`);
+    if (item.watch) parts.push(`<div class="incsec obs"><div class="sectionlabel">${this.t("incObs")}</div>${this.watchBody(item.watch)}</div>`);
+    if (item.group) parts.push(`<div class="incsec"><div class="sectionlabel">${this.t("incFindings", { n: this.formatNumber(item.group.total) })}</div>${this.corrGroupBody(item.group)}</div>`);
     return parts.join("");
   }
 
-  incidentRow(item) {
-    const { group, watch } = item, id = this.incidentId(item), open = this.foldOpen(id, false);
-    const running = watch && !watch.closed_at;
-    const icon = !group ? "mdi:package-up" : group.kind === "start" ? "mdi:restart" : group.kind === "plan" ? "mdi:broom" : group.kind === "purge" ? "mdi:database-remove" : group.kind === "note" ? "mdi:pin-outline" : "mdi:package-up";
-    const title = group ? this.corrText(group) + (group.also?.length ? ` <span class="pill warn alsopill" title="${this.esc(this.t("corrAlsoLabel"))}">+${group.also.length}</span>` : "") : this.watchWhat(watch);
-    const when = [this.formatDate(item.at)];
-    if (running) when.push(this.t("incLeft", { hours: Math.max(0, Math.ceil((Date.parse(watch.until) - Date.now()) / 3600000)) }));
-    else if (watch?.closed_at) when.push(this.t("watchEnded", { when: this.formatDate(watch.closed_at) }));
-    const tones = { worse: "red", stable: "ok", transient: "mute", unknown: "mute", pending: "warn" };
-    const pills = [group ? `<span class="pill ${group.only_group ? "mute" : "warn"}">${this.esc(this.t("corrCount", { n: this.formatNumber(group.total) }))}</span>` : (watch ? `<span class="pill mute">${this.esc(this.t("incNoFindings"))}</span>` : ""),
-      watch ? `<span class="pill ${tones[watch.result?.verdict] || "mute"}">${this.esc(this.t(`watchV_${watch.result?.verdict || "unknown"}`))}</span>` : ""].join("");
-    const endBtn = running ? `<button class="btn quiet" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button>` : "";
-    const tile = group && group.only_group ? "mute" : "warn";
-    const head = `<div class="incidenthead"><button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${tile}"><ha-icon icon="${open ? "mdi:chevron-down" : icon}"></ha-icon></span><span class="row-text"><strong>${title}</strong><small>${this.esc(when.join(" · "))}</small></span>${pills}</button>${endBtn}</div>`;
-    return `<div class="fold${open ? " open" : ""}">${head}${open ? `<div class="foldbody">${this.incidentBody(item)}</div>` : ""}</div>`;
-  }
+  incidentIcon(group) { return !group ? "mdi:package-up" : group.kind === "start" ? "mdi:restart" : group.kind === "plan" ? "mdi:broom" : group.kind === "purge" ? "mdi:database-remove" : group.kind === "note" ? "mdi:pin-outline" : "mdi:package-up"; }
 
   // One card for what began or stopped after an update or restart. Closed by default; the filter line stays in view.
   corrGroupsCard(afterCount = 0, follows = 0) {
@@ -8379,12 +8371,32 @@ class CorrelationMixin {
     if (!items.length) return "";
     const pg = this.paginate("corr", items);
     const open = this.foldOpen("corr", false);
-    const rows = pg.rows.map(it => this.incidentRow(it)).join("");
+    // The incidents as a list like the backups: a row opens its details below it, running watches first.
+    this.lvState("corr", "at", "desc");
+    const tones = { worse: "red", stable: "ok", transient: "mute", unknown: "mute", pending: "warn" };
+    const isOpen = it => this.foldOpen(this.incidentId(it), false), running = it => it.watch && !it.watch.closed_at;
+    const columns = [
+      { key: "what", label: "incColWhat", sortable: false, cell: it => {
+        const { group, watch } = it, id = this.incidentId(it), also = group?.also?.length ? ` <span class="pill warn alsopill" title="${this.esc(this.t("corrAlsoLabel"))}">+${group.also.length}</span>` : "";
+        return `<div class="statcell">${this.expandBtn("data-inc-more", id, isOpen(it), this.t(isOpen(it) ? "incClose" : "incOpen"))}<ha-icon class="incicon" icon="${this.incidentIcon(group)}"></ha-icon><div><strong>${group ? this.corrText(group) : this.watchWhat(watch)}</strong>${also}</div></div>`;
+      } },
+      { key: "at", label: "incColAt", sortable: false, cell: it => this.ageCell(it.at) },
+      { key: "findings", label: "incColFindings", sortable: false, cell: it => (it.group ? `<span class="pill ${it.group.only_group ? "mute" : "warn"}">${this.esc(this.formatNumber(it.group.total))}</span>` : "–") },
+      { key: "watch", label: "incColWatch", sortable: false, cell: it => {
+        const w = it.watch;
+        if (!w) return "–";
+        const left = running(it) ? `<small class="muted">${this.esc(this.t("incLeft", { hours: Math.max(0, Math.ceil((Date.parse(w.until) - Date.now()) / 3600000)) }))}</small>` : "";
+        return `<span class="pill ${tones[w.result?.verdict] || "mute"}">${this.esc(this.t(`watchV_${w.result?.verdict || "unknown"}`))}</span>${left}`;
+      } },
+      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: it => (running(it) ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button></div></details>` : "") },
+    ];
+    const table = this.listTable("corr", columns, pg.rows, { cls: "inc", rowAttrs: it => `data-inc-row="${this.esc(this.incidentId(it))}" tabindex="0" role="button" aria-expanded="${isOpen(it)}"`,
+      after: it => (isOpen(it) ? `<tr class="static remhist"><td colspan="${columns.length}"><div class="incdetail">${this.incidentBody(it)}</div></td></tr>` : "") });
     const pill = `<span class="pill warn">${this.esc(this.t("corrIncidents", { n: this.formatNumber(items.length) }))}</span>`;
     const top = `<button class="row foldhead" data-fold="corr" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("corrTitle")}</strong><small>${this.esc(this.t("corrHint"))}</small></span>${pill}</button>`;
     const on = Boolean(this.findingAfter);
     const strip = afterCount ? `<div class="incfilter${on ? " on" : ""}"><span><b>${this.esc(this.t("corrStrip", { n: this.formatNumber(afterCount) }))}</b>${follows ? ` <span class="muted">· ${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) }))}</span>` : ""}</span><button class="chip" data-finding-after="1" aria-pressed="${on}"><ha-icon icon="mdi:${on ? "close" : "filter-variant"}"></ha-icon>${this.t(on ? "corrFilterOff" : "corrFilterOn")}</button></div>` : "";
-    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${strip}${open ? `<div class="foldbody">${rows}${pg.footer}</div>` : ""}</div></div>`;
+    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${strip}${open ? `<div class="foldbody">${table}${pg.footer}</div>` : ""}</div></div>`;
   }
 }
 
@@ -8506,22 +8518,29 @@ class WatchMixin {
     return `<div class="panel u-mb14" data-watch><button class="row" data-watch-go="${this.esc(w.id || "")}" title="${this.esc(this.t("watchGo"))}"><span class="tile ${n ? "warn" : "mute"}"><ha-icon icon="mdi:eye-check-outline"></ha-icon></span><span class="row-text"><strong>${text}</strong><small>${this.t("watchGo")}</small></span></button></div>`;
   }
 
-  // past = a group about the time of the watch (briefly disturbed, fixed): no finding row with the state of today, only a note when it is a finding again.
+  // The objects of one section of a watch as a small table: object, state, menu. An object that is a finding has the menu
+  // of a finding row (decisions, mark); past = a group about the time of the watch: only a note when it is a finding again.
   watchRows(keys, tone, past = false) {
-    const pg = keys.slice(0, WATCH_LIST).map(key => {
-      // An object that is a finding already shows as in the findings list: checkbox, menu, decisions.
+    const id = `watch_${tone}_${past ? "past" : "now"}`;
+    this.lvState(id, "name", "asc");
+    const rows = keys.slice(0, WATCH_LIST).map(key => {
       const finding = (this.data?.findings || []).find(f => !f.ignored && this.findingKey(f) === key);
-      if (finding && !past) return this.findingRow(finding, false, false);
       const item = this.findObject(key);
-      const name = item?.name || key.split(":").slice(1).join(":");
-      const mark = item?.mark;
-      const again = past && finding ? `<span class="pill warn">${this.t("watchAgain")}</span>` : "";
-      const menu = item && !past ? this.objectMenu(key, !mark) : "";
-      const act = past ? again : `${mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : ""}${menu}`;
-      return `<div class="row" role="button" tabindex="0" data-object="${this.esc(key)}">${this.tile(item?.object_type || key.split(":")[0], tone)}<span class="row-text"><strong>${this.esc(name)}</strong><small>${this.esc(key)}${item?.status && !past ? ` · ${this.esc(item.status)}` : ""}</small></span>${act}</div>`;
-    }).join("");
+      return { key, finding, item, name: item?.name || key.split(":").slice(1).join(":"), type: item?.object_type || key.split(":")[0] };
+    });
+    const state = r => {
+      if (past) return r.finding ? `<span class="pill warn">${this.t("watchAgain")}</span>` : "–";
+      const mark = r.item?.mark;
+      return [r.item?.status ? `<span class="pill ${tone}">${this.esc(this.t(r.item.status))}</span>` : "", mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : ""].join("") || "–";
+    };
+    const menu = r => (past ? "" : r.finding ? this.rowMenu(r.finding) : r.item ? this.objectMenu(r.key, !r.item.mark) : "");
+    const columns = [
+      { key: "name", label: "sortName", sortable: false, cell: r => `<div class="statcell">${this.tile(r.type, tone)}<div>${this.nameCell(r.name, r.key)}</div></div>` },
+      { key: "state", label: "sortStatus", sortable: false, cell: state },
+      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+    ];
     const more = keys.length > WATCH_LIST ? `<p class="sub">${this.t("watchMore", { n: this.formatNumber(keys.length - WATCH_LIST) })}</p>` : "";
-    return pg + more;
+    return this.listTable(id, columns, rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"` }) + more;
   }
 
   // Ends the open watch only after the person has said yes: what it measured so far is judged and no more scans follow.
@@ -8539,11 +8558,11 @@ class WatchMixin {
     const r = { silent: [], marked: [], ...w.result }, parts = [];
     parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.t("watchSamples", { n: w.samples.length })}</p>`);
     if (r.reason === "unread") parts.push(`<p class="factnote">${this.t("watchUnread")}</p>`);
-    const section = (id, keys, tone, past = false) => keys.length ? `<h3>${this.t(id, { n: this.formatNumber(keys.length) })}</h3>${this.watchRows(keys, tone, past)}` : "";
+    const section = (id, keys, tone, past = false) => keys.length ? `<div class="sectionlabel">${this.t(id, { n: this.formatNumber(keys.length) })}</div>${this.watchRows(keys, tone, past)}` : "";
     parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute", true), section("watchFixed", r.fixed, "ok", true));
     if (r.new_repairs?.length) {
       const info = this.watch?.repairs || {};
-      parts.push(`<h3>${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</h3>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
+      parts.push(`<div class="sectionlabel">${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</div>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
         const i = info[key], domain = key.split(":")[0], id = key.split(":").slice(1).join(":");
         const sub = [this.esc(domain), ["critical", "error", "warning"].includes(i?.severity) ? this.t(`repairSeverity_${i.severity}`) : "", i?.fixable ? this.t("repairFixable") : ""].filter(Boolean).join(" · ");
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${i?.url ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
@@ -17389,7 +17408,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -18208,7 +18227,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -18371,7 +18390,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // One note of the filters above the list: its ✕ takes off just that filter.
     root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
       const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
-      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "cause") this.findingCause = "";
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
       else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
       this.pages = {}; this.render();
     });
@@ -18548,6 +18567,16 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
+    // An incident row opens its details below it; a click on its menu or a link inside does not.
+    root.querySelectorAll("[data-inc-more], [data-inc-row]").forEach(el => el.addEventListener("click", ev => {
+      const inner = ev.target?.closest?.("button, select, input, a, label, summary, .menupop");
+      if (el.dataset.incRow !== undefined && inner && inner !== el && el.contains(inner)) return;
+      if (el.dataset.incMore !== undefined) ev.stopPropagation();
+      const id = el.dataset.incMore ?? el.dataset.incRow;
+      this.folds = { ...this.folds, [id]: !this.foldOpen(id, false) }; this.render();
+    }));
+    // The findings of one incident: the list below narrowed to them, from the plain open list.
+    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(); });
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));

@@ -140,7 +140,8 @@ class FindingsMixin {
     const outages = this.findingOutages ? this.outageKeys(this.findingOutages === true ? "" : this.findingOutages) : null;
     const held = this.findingHeld ? this.heldKeys() : null;
     const cause = this.findingCause ? this.causeKeys(this.findingCause) : null;
-    const byClass = [scanNew, outages, held, cause].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
+    const corr = this.findingCorr ? this.corrKeys(this.findingCorr) : null;
+    const byClass = [scanNew, outages, held, cause, corr].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
     const kept = this.lvState("findings", "impact", "desc").f;
     delete kept.fresh; // new and in work are chips of the status row now
     if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
@@ -202,6 +203,8 @@ class FindingsMixin {
     if (this.findingAfter) notes.push(["after", this.t("corrTile")]);
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter", { n: this.formatNumber(this.scanNewKeys().size) })]);
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
+    // The findings of one incident: the note names it, as its row in the card does.
+    if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
@@ -214,7 +217,7 @@ class FindingsMixin {
 
   // Back to the plain list of the chosen status: the tiles, the notes and the list bar start empty.
   clearFindingFilters() {
-    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = "";
+    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = "";
     const st = this.lvState("findings", "impact", "desc");
     st.q = ""; st.f = {}; this.persistLv("findings");
   }
@@ -247,7 +250,7 @@ class FindingsMixin {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
-    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !this.findingHeld && !this.findingCause && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !this.findingHeld && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
@@ -306,7 +309,7 @@ class FindingsMixin {
     // The same count in both views: findings and the objects they belong to.
     const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingScanNew ? all.filter(f => this.scanNewKeys().has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
+    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingScanNew ? all.filter(f => this.scanNewKeys().has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : this.findingCorr ? all.filter(f => this.corrKeys(this.findingCorr).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
     const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
