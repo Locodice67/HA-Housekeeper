@@ -169,6 +169,8 @@ class ObjectGroupsMixin {
 
   // The rows of a node in the findings table: its head, and while open the nodes and findings below it, indented.
   nodeRows(n, depth = 0) {
+    // An object with a single finding of its own is that finding's row: no head that says the same again.
+    if (!n.cause && !n.kids.length && n.findings.length === 1 && this.findingKey(n.findings[0]) === n.key && !n.key.startsWith("dashboard:")) return this.findingTableRow(n.findings[0], depth);
     const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, Boolean(this._autoOpen)), object = this.findObject(n.key);
     const keys = f.list.map(x => x.key);
     (this._findGroups ||= {})[id] = keys;

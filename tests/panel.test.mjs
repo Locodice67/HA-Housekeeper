@@ -817,7 +817,7 @@ test("cause and dashboard groups use the findings table columns in both densitie
   el.denseLists().findings = true;
   html = el.findingsView();
   assert.match(html, /class="tablewrap lt findings-table dense-list"/);
-  assert.match(html, /class="finding-data finding-cause og lvl1"/, "the object below the cause is indented");
+  assert.match(html, /class="finding-data og lvl1"/, "the single finding below the cause is indented as a row of its own");
   const place = { view: "Archive", card: "Card", card_path: "views/0/cards/0", card_refs: 3, card_missing: 2 };
   const broken = i => ({ key: `broken-${i}`, rule_id: "dashboard.missing_entity", object_id: "dash", classification: "broken_reference", confidence: 0.9, impact: "low", affected_object: `sensor.${i}`, evidence: [{ location: `views/0/cards/0/${i}`, place }] });
   el.data = { ...DATA, objects: [...DATA.objects, { object_type: "dashboard", object_id: "dash", name: "Dash" }], causes: [], findings: [broken(1), broken(2)] };
@@ -836,10 +836,10 @@ test("grouped causes and single findings obey the same table sort", () => {
   el.lvState("findings", "impact", "desc");
   el.lv.findings.sort = "name"; el.lv.findings.dir = "asc";
   let html = el.findingsView();
-  assert.ok(html.indexOf('data-fold="og:entity:sensor.a"') < html.indexOf("Integration Zulu is not loaded"));
+  assert.ok(html.indexOf('data-fsel="single"') < html.indexOf("Integration Zulu is not loaded"));
   el.lv.findings.dir = "desc";
   html = el.findingsView();
-  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fold="og:entity:sensor.a"'));
+  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fsel="single"'));
 });
 
 test("batteries and unreferenced lists filter by area and sort", () => {
@@ -6470,3 +6470,12 @@ test("a missing reference reads as what the finding refers to", () => {
   const { el } = panel("en");
   assert.equal(el.findingTitle({ rule_id: "automation.missing_entity", affected_object: "sensor.gone" }), "Refers to entity sensor.gone");
 });
+
+test("an object with a single finding of its own is one row, without a head to open", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "k1", rule_id: "automation.missing_entity", object_id: "automation.a1", classification: "broken_reference", confidence: 0.95, ignored: false, affected_object: "sensor.gone" }] };
+  el.view = "findingsNav";
+  const html = el.findingsView();
+  assert.ok(!html.includes('data-fold="og:automation:automation.a1"') && html.includes('data-fsel="k1"'));
+});
+
