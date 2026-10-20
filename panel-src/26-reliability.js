@@ -150,12 +150,13 @@ class ReliabilityMixin {
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
       { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
-      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ") },
+      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
       { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },
-      { key: "outages", label: "relSortOutages", dir: "desc", cell: outagesCell },
-      { key: "longest", label: "relColLongest", dir: "desc", cell: e => (e.shared_outages ? this.esc(this.relDuration(e.longest_outage)) : "–") },
-      { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? this.esc(`${this.formatDate(new Date(e.last_disruption.end * 1000).toISOString())}, ${this.relDuration(e.last_disruption.seconds)}`) : this.esc(this.t("relNoDisruption"))) },
+      // The longest outage stands below their count instead of in a column of its own, so the table fits a window;
+      // it stays a sort of the list bar.
+      { key: "outages", label: "relSortOutages", dir: "desc", cell: e => `${outagesCell(e)}${e.shared_outages ? `<small class="muted u-block">${this.esc(this.t("relLongestSub", { d: this.relDuration(e.longest_outage) }))}</small>` : ""}` },
+      { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? `${this.esc(this.formatDate(new Date(e.last_disruption.end * 1000).toISOString()))}<small class="muted u-block">${this.esc(this.relDuration(e.last_disruption.seconds))}</small>` : this.esc(this.t("relNoDisruption"))) },
       ...(compare ? [{ key: "delta", label: "relColDelta", dir: "asc", cell: e => (delta(e) === null ? "–" : this.esc(`${delta(e) > 0 ? "+" : delta(e) < 0 ? "−" : "±"}${this.formatNumber(Math.abs(delta(e)))}`)) }] : []),
     ];
     return this.sysList("relentries", r.entries, {
