@@ -936,7 +936,7 @@ class HAHousekeeperPanel extends HTMLElement {
         const st = this.lvState("changes", "", "asc"); st.q = ""; st.f = {}; this.persistLv("changes");
       }
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
+      if (el.dataset.jump === "inventory") { if (!el.dataset.jumpLf) this.invState().q = ""; this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
       this.render();
       if (this.view === "changes" && !this.compare) this.loadCompare();
     });

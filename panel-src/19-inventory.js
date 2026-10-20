@@ -34,7 +34,7 @@ class InventoryMixin {
       const { natural, ids } = this.collators();
       const reason = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? String(item.missing_reference_count) : "");
       const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : (item.name || item.object_id);
-      const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : item.object_type === type))
+      const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : type === RATED_TYPE ? HEALTH_TYPES.includes(item.object_type) : item.object_type === type))
         && (!status || item.status === status)
         && (!label || (item.labels || []).includes(label))
         && (!(type === "helper" && idle) || this.isIdleHelper(item, Number(idle)))
@@ -119,7 +119,7 @@ class InventoryMixin {
     ];
     if (!sorts.some(x => x.key === st.sort)) st.sort = "name";
     const filters = [
-      { name: "type", all: this.t("allTypes"), options: [["helper", this.t("helperKind")], ...types.map(x => [x, this.t(x)])] },
+      { name: "type", all: this.t("allTypes"), options: [[RATED_TYPE, this.t("ratedObjects")], ["helper", this.t("helperKind")], ...types.map(x => [x, this.t(x)])] },
       { name: "status", all: this.t("allStatus"), options: statuses.map(x => [x, this.statusLabel(x)]) },
       ...(labels.length ? [{ name: "label", all: this.t("allLabels"), options: labels }] : []),
       ...(integ ? [{ name: "origin", all: this.t("allOrigins"), options: [["core", this.t("originKindCore")], ["custom", this.t("originKindCustom")]] }] : []),

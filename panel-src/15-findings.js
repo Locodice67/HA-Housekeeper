@@ -37,7 +37,8 @@ class FindingsMixin {
   // from the number but from what is open: red while an urgent topic is, yellow while another topic or an object
   // with high or medium impact is, green otherwise. Maintenance (goals, reminders, quarantine) never colours it.
   health() {
-    const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
+    // As the inventory lists them: an automation, script or scene is one object, not also its registry entity.
+    const objects = this.invObjects().filter(o => HEALTH_TYPES.includes(o.object_type));
     const base = objects.length;
     const known = new Set(objects.map(o => this.objectKey(o)));
     // The same number in every view: what it counts is fetched here, not only when the overview opens. The database

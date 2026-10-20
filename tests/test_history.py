@@ -294,6 +294,20 @@ def test_the_state_of_the_house_counts_the_followers_of_a_cause_as_objects(hass)
     assert point["health"] == 50.0, "three objects, each taking off a half: the followers count too"
 
 
+def test_an_automation_is_rated_once_not_also_as_its_registry_entity(hass) -> None:
+    history = ScanHistory(hass)
+    snapshot = _snapshot(
+        "2026-10-06T08:00:00+00:00",
+        [
+            ("automation", "automation.a", "active"),
+            ("entity", "automation.a", "active"),
+            ("entity", "x.b", "active"),
+        ],
+    )
+    history.record(snapshot)
+    assert history.series()["points"][0]["rated"] == 2
+
+
 def test_a_pinned_scan_point_is_named_compared_kept_beyond_the_retention_and_deleted(hass) -> None:
     from custom_components.ha_housekeeper.history import PIN_LIMIT, PinError
 

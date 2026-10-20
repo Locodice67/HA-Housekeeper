@@ -6337,3 +6337,12 @@ test("a row of since the last scan opens its own section against the last scan",
   jump.onclick();
   assert.equal(`${el.view}|${el.compareBaseline}|${el.changesCat}|${el.folds.chg_newFindings}`, "changes|previous|newFindings|true");
 });
+
+test("checked objects count what the inventory shows under its filter, an automation once", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "automation", object_id: "automation.a", name: "A", status: "active" }, { object_type: "entity", object_id: "automation.a", name: "A", status: "active" }, { object_type: "entity", object_id: "light.b", name: "B", status: "active" }, { object_type: "area", object_id: "kitchen", name: "Kitchen", status: "active" }], findings: [], causes: [] };
+  assert.equal(el.health().base, 2, "the registry entity of an automation is not rated a second time, an area not at all");
+  assert.ok(el.overview().includes('data-jump="inventory" data-status="" data-type="_rated"'));
+  el.typeFilter = "_rated";
+  assert.equal(el.filtered().length, el.health().base);
+});

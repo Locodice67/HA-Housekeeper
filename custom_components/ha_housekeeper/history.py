@@ -74,6 +74,12 @@ def _health(snapshot: dict[str, Any]) -> tuple[int, float]:
         for o in snapshot["objects"]
         if o["object_type"] in HEALTH_TYPES
     }
+    # An automation, script or scene is one object: its registry entity is not rated a second time.
+    known -= {
+        f"entity:{key.split(':', 1)[1]}"
+        for key in list(known)
+        if key.split(":", 1)[0] in ("automation", "script", "scene")
+    }
     worst: dict[str, float] = {}
 
     def note(key: str, level: str) -> None:

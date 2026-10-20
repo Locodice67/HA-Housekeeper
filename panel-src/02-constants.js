@@ -193,6 +193,8 @@ const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene", "config_entry", "device"];
+// The type filter of the inventory that shows the objects the state of the house rates (the KPI of the overview).
+const RATED_TYPE = "_rated";
 
 // One CSV cell, quoted. Text a spreadsheet would run as a formula (leading =, +, -, @) gets a leading
 // apostrophe; numbers, also negative ones as text such as "-3.5", stay numbers.
