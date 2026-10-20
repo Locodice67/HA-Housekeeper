@@ -5929,6 +5929,8 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("0.7 % of the size a day") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
   assert.ok(html.includes("Automatic purging is off") && html.includes("2 gaps from restarts (normal)"), "the sentences stay as notes");
   assert.ok(html.includes('data-exp-menu="recdb"'), "the export button is there on the first render");
+  el.dbHealth = { ...DBH, computed_at: Date.now() / 1000 - 600, age_seconds: 600 };
+  assert.equal((el.dbCard().match(/As of/g) || []).length, 1, "an older result has one time only, in the bar");
   el.dbHealth = { ...DBH, growth: { known: true, per_day: -50 * 1024 ** 2 } };
   assert.ok(el.dbCard().includes("−50 MB"), "a database that shrank shows minus, not +0 B");
   el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };
