@@ -8086,7 +8086,8 @@ class LayoutMixin {
       if (t.filter !== undefined) return filter(`data-finding-filter="${this.esc(t.filter)}"`, t.active);
       if (t.lf) {
         const [id, name, value] = t.lf, f = this.lv[id]?.f || {};
-        return filter(`data-lf-set="${this.esc(t.lf.join("|"))}"`, name ? f[name] === value : !Object.values(f).some(Boolean));
+        // A tile without a filter of its own ("All") clears the filters; it is not marked itself, only a filter that is on is.
+        return filter(`data-lf-set="${this.esc(t.lf.join("|"))}"`, name ? f[name] === value : false);
       }
       if (t.attr && t.attr[0] !== "data-object") return filter(`${t.attr[0]}="${this.esc(t.attr[1])}"`, t.active);
       if (t.inv !== undefined) return filter(`data-inv-filter="${this.esc(t.inv)}"`, t.active);

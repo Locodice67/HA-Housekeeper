@@ -6664,3 +6664,10 @@ test("the home functions have tiles per state, a plain description and no second
   assert.ok(html.includes('data-lf-set="monitor|state|problem"') && html.includes('<small class="muted u-block">Opens the door</small>'));
   assert.ok(!html.includes(el.t("monitorSubtitle")), "the explanation stands in the page head only");
 });
+
+test("a tile that clears the filters of a list is never marked itself", () => {
+  const { el } = panel("en");
+  el.lvState("x", "name", "asc");
+  const html = el.sumTiles([{ label: "All", value: "3", lf: ["x", "", ""] }, { label: "Low", value: "1", lf: ["x", "level", "low"] }]);
+  assert.ok(!html.includes('aria-pressed="true"'));
+});
