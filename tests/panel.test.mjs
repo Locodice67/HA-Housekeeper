@@ -1026,7 +1026,7 @@ test("orphaned statistics have their own tab with search, kind filter and energy
   el.unrefTab = "statistics";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
+  assert.ok(html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("create a plan"));
   assert.equal((html.match(/In the Energy dashboard/g) || []).length, 1);
   el.lv.orphanstats.f.kind = "kindMean";
   el.render();
@@ -2971,7 +2971,7 @@ test("an orphaned statistic names likely successors by domain, unit and name, an
   assert.ok(!html.includes("energie_zaehler") && !html.includes("energie_alt2") && !html.includes('data-object="entity:light.'), "other unit, disabled and other domain are not suggested");
   assert.equal(html.split('<small class="statsucc">Possible successors:').length - 1, 1, "no suggestion without a similar name");
   assert.ok(html.includes('data-tip-sub="Possible successors: sensor.wohnzimmer_energie_neu"'), "the tooltip of the name holds them for the compact rows");
-  assert.ok(html.includes("Meter change (continue statistics)") && html.includes("Developer tools → Statistics"));
+  assert.ok(html.includes("Repair → Replace a meter") && html.includes("makes a backup first"));
 });
 
 const STORMS = {
