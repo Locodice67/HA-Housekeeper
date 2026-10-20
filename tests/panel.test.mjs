@@ -6198,3 +6198,17 @@ test("the vacation bar says why nothing is held back and offers no empty list", 
   el.data.meta.vacation = { entity: "input_boolean.away", active: true, held: 3, rules: 1 };
   assert.ok(el.vacationBar().includes("3 findings held back") && el.vacationBar().includes('data-vac-go="hidden"'));
 });
+
+test("the outages row of the overview jumps to exactly the chains it counts, quiet outages left out", () => {
+  const { el } = panel("en");
+  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key, classification, confidence: 0.9, ignored: false, impact: "high", ...extra });
+  const cause = (id, impact) => ({ id: `device_down:${id}`, kind: "device_down", object_type: "device", object_id: id, name: id, impact, follower_count: 1, total_followers: 1, finding_key: `own_${id}`, child_ids: [], consumers: {} });
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "loud", name: "Loud" }, { object_type: "device", object_id: "calm", name: "Calm" }], edges: [], causes: [cause("loud", "high"), cause("calm", "low")],
+    findings: [f("own_loud", "device.down", "problem", { cause_id: "device_down:loud" }), f("s1", "entity.state_unavailable", "unavailable", { cause_id: "device_down:loud" }),
+      f("own_calm", "device.down", "problem", { cause_id: "device_down:calm", impact: "low" }), f("s2", "entity.state_unavailable", "unavailable", { cause_id: "device_down:calm", impact: "low" }), f("x", "entity.stale", "stale")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.ok(el.todoCard().includes("data-jump-outages"), "the row carries its own filter, not an empty one");
+  el.findingOutages = true;
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "own_loud,s1");
+  assert.ok(el.findingsView().includes("Outages from the overview (1)"));
+});

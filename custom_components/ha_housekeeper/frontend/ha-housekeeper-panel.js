@@ -45,7 +45,7 @@ const TEXT = {
     healthBad: "Dringend", healthHint: "Zustand in Punkten von 100, nach den Befunden der Objekte", healthTip: "Zustand in Punkten. Betroffen: {affected} von {base} Objekten.",
     openFindings: "Offene Befunde",
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
-    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neu kritisch seit dem letzten Scan",
+    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neu kritisch seit dem letzten Scan", outagesFilter: "Ausfälle aus der Übersicht ({n})",
    
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
@@ -230,7 +230,7 @@ const TEXT = {
     healthBad: "Urgent", healthHint: "State in points out of 100, by the findings of the objects", healthTip: "State in points. Affected: {affected} of {base} objects.",
     openFindings: "Open findings",
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
-    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical since the last scan",
+    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical since the last scan", outagesFilter: "Outages from the overview ({n})",
    
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
@@ -2387,7 +2387,7 @@ class OverviewMixin {
     const updates = this.preflight?.state?.updates || [];
     if (updates.length) items.push({ key: "updates", area: "care", tone: "warn", icon: "mdi:package-up", text: this.t(updates.length === 1 ? "todoUpdates_1" : "todoUpdates_n", { n: this.formatNumber(updates.length) }), hintText: updates.slice(0, 3).map(u => u.name).join(", ") + (updates.length > 3 ? ", …" : ""), jump: 'data-jump="maintenance" data-jump-tab="updates"' });
     const outages = this.causeList().filter(c => !this.quietCause(c));
-    if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, view: "findingsNav", filter: "" });
+    if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages' });
     const regressions = (this.data.regressions || []).length;
     if (regressions) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
@@ -2855,7 +2855,8 @@ class FindingsMixin {
     const follows = this.findingFollowers ? classed.filter(f => this.isFollowUp(f)) : classed;
     const afterOnly = this.findingAfter ? follows.filter(f => this.corr?.by_key?.[f.key]) : follows;
     const scanNew = this.findingScanNew ? this.scanNewKeys() : null;
-    const byClass = scanNew ? afterOnly.filter(f => scanNew.has(f.key)) : afterOnly;
+    const outages = this.findingOutages ? this.outageKeys() : null;
+    const byClass = [scanNew, outages].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
     const kept = this.lvState("findings", "impact", "desc").f;
     delete kept.fresh; // new and in work are chips of the status row now
     if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
@@ -2916,6 +2917,7 @@ class FindingsMixin {
     if (this.findingFollowers) notes.push(["followers", this.t("followersFilter")]);
     if (this.findingAfter) notes.push(["after", this.t("corrTile")]);
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter")]);
+    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.causeList().filter(c => !this.quietCause(c)).length) })]);
     if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
@@ -2925,7 +2927,7 @@ class FindingsMixin {
 
   // Back to the plain list of the chosen status: the tiles, the notes and the list bar start empty.
   clearFindingFilters() {
-    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false;
+    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false;
     const st = this.lvState("findings", "impact", "desc");
     st.q = ""; st.f = {}; this.persistLv("findings");
   }
@@ -2959,7 +2961,7 @@ class FindingsMixin {
     const classes = [...new Set(all.map(f => this.findingReason(f)))];
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
-    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
@@ -3002,7 +3004,7 @@ class FindingsMixin {
     const items = grouped ? nodes : sorted;
     const objects = this.countObjects(nodes);
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter).length : this.findingFollowers ? followers : all.length;
+    const base = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     const count = grouped ? this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of }) : this.t(of ? "viewCountOf" : "viewCount", { n: this.formatNumber(sorted.length), ...of });
     const pg = this.paginate("findings", items);
@@ -10948,6 +10950,14 @@ class FindingStatusMixin {
     return new Set((this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).map(f => `${f.rule_id}|${f.object_id}|${f.affected_object || ""}`));
   }
 
+  // The outages the overview counts (every cause from medium on) with everything they explain: the jump of its row.
+  // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
+  outageKeys() {
+    const loud = c => c && !this.quietCause(c);
+    const counts = f => { for (let c = this.causeById(f.cause_id), n = 0; c && n < 20; c = this.causeById(c.parent_id), n++) if (loud(c)) return true; return false; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && counts(f)).map(f => f.key));
+  }
+
   inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
 
   // Does a finding belong to the chosen status? "" is the default: everything not decided.
@@ -17141,7 +17151,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.findingOutages = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -17951,7 +17961,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.findingOutages = false; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -18048,7 +18058,8 @@ class HAHousekeeperPanel extends HTMLElement {
       ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {}; this.findingScanNew = el.dataset.jumpScanNew !== undefined;
-      if (this.findingScanNew) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
+      this.findingOutages = el.dataset.jumpOutages !== undefined;
+      if (this.findingScanNew || this.findingOutages) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
@@ -18093,7 +18104,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // One note of the filters above the list: its ✕ takes off just that filter.
     root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
       const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
-      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false;
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false; else if (key === "outages") this.findingOutages = false;
       else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
       this.pages = {}; this.render();
     });

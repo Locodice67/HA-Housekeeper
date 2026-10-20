@@ -131,7 +131,8 @@ class FindingsMixin {
     const follows = this.findingFollowers ? classed.filter(f => this.isFollowUp(f)) : classed;
     const afterOnly = this.findingAfter ? follows.filter(f => this.corr?.by_key?.[f.key]) : follows;
     const scanNew = this.findingScanNew ? this.scanNewKeys() : null;
-    const byClass = scanNew ? afterOnly.filter(f => scanNew.has(f.key)) : afterOnly;
+    const outages = this.findingOutages ? this.outageKeys() : null;
+    const byClass = [scanNew, outages].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
     const kept = this.lvState("findings", "impact", "desc").f;
     delete kept.fresh; // new and in work are chips of the status row now
     if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
@@ -192,6 +193,7 @@ class FindingsMixin {
     if (this.findingFollowers) notes.push(["followers", this.t("followersFilter")]);
     if (this.findingAfter) notes.push(["after", this.t("corrTile")]);
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter")]);
+    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.causeList().filter(c => !this.quietCause(c)).length) })]);
     if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
@@ -201,7 +203,7 @@ class FindingsMixin {
 
   // Back to the plain list of the chosen status: the tiles, the notes and the list bar start empty.
   clearFindingFilters() {
-    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false;
+    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false;
     const st = this.lvState("findings", "impact", "desc");
     st.q = ""; st.f = {}; this.persistLv("findings");
   }
@@ -235,7 +237,7 @@ class FindingsMixin {
     const classes = [...new Set(all.map(f => this.findingReason(f)))];
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
-    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
@@ -278,7 +280,7 @@ class FindingsMixin {
     const items = grouped ? nodes : sorted;
     const objects = this.countObjects(nodes);
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter).length : this.findingFollowers ? followers : all.length;
+    const base = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     const count = grouped ? this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of }) : this.t(of ? "viewCountOf" : "viewCount", { n: this.formatNumber(sorted.length), ...of });
     const pg = this.paginate("findings", items);

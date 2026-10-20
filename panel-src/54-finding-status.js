@@ -60,6 +60,14 @@ class FindingStatusMixin {
     return new Set((this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).map(f => `${f.rule_id}|${f.object_id}|${f.affected_object || ""}`));
   }
 
+  // The outages the overview counts (every cause from medium on) with everything they explain: the jump of its row.
+  // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
+  outageKeys() {
+    const loud = c => c && !this.quietCause(c);
+    const counts = f => { for (let c = this.causeById(f.cause_id), n = 0; c && n < 20; c = this.causeById(c.parent_id), n++) if (loud(c)) return true; return false; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && counts(f)).map(f => f.key));
+  }
+
   inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
 
   // Does a finding belong to the chosen status? "" is the default: everything not decided.

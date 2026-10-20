@@ -5,7 +5,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.findingOutages = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -815,7 +815,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.findingOutages = false; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -912,7 +912,8 @@ class HAHousekeeperPanel extends HTMLElement {
       ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {}; this.findingScanNew = el.dataset.jumpScanNew !== undefined;
-      if (this.findingScanNew) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
+      this.findingOutages = el.dataset.jumpOutages !== undefined;
+      if (this.findingScanNew || this.findingOutages) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingFollowers = false; }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
@@ -957,7 +958,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // One note of the filters above the list: its ✕ takes off just that filter.
     root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
       const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
-      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false;
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false; else if (key === "outages") this.findingOutages = false;
       else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
       this.pages = {}; this.render();
     });
