@@ -3601,6 +3601,8 @@ test("Done lists what a plan fixed and what ended by itself; objects removed or 
   el.render = () => {};
   await el.loadEnded();
   assert.equal(el.doneCount(), 2, "the plan and the one that came back; the plan's own object is not counted twice");
+  assert.ok(!el.fixedList().includes("Entity disabled"), "every group starts folded");
+  el.folds = { ...el.folds, done_plan: true, done_back: true };
   const html = el.fixedList();
   assert.ok(html.includes("Fixed by a plan") && html.includes("Entity disabled") && html.includes("400 objects") && html.includes("can be undone: yes"));
   assert.ok(html.includes("Back in order by itself") && html.includes("sensor.back") && !html.includes("sensor.z</strong>"));

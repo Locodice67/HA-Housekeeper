@@ -153,6 +153,7 @@ class FindingStatusMixin {
   }
 
   // "Done": what a plan fixed, and what ended by itself, in the chosen period. Only the first two groups count as fixed.
+  // Every group starts folded; its head names the count.
   fixedList() {
     this.loadEnded();
     const days = this.doneDays(), e = this.endedNow(), self = this.endedSelf();
@@ -170,8 +171,8 @@ class FindingStatusMixin {
     };
     const row = (f, tone) => `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:${tone === "ok" ? "check" : "help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`${f.rule_id.split(".")[0]}:${f.object_id}`)?.name || f.object_id)}</strong><small>${this.esc(this.findingTitle(f))}</small></span></div>`;
     const groups = [
-      group("plan", "doneByPlan", "ok", planRows, true),
-      group("back", "doneBack", "ok", self.back.map(f => row(f, "ok")), true),
+      group("plan", "doneByPlan", "ok", planRows, false),
+      group("back", "doneBack", "ok", self.back.map(f => row(f, "ok")), false),
       group("removed", "doneRemoved", "mute", self.removed.map(f => row(f, "mute")), false),
       group("unread", "doneUnread", "mute", self.unread.map(f => row(f, "mute")), false),
       group("other", "doneOther", "mute", self.other.map(f => row(f, "mute")), false),
