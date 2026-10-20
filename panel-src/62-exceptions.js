@@ -293,6 +293,21 @@ class ExceptionsMixin {
     this.excPreview();
   }
 
+  // A new rule from the findings: the objects already picked, the form above the list instead of in the settings.
+  async openExceptionFor(objectKeys) {
+    if (!this.exc) await this.loadExceptions();
+    const picks = [];
+    for (const key of objectKeys) {
+      const o = this.findObject(key), t = o && this.excTargetOf(o);
+      if (t && !picks.some(p => p.kind === t.kind && p.id === t.id)) picks.push({ ...t, name: o.name || t.id });
+    }
+    if (!picks.length) return;
+    this.excForm = { id: "", kind: "any", targets: [], picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true };
+    this.render();
+    this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });
+    this.excPreview();
+  }
+
   async excPreview() {
     const f = this.excForm;
     if (!f || !(f.kind === "any" ? f.picks.length : f.targets.length)) { if (f) { f.preview = null; this.render(); } return; }

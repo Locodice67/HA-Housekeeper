@@ -118,6 +118,8 @@ const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
+// One icon per action, the same in the selection bar and in the menu of a row.
+const FSEL_ICONS = { known: "mdi:bookmark-check-outline", snoozed: "mdi:clock-outline", hide: "mdi:eye-off-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],

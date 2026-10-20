@@ -5784,7 +5784,7 @@ test("the watch lists an object that is a finding like the findings list does, a
   el.data = { ...DATA, objects: [object, { object_type: "entity", object_id: "light.b", name: "Porch", status: "unknown" }], edges: [], findings: [finding] };
   const html = el.watchRows(["entity:light.a", "entity:light.b"], "warn");
   assert.ok(html.includes("data-decide-open=") && !html.includes("data-fsel=") && html.includes('data-watch-mark="entity:light.b"'));
-  assert.equal(html.includes('data-watch-mark="entity:light.a"'), false);
+  assert.equal(html.includes('data-watch-mark="entity:light.a"'), true, "the menu of a finding row offers the mark on its object, like the selection bar");
   const past = el.watchRows(["entity:light.a"], "mute", true);
   assert.ok(past.includes("Disturbed again now") && !past.includes("data-decide-open"), "a group about the past shows no finding row, only a note");
 });
@@ -6088,4 +6088,18 @@ test("every finding stands below its object: a device gathers all kinds of its e
   assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
   el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
   assert.ok(el.findingsView().includes("1 of 3 findings match the filter"));
+});
+
+test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {
+  const { el } = panel("en");
+  const object = { object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" };
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "entity.state_unavailable|light.a|", object_id: "light.a", confidence: 0.75, impact: "medium", ignored: false };
+  el.data = { ...DATA, objects: [object], edges: [], findings: [finding] };
+  el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
+  const menu = el.rowMenu(finding);
+  assert.ok(["fselKnown", "fselSnooze", "fselHide", "markSet", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
+  await el.openExceptionFor(["entity:light.a"]);
+  assert.equal(el.excForm.picks.map(p => `${p.kind}:${p.id}`).join(), "entity:light.a");
+  el.view = "findingsNav";
+  assert.ok(el.findingsView().includes("data-exc-form"));
 });
