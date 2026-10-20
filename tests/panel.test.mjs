@@ -5852,9 +5852,11 @@ test("the suggestions gather the entities of a device that fail together; the ma
   const items = el.oftenSuggestions();
   assert.equal(items.map(s => `${s.key}:${s.hides}`).join(), "group:tv:3");
   el.folds = { ...(el.folds || {}), often: true };
-  assert.ok(el.oftenCard().includes('data-often-take="group:tv"') && !el.oftenCard().includes("data-often-all"), "one suggestion: no accept all");
-  assert.ok(el.oftenCard().includes("TV: 3 entities") && el.oftenCard().includes("the other entity stays watched"), el.oftenCard());
-  assert.ok(el.oftenCard().includes("1 object · 3 findings") && el.oftenCard().includes('class="iconbtn" data-often-skip="group:tv"') && el.oftenFindings(1) === "1 finding", "a bar with the sum, a quiet cross, singular and plural");
+  const card = el.oftenCard();
+  assert.ok(card.includes('data-often-sel="group:tv"') && card.includes("data-often-page") && card.includes("data-often-picked"), "a box per row, one for the page and the selection bar");
+  assert.ok(card.includes('class="menuitem" data-often-take="group:tv"') && card.includes('class="menuitem" data-often-skip="group:tv"'), "one row alone through its menu");
+  assert.ok(card.includes("TV: 3 entities") && card.includes("the other entity stays watched") && card.includes('data-object="device:tv"'), card);
+  assert.ok(el.oftenFindings(1) === "1 finding" && el.oftenFindings(3) === "3 findings", "singular and plural");
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   el.render = () => {};
