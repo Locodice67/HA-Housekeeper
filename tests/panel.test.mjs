@@ -6588,3 +6588,9 @@ test("a remote target that the newest backup did not reach is named instead of l
   el.backup.checks[0].values.agents = ["backup.local"];
   assert.ok(el.bhText({ id: "targets", level: "note", values: { local: ["backup.local"], remote: [] } }).startsWith("Local only"));
 });
+
+test("the To check tile of the backups says how many problems and hints it adds up", () => {
+  const { el } = panel("en");
+  const html = el.bhTiles({ checks: [], counts: { problem: 2, note: 1 }, backup_count: 3 });
+  assert.ok(html.includes(">3<") && html.includes("2 problems, 1 hint"));
+});

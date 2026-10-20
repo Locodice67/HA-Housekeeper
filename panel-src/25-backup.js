@@ -227,7 +227,8 @@ class BackupMixin {
       { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), tone: "mute" },
       { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
       { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
-      { label: this.t("bhTileOpen"), value: this.formatNumber(open), tone: open ? "warn" : "ok" },
+      // The number counts problems and hints together; below it, how many of each, so it matches "2 problems" above.
+      { label: this.t("bhTileOpen"), value: this.formatNumber(open), sub: open ? this.esc([b.counts?.problem ? this.t(b.counts.problem === 1 ? "bhTileProblems1" : "bhTileProblems", { n: this.formatNumber(b.counts.problem) }) : "", b.counts?.note ? this.t(b.counts.note === 1 ? "bhTileNotes1" : "bhTileNotes", { n: this.formatNumber(b.counts.note) }) : ""].filter(Boolean).join(", ")) : "", tone: b.counts?.problem ? "red" : open ? "warn" : "ok" },
     ]);
   }
 }
