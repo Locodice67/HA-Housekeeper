@@ -1635,7 +1635,7 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   assert.ok(html.includes("12,000 stored states") && html.includes("5 MB") && html.includes("kept 10 days"));
   assert.ok(html.includes("&lt;b&gt;Noisy&lt;/b&gt;") && !html.includes("<b>Noisy</b>"), "names are escaped");
   assert.ok(html.includes("Recommended") && html.includes("already excluded") && html.includes("3 uses"));
-  assert.ok(html.includes("Nothing selected · ") && html.includes("Select all suggested") && !html.includes("Copy YAML"), "without a pick there is only the bar");
+  assert.ok(!html.includes("Nothing selected") && / suggestions</.test(html) && html.includes("Select all suggested") && !html.includes("Copy YAML"), "without a pick there is only the bar");
   el.excludeSel.add("sensor.noisy");
   assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.noisy\n");
   el.render();
@@ -5432,7 +5432,7 @@ test("the findings of the load view are a sortable table with the numbers in col
   el.storms = STORMS;
   const html = el.stormsView();
   assert.ok(html.includes('data-lf-set="stormfind||"') && html.includes('data-lf-set="stormfind|kind|storm"'));
-  assert.ok(html.includes("Rows/day") && html.includes("72,000") && html.includes('data-object="entity:sensor.laut"') && html.includes('data-exsel="sensor.laut"') && html.includes("Nothing selected"));
+  assert.ok(html.includes("Rows/day") && html.includes("72,000") && html.includes('data-object="entity:sensor.laut"') && html.includes('data-exsel="sensor.laut"') && !html.includes("Nothing selected"));
   assert.ok(!html.includes("stormgroup"));
 });
 

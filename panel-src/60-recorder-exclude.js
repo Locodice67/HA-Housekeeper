@@ -3,7 +3,7 @@
 Object.assign(TEXT.de, {
   exclHint: "Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
   exTrimCount: "{count} zum Kürzen", exLeft: "Ausgeschlossen, aber noch gespeichert: {count} Entitäten, mindestens {rows} Zeilen", exLeftPick: "Zum Kürzen wählen",
-  exCount: "{count} ausgewählt", exNone: "Nichts ausgewählt", exNoneSug: "Nichts ausgewählt · {count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
+  exCount: "{count} ausgewählt", exSugCount: "{count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
   exStepsTitle: "So geht es weiter", exStep1: "Einfügen in die configuration.yaml. Gibt es dort schon einen recorder:-Abschnitt, trage nur die Zeilen unter entities: in dessen exclude:-Liste ein, nicht noch einmal recorder:.",
   exStep2: "Prüfen unter Entwicklerwerkzeuge → YAML → Konfiguration prüfen.", exStep3: "Neu starten. Der Recorder liest den Ausschluss nur beim Start. Danach steht die Entität hier als „bereits ausgeschlossen“.",
   exSuggest: "Empfohlen", exOnlySug: "Nur Vorschläge", exWhy: "Nicht verwendet, keine Statistik, {perDay} Zeilen in den letzten 24 Stunden", exRule: "Empfohlen ist, was nirgends verwendet wird, keine Statistik hat und in den letzten 24 Stunden mindestens {min} Zeilen schreibt.", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
@@ -18,7 +18,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   exclHint: "This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
   exTrimCount: "{count} to trim", exLeft: "Excluded but still stored: {count} entities, at least {rows} rows", exLeftPick: "Select to trim",
-  exCount: "{count} selected", exNone: "Nothing selected", exNoneSug: "Nothing selected · {count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
+  exCount: "{count} selected", exSugCount: "{count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
   exStepsTitle: "What to do next", exStep1: "Paste it into configuration.yaml. If there is a recorder: section already, add only the lines under entities: to its exclude: list, not recorder: again.",
   exStep2: "Check under Developer tools → YAML → Check configuration.", exStep3: "Restart. The recorder reads the exclusion only at start. Afterwards the entity shows here as “already excluded”.",
   exSuggest: "Recommended", exOnlySug: "Only suggestions", exWhy: "Not used, no statistics, {perDay} rows in the last 24 hours", exRule: "Recommended means: used nowhere, no statistics and wrote at least {min} rows in the last 24 hours.", exHasStats: "has statistics", exUsedBy: "{count} uses",
@@ -84,11 +84,11 @@ class ExcludeMixin {
   excludeCard(suggested, { only = true } = {}) {
     this._exSuggested = suggested;
     const n = this.excludeChosen().length, trim = this.excludeSel.size - n, sug = suggested.length, left = this.excludeLeft();
-    const label = [n ? this.t("exCount", { count: n }) : "", trim ? this.t("exTrimCount", { count: trim }) : ""].filter(Boolean).join(" · ") || (sug ? this.t("exNoneSug", { count: sug }) : this.t("exNone"));
+    const label = [n ? this.t("exCount", { count: n }) : "", trim ? this.t("exTrimCount", { count: trim }) : ""].filter(Boolean).join(" · ") || (sug ? this.t("exSugCount", { count: sug }) : ""); // nothing picked: only the suggestions, if any
     const leftNote = left.ids.length && left.ids.some(id => !this.excludeSel.has(id))
       ? `<span class="date">${this.t("exLeft", { count: this.formatNumber(left.ids.length), rows: this.formatNumber(left.rows) })}</span><button class="btn quiet" data-ex-left>${this.t("exLeftPick")}</button>` : "";
     const any = n || trim;
-    const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button class="btn quiet${this.exOnlySug ? " on" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button>` : ""}<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span><span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
+    const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button class="btn quiet${this.exOnlySug ? " on" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button>` : ""}${label ? `<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span>` : ""}<span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
     const steps = `<div class="exsteps"><strong>${this.t("exStepsTitle")}</strong><ol><li>${this.t("exStep1")}</li><li>${this.t("exStep2")}</li><li>${this.t("exStep3")}</li></ol></div>`;
     const rule = `<p class="factnote exrule">${this.t("exRule", { min: EXCLUDE_MIN_PER_DAY })}</p>`;
     return `${bar}${rule}${n ? `<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}` : ""}${any ? this.trimBlock() : ""}`;
