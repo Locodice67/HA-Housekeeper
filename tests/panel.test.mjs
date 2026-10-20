@@ -3899,6 +3899,7 @@ test("the History tab holds the logbook, the plans of the journal that named the
   assert.equal(el.historyCount(ent), 2, "one entry and one plan");
   const html = el.historyTab(ent);
   assert.ok(html.includes("Stick replaced") && html.includes('data-plan-open="p1"') && !html.includes('data-plan-open="p2"') && html.includes("data-note-add-for"));
+  assert.ok(/<tr data-plan-open="p1" tabindex="0" role="button"/.test(html), "the plans are a table like the Journal; a row opens its plan");
   assert.ok(el.detailTabs(ent, "entity:sensor.h").some(([id, , n]) => id === "history" && n === 2));
   const seen = { ...ent, status_since: "2026-10-01T10:00:00+00:00", last_changed: "2026-10-10T10:00:00+00:00", created_at: "2025-08-05T12:16:00+00:00" };
   const lines = el.noticedLines(seen, "entity:sensor.h");

@@ -24,7 +24,19 @@ class HistoryTabMixin {
     const plans = this.plansOf(item);
     const head = `<div class="panelhead"><div><h2>${this.t("histPlans")}</h2><p>${this.t("histPlansHint")}</p></div></div>`;
     if (this.journal === null || this.journal === undefined) return `<section class="panel">${head}${this.skeleton("histPlansLoading")}</section>`;
-    const rows = plans.map(plan => `<div class="row jrow"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}</small></span><span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span><button class="btn small" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button></div>`).join("");
+    // A small table like the Journal: date, state, result and follow-up; a click on a row opens the plan.
+    const fuState = plan => plan.followup?.state ?? plan.followup ?? "";
+    const rows = plans.length ? this.sysList("histplans", plans, {
+      sort: "date", dir: "desc", tie: plan => plan.plan_id, empty: "histPlansNone",
+      sorts: [{ key: "date", label: "journalColDate", dir: "desc", get: plan => plan.created_at || "" }],
+      rowAttrs: plan => `data-plan-open="${this.esc(plan.plan_id)}" tabindex="0" role="button" aria-label="${this.esc(this.formatDate(plan.created_at))}"`,
+      columns: [
+        { key: "date", label: "journalColDate", dir: "desc", cell: plan => `<span class="statcell"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><strong>${this.esc(this.formatDate(plan.created_at))}</strong></span>` },
+        { key: "status", label: "sortStatus", sortable: false, cell: plan => `<span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>` },
+        { key: "total", label: "journalColActions", sortable: false, cell: plan => `<span class="jsum">${this.esc(this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 }))}</span>` },
+        { key: "follow", label: "journalColFollow", sortable: false, cell: plan => (fuState(plan) ? `<span class="pill ${this.followupTone(fuState(plan))}">${this.t(`fu_${fuState(plan)}`)}</span>` : "–") },
+      ],
+    }) : "";
     return `<section class="panel">${head}${rows || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("histPlansNone")}</div>`}</section>`;
   }
 
