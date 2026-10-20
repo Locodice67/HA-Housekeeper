@@ -17048,13 +17048,13 @@ Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
   ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
   ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt",
-  ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
+  ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
   ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
   ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object",
-  ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", ogOf: "Device {name}", fselPart: "{n} of {m}",
+  ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
 
 const OG_NO_VALUE = ["unavailable", "unknown"];
@@ -17226,7 +17226,7 @@ class ObjectGroupsMixin {
     const total = n.cause ? this.causeTotal(n.cause) : 0;
     const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}`;
     const link = object ? `<button type="button" class="finding-link" data-object="${this.esc(n.key)}">${label}</button>` : `<button type="button" class="finding-link" data-fold="${this.esc(id)}">${label}</button>`;
-    const conf = f.conf[0] == null ? "–" : f.conf[0] === f.conf[1] ? `${Math.round(f.conf[0] * 100)} %` : `${Math.round(f.conf[0] * 100)}–${Math.round(f.conf[1] * 100)} %`;
+    const conf = f.conf[0] == null ? "–" : f.conf[0] === f.conf[1] ? `${Math.round(f.conf[0] * 100)} %` : `<span title="${this.esc(this.t("certSpanHint"))}">${Math.round(f.conf[0] * 100)}–${Math.round(f.conf[1] * 100)} %</span>`;
     const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);
     // What a person reads first: the reason in words, or how many findings the object has; the rule ID small below.
     const rule = f.own ? `<span class="finding-label">${this.t("chip_outage")}</span><small class="finding-rule">${this.esc(f.own.rule_id)}</small>` : `<span class="finding-label">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
