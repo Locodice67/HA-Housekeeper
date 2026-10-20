@@ -41,7 +41,7 @@ const TEXT = {
     recentFindings: "Aktuelle Befunde", affected: "Betroffenes Objekt",
     systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "In Ordnung", healthCheck: "Offen",
     healthBad: "Dringend", healthHint: "Zustand in Punkten von 100, nach den Befunden der Objekte", healthTip: "Zustand in Punkten. Betroffen: {affected} von {base} Objekten.",
-    openFindings: "Offene Befunde",
+    openFindings: "Befunde",
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
     actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neu kritisch seit dem letzten Scan", outagesFilter: "Ausfälle aus der Übersicht ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
    
@@ -226,7 +226,7 @@ const TEXT = {
     recentFindings: "Current findings", affected: "Affected object",
     systemState: "System health", health: "Housekeeping status", healthGood: "In order", healthCheck: "Open",
     healthBad: "Urgent", healthHint: "State in points out of 100, by the findings of the objects", healthTip: "State in points. Affected: {affected} of {base} objects.",
-    openFindings: "Open findings",
+    openFindings: "Findings",
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
     actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical since the last scan", outagesFilter: "Outages from the overview ({n})", heldFilter: "Held back for the vacation ({n})",
    
