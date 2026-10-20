@@ -105,6 +105,13 @@ class ListsMixin {
   }
 
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
+  // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
+  // "only the selected" stays while it is on, so the way back is there.
+  selTools(id, count, clearAttr) {
+    if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
+    return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
+  }
+
   selOnlyButton(id, count) {
     const on = Boolean(this.selOnly?.[id]);
     return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;

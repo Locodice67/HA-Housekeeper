@@ -6564,3 +6564,11 @@ test("a hint row with nothing to show is a quiet line without a jump", () => {
   const dup = html.slice(html.lastIndexOf("<", html.indexOf("Possible duplicate")) - 400, html.indexOf("Possible duplicate"));
   assert.ok(dup.includes('class="row zero"') && !dup.slice(dup.lastIndexOf('class="row')).includes("data-jump"));
 });
+
+test("the cleanup list offers its selection tools only with the first tick", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el.view = "cleanup";
+  assert.ok(!el.cleanupView().includes("data-sel-clear"));
+  el.cleanupSel = new Set(["x"]);
+  assert.ok(el.cleanupView().includes("data-sel-clear") && el.cleanupView().includes("1 selected"));
+});
