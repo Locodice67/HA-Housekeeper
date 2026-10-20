@@ -925,7 +925,8 @@ class HAHousekeeperPanel extends HTMLElement {
       // left from before (a status, a search, a filter of the list bar) would change the number the row said.
       if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
       this.findingScanNew = el.dataset.jumpScanNew !== undefined;
-      this.findingOutages = el.dataset.jumpOutages !== undefined;
+      // The outages of one level ("high", "medium") or all of them.
+      this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
       if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       // A list the jump counts starts without the search and filters kept from before; its own filter comes after.

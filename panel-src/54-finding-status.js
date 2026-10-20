@@ -64,11 +64,12 @@ class FindingStatusMixin {
   // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
   // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
   // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
-  countedOutages() { return this.causeEntries().filter(c => !this.quietCause(c)); }
+  // level "high" keeps the urgent ones, "medium" the others; without a level all of them.
+  countedOutages(level = "") { return this.causeEntries().filter(c => !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
 
-  // The findings of the counted outages: every open finding whose chain ends at the top in one of them.
-  outageKeys() {
-    const tops = new Set(this.countedOutages().map(c => c.id));
+  // The findings of the counted outages (of one level): every open finding whose chain ends at the top in one of them.
+  outageKeys(level = "") {
+    const tops = new Set(this.countedOutages(level).map(c => c.id));
     const top = f => { let c = this.causeById(f.cause_id), n = 0; while (c?.parent_id && n < 20) { c = this.causeById(c.parent_id); n++; } return c; };
     return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && tops.has(top(f)?.id)).map(f => f.key));
   }

@@ -2411,8 +2411,10 @@ class OverviewMixin {
     this.ensurePreflight();
     const updates = this.preflight?.state?.updates || [];
     if (updates.length) items.push({ key: "updates", area: "care", tone: "warn", icon: "mdi:package-up", text: this.t(updates.length === 1 ? "todoUpdates_1" : "todoUpdates_n", { n: this.formatNumber(updates.length) }), hintText: updates.slice(0, 3).map(u => u.name).join(", ") + (updates.length > 3 ? ", …" : ""), jump: 'data-jump="maintenance" data-jump-tab="updates"' });
-    const outages = this.countedOutages();
-    if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages' });
+    // Urgent is an outage at the level high (long, or at something critical); the others the overview counts are open.
+    const urgent = this.countedOutages("high"), other = this.countedOutages("medium");
+    if (urgent.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(urgent), count: urgent.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="high"' });
+    if (other.length) items.push({ key: "outages_open", area: "findings", tone: "warn", icon: "mdi:source-branch", label: "actOutagesOpen", hintText: this.outagesHint(other), count: other.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="medium"' });
     // Each row lands on what it counts: one plan with a setback opens itself, several the journal filtered to them.
     const regressions = this.data.regressions || [];
     if (regressions.length) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions.length, jump: regressions.length === 1 ? `data-plan-open="${this.esc(regressions[0].plan_id)}"` : 'data-jump="journal" data-jump-tab="plans" data-jump-lf="journal|follow|regression"' });
@@ -2890,7 +2892,7 @@ class FindingsMixin {
     const follows = this.findingFollowers ? classed.filter(f => this.isFollowUp(f)) : classed;
     const afterOnly = this.findingAfter ? follows.filter(f => this.corr?.by_key?.[f.key]) : follows;
     const scanNew = this.findingScanNew ? this.scanNewKeys() : null;
-    const outages = this.findingOutages ? this.outageKeys() : null;
+    const outages = this.findingOutages ? this.outageKeys(this.findingOutages === true ? "" : this.findingOutages) : null;
     const held = this.findingHeld ? this.heldKeys() : null;
     const cause = this.findingCause ? this.causeKeys(this.findingCause) : null;
     const byClass = [scanNew, outages, held, cause].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
@@ -2956,7 +2958,7 @@ class FindingsMixin {
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter")]);
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
-    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.countedOutages().length) })]);
+    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
     if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
@@ -3059,7 +3061,7 @@ class FindingsMixin {
     // The same count in both views: findings and the objects they belong to.
     const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
+    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     const count = this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
     // Grouped, the pages count the rows shown, heads and what is open below them, not only the heads.
@@ -9009,7 +9011,7 @@ class OftenMixin {
 
 // Texts for the impact of a finding (see impact.py); merged into TEXT.
 Object.assign(TEXT.de, {
-  levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
+  levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel, dringend ist ein Ausfall ab hoch; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
   openFindingsQuiet: "davon {n} Info/niedrig", whyOpenLevel: "Befunde dieser Stufe anzeigen",
   sortImpact: "Schweregrad", allSeverities: "Alle Schweregrade", chip_none: "Keine", viewsClear: "Keine Ansicht", impact_high: "Hohe Auswirkung", impact_medium: "Mittlere Auswirkung", impact_low: "Geringe Auswirkung", impact_info: "Info", outageFor: "seit {span}", outageNext: "{level} in {span}", unitMin: "Min.", unitHour: "Std.", unitDay: "Tagen", chip_outage: "Ausfall", reasonProblem: "Automation gestört", allObjectTypes: "Alle Objektarten", followersFilter: "Folgen von Ausfällen", filterRemove: "Filter {name} entfernen", filterResetAll: "Alle Filter zurücksetzen", findingsOnObjects: "an {m} Objekten", findingsOnObjects1: "an 1 Objekt", hintsLabel: "Hinweise", hintOften: "{n} Vorschläge für Vermerke", hintCorr: "{n} Vorfälle nach Updates", allReasons: "Alle Gründe", chip_high: "Hoch", chip_medium: "Mittel", chip_low: "Niedrig", chip_info: "Info", rowMenu: "Aktionen für diese Zeile", impact_none: "Keine Auswirkung",
   impactFact_outage_age: "Dauer des Ausfalls", impactFact_critical: "kritisch: {why}", impactFact_target_critical: "fehlendes Ziel {id} ist kritisch", impactFact_controls_critical: "steuert {n} kritische Objekte", impactFact_used_by_active: "von {n} aktiven Automationen oder Skripten genutzt", impactFact_on_dashboards: "auf {n} Dashboards", impactFact_many_dependents: "{n} Abhängige", impactFact_runs_active: "läuft aktiv", impactFact_runs_inactive: "ist deaktiviert",
@@ -9017,7 +9019,7 @@ Object.assign(TEXT.de, {
   impactWhy_label: "Label", impactWhy_device_label: "Label am Gerät", impactWhy_area_label: "Label am Bereich", impactWhy_kind: "Art des Objekts",
 });
 Object.assign(TEXT.en, {
-  levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
+  levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on and calls an outage urgent from high on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
   openFindingsQuiet: "{n} of them info/low", whyOpenLevel: "Show the findings of this level",
   sortImpact: "Severity", allSeverities: "All severities", chip_none: "None", viewsClear: "No view", impact_high: "High impact", impact_medium: "Medium impact", impact_low: "Low impact", impact_info: "Info", outageFor: "for {span}", outageNext: "{level} in {span}", unitMin: "min", unitHour: "h", unitDay: "days", chip_outage: "Outage", reasonProblem: "Automation impaired", allObjectTypes: "All object types", followersFilter: "Follow-ups of outages", filterRemove: "Remove filter {name}", filterResetAll: "Reset all filters", findingsOnObjects: "on {m} objects", findingsOnObjects1: "on 1 object", hintsLabel: "Hints", hintOften: "{n} suggestions for marks", hintCorr: "{n} incidents after updates", allReasons: "All reasons", chip_high: "High", chip_medium: "Medium", chip_low: "Low", chip_info: "Info", rowMenu: "Actions for this row", impact_none: "No impact",
   impactFact_outage_age: "length of the outage", impactFact_critical: "critical: {why}", impactFact_target_critical: "the missing target {id} is critical", impactFact_controls_critical: "controls {n} critical objects", impactFact_used_by_active: "used by {n} active automations or scripts", impactFact_on_dashboards: "on {n} dashboards", impactFact_many_dependents: "{n} dependents", impactFact_runs_active: "runs actively", impactFact_runs_inactive: "is disabled",
@@ -9317,7 +9319,7 @@ Object.assign(TEXT.de, {
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
   cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
   causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageApps1: "1 App", outageTargets: "{n} fehlende Ziele", outageTargets1: "1 fehlendes Ziel", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", outageServices1: "1 fehlender Dienst", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
-  findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{n} von {total} Befunden an {m} Objekten", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle",
+  findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{n} von {total} Befunden an {m} Objekten", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle", actOutagesOpen: "Weitere Ausfälle",
 });
 Object.assign(TEXT.en, {
   causesTitle: "Outages",
@@ -9325,7 +9327,7 @@ Object.assign(TEXT.en, {
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
   cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
   causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageApps1: "1 app", outageTargets: "{n} missing targets", outageTargets1: "1 missing target", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", outageServices1: "1 missing service", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
-  findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{n} of {total} findings on {m} objects", viewCountOf: "{n} of {total} findings", actOutages: "Outages",
+  findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{n} of {total} findings on {m} objects", viewCountOf: "{n} of {total} findings", actOutages: "Outages", actOutagesOpen: "Further outages",
 });
 
 // Maintenance goals: what "in order" means for this house and whether it is so (see goals.py); mixed into the panel in 99-register.js.
@@ -11094,11 +11096,12 @@ class FindingStatusMixin {
   // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
   // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
   // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
-  countedOutages() { return this.causeEntries().filter(c => !this.quietCause(c)); }
+  // level "high" keeps the urgent ones, "medium" the others; without a level all of them.
+  countedOutages(level = "") { return this.causeEntries().filter(c => !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
 
-  // The findings of the counted outages: every open finding whose chain ends at the top in one of them.
-  outageKeys() {
-    const tops = new Set(this.countedOutages().map(c => c.id));
+  // The findings of the counted outages (of one level): every open finding whose chain ends at the top in one of them.
+  outageKeys(level = "") {
+    const tops = new Set(this.countedOutages(level).map(c => c.id));
     const top = f => { let c = this.causeById(f.cause_id), n = 0; while (c?.parent_id && n < 20) { c = this.causeById(c.parent_id); n++; } return c; };
     return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && tops.has(top(f)?.id)).map(f => f.key));
   }
@@ -11660,7 +11663,7 @@ Object.assign(TEXT.de, {
   statusPartOpen: "{n} offen", statusPartCare: "{n} in der Wartung", statusJoin: " und ", statusAlso: "Dazu {what}",
   group_red: "Dringend", group_open: "Offen", group_care: "Wartung", topFindings: "Wichtigste Befunde", topFindingsSub: "zählen nicht als eigener Punkt",
   whyHeadTitle: "Die Kopfzeile", whyRingTitle: "Der Ring",
-  whyGroup_red: "ist, was jetzt etwas kaputt macht: Ausfälle, neue kritische Befunde, eine Anmeldung, die erneuert werden muss, eine gestörte überwachte Funktion, Rückfälle nach einem Plan, ein Backup- oder Datenbankproblem, eine fast volle Platte.",
+  whyGroup_red: "ist, was jetzt etwas kaputt macht: Ausfälle der Stufe hoch (lange oder an Kritischem), neue kritische Befunde, eine Anmeldung, die erneuert werden muss, eine gestörte überwachte Funktion, Rückfälle nach einem Plan, ein Backup- oder Datenbankproblem, eine fast volle Platte.",
   whyGroup_open: "ist Zustand, der geprüft werden sollte: ein alter Scan, eine unklare überwachte Funktion, eine Platte, die voll wird.",
   whyGroup_care: "sind Updates, Erinnerungen, Ziele, Quarantäne und entfernte HACS-Repositorys. Sie färben den Ring nie.",
   statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} Punkte", healthWhy: "Wie kommt das zustande?",
@@ -11709,7 +11712,7 @@ Object.assign(TEXT.en, {
   statusPartOpen: "{n} open", statusPartCare: "{n} in maintenance", statusJoin: " and ", statusAlso: "Plus {what}",
   group_red: "Urgent", group_open: "Open", group_care: "Maintenance", topFindings: "Most important findings", topFindingsSub: "not counted as items of their own",
   whyHeadTitle: "The headline", whyRingTitle: "The ring",
-  whyGroup_red: "is what breaks something now: outages, new critical findings, a login that needs renewing, a monitored function with a fault, setbacks after a plan, a backup or database problem, a nearly full disk.",
+  whyGroup_red: "is what breaks something now: outages at the level high (long, or at something critical), new critical findings, a login that needs renewing, a monitored function with a fault, setbacks after a plan, a backup or database problem, a nearly full disk.",
   whyGroup_open: "is state that should be checked: an old scan, a monitored function that is unclear, a disk that is filling up.",
   whyGroup_care: "are updates, reminders, goals, quarantine and removed HACS repositories. They never colour the ring.",
   statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} points", healthWhy: "How does this come about?",
@@ -18240,7 +18243,8 @@ class HAHousekeeperPanel extends HTMLElement {
       // left from before (a status, a search, a filter of the list bar) would change the number the row said.
       if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
       this.findingScanNew = el.dataset.jumpScanNew !== undefined;
-      this.findingOutages = el.dataset.jumpOutages !== undefined;
+      // The outages of one level ("high", "medium") or all of them.
+      this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
       if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       // A list the jump counts starts without the search and filters kept from before; its own filter comes after.

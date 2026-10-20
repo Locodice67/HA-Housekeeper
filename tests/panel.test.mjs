@@ -1942,7 +1942,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
     meta: { ...DATA.meta, scanned_at: new Date(Date.now() - 80 * 3.6e6).toISOString(), scan_interval_hours: 24, quarantine_days: 14 },
     objects: [...DATA.objects, { object_type: "config_entry", object_id: "e1", name: "Hub", status: "problem", domain: "hue", state: "setup_error" }],
     quarantine: [{ object_id: "sensor.old", object_type: "entity", since: new Date(Date.now() - 20 * 864e5).toISOString() }, { object_id: "sensor.fresh", object_type: "entity", since: now }],
-    causes: [{ id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hub", follower_count: 0, consumers: {}, impact: "none", state: "setup_error" }],
+    causes: [{ id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hub", follower_count: 0, consumers: {}, impact: "high", state: "setup_error" }],
   };
   el.trend = TREND;
   el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }, { id: "emergency_kit", level: "note" }, { id: "last_run", level: "problem" }] };
@@ -6528,9 +6528,12 @@ test("the details of missing hours stand folded below the largest tables, with a
 
 test("the overview counts an outage chain once, at its top: a device below an integration that is down is not counted again", () => {
   const { el } = panel("en");
-  const cause = (id, kind, extra = {}) => ({ id, kind, object_type: kind === "device_down" ? "device" : "config_entry", object_id: id, name: id, follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "medium", ...extra });
+  const cause = (id, kind, extra = {}) => ({ id, kind, object_type: kind === "device_down" ? "device" : "config_entry", object_id: id, name: id, follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high", ...extra });
   el.data = { ...DATA, causes: [cause("int", "integration_down"), cause("dev", "device_down", { parent_id: "int" }), cause("solo", "device_down")], findings: [] };
   const row = el.todoItems().find(i => i.key === "outages");
   assert.equal(row.count, 2);
   assert.equal(row.hintText, "1 integration, 1 device");
+  el.data = { ...el.data, causes: [cause("int", "integration_down", { impact: "medium" }), cause("solo", "device_down")] };
+  const items = el.todoItems(), groups = el.todoGroups(items);
+  assert.ok(groups.red.some(i => i.key === "outages" && i.count === 1) && groups.open.some(i => i.key === "outages_open" && i.count === 1), "only high is urgent, medium is open");
 });
