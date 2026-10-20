@@ -120,7 +120,7 @@ const TEXT = {
     energyDashboard: "Energie-Dashboard",
     orphanStats: "Verwaiste Statistiken", unreferencedEntities: "Entitäten", noOrphanStats: "Keine verwaisten Statistiken.", noRecorder: "Der Recorder ist nicht verfügbar; es gibt keine Statistiken zu prüfen.",
    
-    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
+    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", inEnergyLocked: "Im Energie-Dashboard, darum nicht löschbar", sortUnit: "Einheit", allKinds: "Alle Arten",
     warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Bereinigen ist bis dahin gesperrt.",
     err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
@@ -305,7 +305,7 @@ const TEXT = {
     energyDashboard: "Energy dashboard",
     orphanStats: "Orphaned statistics", unreferencedEntities: "Entities", noOrphanStats: "No orphaned statistics.", noRecorder: "The recorder is not available; there are no statistics to check.",
    
-    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
+    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", inEnergyLocked: "In the Energy dashboard, so it cannot be deleted", sortUnit: "Unit", allKinds: "All kinds",
     warmupBanner: "Home Assistant is still starting. The findings are preliminary and will be collected again after startup; cleanup is locked until then.",
     err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",

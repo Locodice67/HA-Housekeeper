@@ -122,7 +122,7 @@ const TEXT = {
     energyDashboard: "Energie-Dashboard",
     orphanStats: "Verwaiste Statistiken", unreferencedEntities: "Entitäten", noOrphanStats: "Keine verwaisten Statistiken.", noRecorder: "Der Recorder ist nicht verfügbar; es gibt keine Statistiken zu prüfen.",
    
-    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
+    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", inEnergyLocked: "Im Energie-Dashboard, darum nicht löschbar", sortUnit: "Einheit", allKinds: "Alle Arten",
     warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Bereinigen ist bis dahin gesperrt.",
     err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
@@ -307,7 +307,7 @@ const TEXT = {
     energyDashboard: "Energy dashboard",
     orphanStats: "Orphaned statistics", unreferencedEntities: "Entities", noOrphanStats: "No orphaned statistics.", noRecorder: "The recorder is not available; there are no statistics to check.",
    
-    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
+    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", inEnergyLocked: "In the Energy dashboard, so it cannot be deleted", sortUnit: "Unit", allKinds: "All kinds",
     warmupBanner: "Home Assistant is still starting. The findings are preliminary and will be collected again after startup; cleanup is locked until then.",
     err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
@@ -5388,7 +5388,7 @@ class UnusedMixin {
       { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
       { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
-      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
+      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn" title="${this.esc(this.t("inEnergyLocked"))}">${this.t("inEnergy")}</span>` : "") },
     ];
     const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
@@ -5396,8 +5396,10 @@ class UnusedMixin {
   }
 
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
+  // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
-    if (!this.data.meta.recorder_available || o.in_energy) return "";
+    if (!this.data.meta.recorder_available) return "";
+    if (o.in_energy) return `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t("inEnergyLocked"))}" aria-label="${this.esc(`${o.statistic_id}: ${this.t("inEnergyLocked")}`)}">`;
     return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
   }
 

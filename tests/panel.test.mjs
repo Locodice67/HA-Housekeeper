@@ -1027,7 +1027,8 @@ test("orphaned statistics have their own tab with search, kind filter and energy
   el.render();
   let html = shadow.innerHTML;
   assert.ok(html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("create a plan"));
-  assert.equal((html.match(/In the Energy dashboard/g) || []).length, 1);
+  assert.equal((html.match(/>In the Energy dashboard</g) || []).length, 1);
+  assert.ok(html.includes("so it cannot be deleted"), "the greyed box says why");
   el.lv.orphanstats.f.kind = "kindMean";
   el.render();
   html = shadow.innerHTML;
