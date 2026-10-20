@@ -6387,3 +6387,13 @@ test("a type in the inventory table shows every object of it, without a search l
   assert.equal(`${el.typeFilter}|${el.query}|${el.labelFilter}`, "entity||");
   assert.equal(el.filtered().length, DATA.objects.filter(o => o.object_type === "entity").length);
 });
+
+test("a battery tile shows the batteries it counts, without a search left over", () => {
+  const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
+  const st = el.lvState("batteries", "left", "asc"); st.q = "kitchen"; st.f = { area: "Kitchen" };
+  const tile = { dataset: { batteryFilter: "low" } };
+  shadow.querySelectorAll = selector => (selector === "[data-battery-filter]" ? [tile] : []);
+  el.bind();
+  tile.onclick();
+  assert.equal(`${el.batteryFilter}|${el.lv.batteries.q}|${Object.keys(el.lv.batteries.f).length}`, "low||0");
+});
