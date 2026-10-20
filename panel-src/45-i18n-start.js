@@ -1,8 +1,8 @@
 Object.assign(TEXT.de, {
   warmupTitle: "Home Assistant startet ...", warmupS1: "Home Assistant startet", warmupS2: "Integrationen laden", warmupS3: "Puffer", warmupS4: "Befunde erheben",
   warmupLoaded: "{done} von {total} Integrationen geladen", warmupLoadedAll: "{done} Integrationen geladen", warmupWait: "Wartezeit, höchstens noch", warmupBuffer: "Sicherheitspuffer, noch", warmupMin: "Min.",
-  warmupNames: "Laden noch:", warmupLocked: "Aufräumen ist bis dahin gesperrt.", warmupBlip: "{name} lädt kurz neu, der Puffer läuft weiter.",
-  warmupBootLine: "Home Assistant lädt noch. Die Wartezeit beginnt danach. Aufräumen ist bis dahin gesperrt.", warmupAfter: "Danach sind die Befunde endgültig, und Aufräumen ist wieder frei.",
+  warmupNames: "Laden noch:", warmupLocked: "Bereinigen ist bis dahin gesperrt.", warmupBlip: "{name} lädt kurz neu, der Puffer läuft weiter.",
+  warmupBootLine: "Home Assistant lädt noch. Die Wartezeit beginnt danach. Bereinigen ist bis dahin gesperrt.", warmupAfter: "Danach sind die Befunde endgültig, und Bereinigen ist wieder frei.",
   warmupBooting: "Home Assistant lädt", warmupAsking: "Stand wird abgefragt …", warmupDoneToast: "Die Befunde sind endgültig.",
   warmupPhase_start: "Der Scan startet", warmupPhase_registries: "Register lesen", warmupPhase_devices: "Geräte und Entitäten", warmupPhase_automations: "Automationen und Verweise", warmupPhase_finalizing: "Befunde berechnen",
 });

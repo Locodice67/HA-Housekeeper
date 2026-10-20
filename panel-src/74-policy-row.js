@@ -1,8 +1,8 @@
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  polOpenRow: "Details aufklappen", polCloseRow: "Details zuklappen", polWhy: "Warum", polActRename: "Umbenennen", polOpenObject: "Objekt öffnen", polToCleanup: "Zum Aufräumen",
-  polNameFree: "frei", polNameTaken: "vergeben von {name} ({id})", polNameTakenDead: "vergeben: {id} ist nicht mehr verfügbar. Aufräumen gibt den Namen frei.", polNameSame: "unverändert",
+  polOpenRow: "Details aufklappen", polCloseRow: "Details zuklappen", polWhy: "Warum", polActRename: "Umbenennen", polOpenObject: "Objekt öffnen", polToCleanup: "Zum Bereinigen",
+  polNameFree: "frei", polNameTaken: "vergeben von {name} ({id})", polNameTakenDead: "vergeben: {id} ist nicht mehr verfügbar. Bereinigen gibt den Namen frei.", polNameSame: "unverändert",
   polSuggestHint: "Vorschläge:", polRecommended: "empfohlen", polPickHint: "Wähle einen Vorschlag oder tippe eine ID.", polNoSuggest: "Kein freier Vorschlag aus Name und Bereich. Tippe eine ID.", polSuggTaken: "{id} ist vergeben: {why}", polExpectedNote: "Die ID beginnt hier mit „{prefix}“.",
 });
 Object.assign(TEXT.en, {
