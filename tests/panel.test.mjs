@@ -4705,9 +4705,9 @@ test("the journal names the end of a follow-up and the safety line counts the wa
 test("the sparkline shows the change over the whole period, and a hint while there are too few points", () => {
   const { el } = panel("en");
   const day = n => new Date(Date.UTC(2026, 9, n)).toISOString();
-  el.series = { points: [{ at: day(1), findings: 58, objects: 10 }, { at: day(11), findings: 50, objects: 10 }, { at: day(31), findings: 38, objects: 10 }] };
+  el.series = { points: [{ at: day(25), findings: 58, objects: 10 }, { at: day(28), findings: 50, objects: 10 }, { at: day(31), findings: 38, objects: 10 }] };
   const html = el.sparkline("findings", "bad");
-  assert.ok(html.includes("<svg") && html.includes("−20 in 30 days") && html.includes('spark-end ok'), "fewer findings is good");
+  assert.ok(html.includes("<svg") && html.includes("−20 in 6 days") && html.includes('spark-end ok'), "fewer findings is good");
   assert.ok(el.sparkline("findings", "bad") !== el.sparkline("objects") && !el.sparkline("objects").includes("spark-end ok"), "without a direction the end point stays neutral");
   el.series = { points: [{ at: day(1), findings: 5 }, { at: day(2), findings: 6 }] };
   assert.ok(el.sparkline("findings", "bad").includes("appears after a few scans") && !el.sparkline("findings", "bad").includes("<svg"));
@@ -6423,4 +6423,10 @@ test("the overview tiles count every finding, the faults and the tidying up, and
   assert.ok(html.includes("<small>Findings</small><strong>4</strong>"), "Findings counts all four");
   assert.ok(tile("red").includes("Faults") && tile("red").includes("<strong>2</strong>") && tile("red").includes("+1 in 2 days"));
   assert.ok(tile("tidy").includes("Tidying up") && tile("tidy").includes("<strong>2</strong>") && tile("tidy").includes("−1 in 2 days"));
+});
+
+test("a sparkline shows at most the last seven days", () => {
+  const { el } = panel("en");
+  el.series = { points: Array.from({ length: 10 }, (_, i) => ({ at: new Date(Date.UTC(2026, 9, 11 + i)).toISOString(), open: i })) };
+  assert.ok(el.sparkline("open", "bad").includes("+7 in 7 days"));
 });

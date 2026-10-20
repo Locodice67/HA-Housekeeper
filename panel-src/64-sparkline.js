@@ -1,6 +1,8 @@
 // SparklineMixin: the small history lines in the overview tiles. The series comes from the stored
 // scan history (one point per day); the number beside it is the change over the whole period.
 const SPARK_MIN_POINTS = 3;
+// A line shows at most the last week, so the tiles side by side cover the same days once every series is that old.
+const SPARK_DAYS = 7;
 
 class SparklineMixin {
   // The series is fetched once per data set, like the comparison with the previous scan.
@@ -33,7 +35,10 @@ class SparklineMixin {
       : key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
       : key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
       : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
-    const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
+    const stored = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
+    // An hour of slack for the day a clock change makes 23 or 25 hours long.
+    const end = stored.length ? Date.parse(stored[stored.length - 1].at) : 0;
+    const points = stored.filter(p => end - Date.parse(p.at) <= SPARK_DAYS * 864e5 + 36e5);
     if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;
     const values = points.map(read), n = values.length;
     const first = values[0], last = values[n - 1], change = last - first;
