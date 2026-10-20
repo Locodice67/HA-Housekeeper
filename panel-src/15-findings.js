@@ -126,7 +126,9 @@ class FindingsMixin {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const classed = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter) : all;
     const afterOnly = this.findingAfter ? classed.filter(f => this.corr?.by_key?.[f.key]) : classed;
-    const byClass = this.findingDue ? afterOnly.filter(f => f.resurfaced) : afterOnly;
+    const due = this.findingDue ? afterOnly.filter(f => f.resurfaced) : afterOnly;
+    const scanNew = this.findingScanNew ? this.scanNewKeys() : null;
+    const byClass = scanNew ? due.filter(f => scanNew.has(f.key)) : due;
     this.lvState("findings", "impact", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
@@ -169,7 +171,7 @@ class FindingsMixin {
 
   // The filters the tiles above set (class, "after"); the list bar shows its own.
   findingNote() {
-    return this.filterNote([this.findingFilter ? this.reasonLabel(this.findingFilter) : "", this.findingAfter ? this.t("corrTile") : ""].filter(Boolean), "data-finding-reset");
+    return this.filterNote([this.findingFilter ? this.reasonLabel(this.findingFilter) : "", this.findingAfter ? this.t("corrTile") : "", this.findingScanNew ? this.t("scanNewFilter") : ""].filter(Boolean), "data-finding-reset");
   }
 
   // Opens or closes every head of the grouped list at once, the ones below a closed head too.
