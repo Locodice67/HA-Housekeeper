@@ -50,7 +50,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -119,6 +119,10 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
     backups: [70, 94, 118].map((h, i) => ({ date: ago(h), size: (900 - i * 10) * MB, agents: ["hassio.local"], protected: false, automatic: true, failed_agents: [] })),
     attest: { emergency_kit: null, restore_test: ago(24 * 37) } };
   const data = await (await fetch("/data.json")).json(), trend = await (await fetch("/trend.json")).json();
+  // Two marks for the page of exceptions and marks: one current, one whose review date has passed.
+  const devices = data.objects.filter(o => o.object_type === "device");
+  if (devices[0]) devices[0].mark = { kind: "expected_offline", reason: "nachts aus", until: null, window: { mode: "time", from: "22:00", to: "07:00" }, at: ago(240) };
+  if (devices[1]) Object.assign(devices[1], { mark: { kind: "seasonal", reason: "", until: ago(48), at: ago(2400) }, mark_due: true });
   const el = document.createElement("ha-housekeeper-panel");
   el.narrow = innerWidth <= 870; // as Home Assistant hands it to a panel when its sidebar becomes a drawer
   document.body.appendChild(el);
@@ -127,6 +131,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
     callWS: async msg => { const t = msg.type;
       if (t.endsWith("/inventory") || t.endsWith("/scan")) return data;
       if (t.endsWith("/status")) return { running: false };
+      if (t.endsWith("/exceptions")) return { rules: [{ id: "r1", kind: "area", targets: ["garten"], action: "delay", days: 3, scope: "always", enabled: true, note: "", effect: { hold: 5, due: 0 } }], areas: [{ id: "garten", name: "Garten" }], labels: [], integrations: [], domains: [], devices: [], entities: [], vacation: {}, days_max: 365 };
       if (t.endsWith("/plan_list")) return { plans: [] };
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };

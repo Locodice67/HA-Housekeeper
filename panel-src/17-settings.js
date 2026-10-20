@@ -30,7 +30,11 @@ class SettingsMixin {
     const v = m.vacation, rules = this.exc?.rules ? this.exc.rules.length : m.exception_rules || 0;
     const pills = [{ text: this.t(rules === 1 ? "setRuleOne" : "setRulesCount", { n: rules }) }, { text: hidden ? this.t("setHiddenCount", { n: hidden }) : this.t("setNoneHidden") }];
     pills.push(v ? { text: this.t(v.active ? "setVacationOn" : "setVacationOff"), tone: v.active ? "warn" : "mute" } : { text: this.t("setVacationNone"), tone: "warn" });
-    return pills;
+    // What wants a look again: marks whose review date passed, findings whose status ran out.
+    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length, statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
+    if (marksDue) pills.unshift({ text: this.t("decReviewDue", { n: marksDue }), tone: "warn" });
+    if (statusDue) pills.unshift({ text: this.t("decDue", { n: statusDue }), tone: "warn" });
+    return pills.slice(0, 3); // more do not fit the tile; what is due comes first
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -94,26 +98,67 @@ class SettingsMixin {
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save disabled>${this.t("saveOptions")}</button></div></section>`;
   }
 
-  hiddenCard() {
-    const hidden = (this.data?.findings || []).filter(f => f.ignored);
-    const by = f => (f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? f.ignored_by : "manual");
+  // The numbers of the tab, one per card: findings with a status, marks, rules and labelled objects; each jumps to its card.
+  decisionsBar() {
+    const findings = this.data?.findings || [], objects = this.data?.objects || [];
+    const status = findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), statusDue = status.filter(f => !f.ignored).length;
+    const marks = objects.filter(o => o.mark), marksDue = marks.filter(o => o.mark_due).length;
+    const rules = this.exc?.rules?.length ?? this.data?.meta?.exception_rules ?? 0, byRule = findings.filter(f => f.ignored_by === "rule").length;
+    const labelled = this.invObjects().filter(o => (o.labels || []).some(l => HK_LABELS.includes(l))).length;
+    const kpi = (sec, label, n, extra, warn) => `<button type="button" class="kpi" data-sec-go="${sec}"><small>${this.t(label)}</small><strong>${this.formatNumber(n)}</strong>${extra ? `<small class="${warn ? "warntext" : ""}">${this.esc(extra)}</small>` : ""}</button>`;
+    return `<div class="kpis decbar">${kpi("status", "decStatusKpi", status.length, statusDue ? this.t("decDue", { n: this.formatNumber(statusDue) }) : "", true)}${kpi("marks", "decMarksKpi", marks.length, marksDue ? this.t("decReviewDue", { n: this.formatNumber(marksDue) }) : "", true)}${kpi("rules", "decRulesKpi", rules, byRule ? this.t("decRuleHides", { n: this.formatNumber(byRule) }) : "")}${kpi("labels", "decLabelsKpi", labelled, "housekeeper_*")}</div>`;
+  }
+
+  // The findings with a status of their own: known, snoozed, hidden, and the ones whose time ran out (due), those first.
+  // Marks, rules and labels have their own cards.
+  statusCard() {
+    const list = (this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored));
+    const state = f => (f.ignored ? this.decidedState(f) : "due");
     const objectName = f => this.findObject(this.findingKey(f))?.name || f.object_id;
-    const decision = f => (f.ignore_info ? this.decisionLabel(f) : "") + (f.mark ? ` ${this.markLine(f.mark)}` : "") + (f.ignored_by === "rule" ? this.findingRuleLine(f) : "");
-    const action = f => (by(f) === "manual" ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : f.ignored_by === "rule" ? "hidRuleLink" : "ignoredByLabel")}</span>`);
-    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }];
-    const filters = [{ name: "by", all: this.t("hidAllWays"), options: [["manual", this.t("hidByManual")], ["label", this.t("hidByLabel")], ["mark", this.t("hidByMark")], ["rule", this.t("hidByRule")]] }];
-    const st = this.lvState("hidden", "name", "asc");
-    this.setExporter("hidden", "hidden-findings", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("hidColDecision")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), decision(f).trim()]));
-    const bar = hidden.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("hidden", { sorts, filters }) : "";
-    const refined = this.refine("hidden", hidden, { text: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f)].join(" "), filters: { by: (f, v) => by(f) === v }, sorts, tie: f => f.key });
-    const pg = this.paginate("hidden", refined);
+    const until = f => (f.ignore_info?.until ? this.t("decideUntil", { date: this.formatDate(f.ignore_info.until) }) : f.ignored ? this.t("decideForever") : "");
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }, { key: "until", label: "decColUntil", dir: "asc", get: f => f.ignore_info?.until || "9999" }];
+    const filters = [{ name: "state", all: this.t("decAllStates"), options: ["known", "snoozed", "hidden", "due"].map(s => [s, this.t(s === "due" ? "dueLabel" : `state_${s}`)]) }];
+    const st = this.lvState("decided", "name", "asc");
+    this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f)]));
+    const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("decided", { sorts, filters }) : "";
+    const sorted = this.refine("decided", list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v }, sorts, tie: f => f.key });
+    const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored)];
+    const pg = this.paginate("decided", refined);
     st.shown = refined.length;
+    const tone = { known: "ok", snoozed: "warn", hidden: "mute", due: "warn" };
     const row = f => {
-      const key = this.findingKey(f), object = this.findObject(key), why = decision(f).trim();
-      return `<div class="row" ${object ? `data-object="${this.esc(key)}" tabindex="0" role="button" aria-label="${this.esc(objectName(f))}"` : ""} title="${this.esc(f.object_id)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text"><strong>${this.esc(objectName(f))}</strong><small>${this.esc(this.findingTitle(f))}${why ? ` · ${this.esc(why)}` : ""}</small></span>${action(f)}</div>`;
+      const key = this.findingKey(f), object = this.findObject(key), s = state(f);
+      const facts = [this.findingTitle(f), f.ignore_info?.reason, until(f)].filter(Boolean).map(x => this.esc(x)).join(" · ");
+      const back = f.ignored ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : "";
+      const form = this.decide?.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : "";
+      return `<div class="row${s === "due" ? " duerow" : ""}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text">${object ? `<button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(objectName(f))}</button>` : `<strong>${this.esc(objectName(f))}</strong>`}<small>${facts}</small></span><span class="pill ${tone[s]}">${this.t(s === "due" ? "dueLabel" : `state_${s}`)}</span><span class="rowacts"><button class="btn quiet" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "keep"}"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t(f.ignored ? "decChange" : "fselStatus")}</button>${back}</span></div>${form}`;
     };
-    const table = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${hidden.length ? this.noMatches("hidden") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("hiddenNone")}`}</div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${bar}${table}${pg.footer}</section>`;
+    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
+  }
+
+  // Every mark, also one that hides nothing right now: what it says, when it applies and what it does at the moment.
+  marksCard() {
+    const list = (this.data?.objects || []).filter(o => o.mark);
+    const hides = new Map();
+    for (const f of this.data?.findings || []) if (f.ignored_by === "mark") { const owner = this.markOwner(f); if (owner) hides.set(owner, (hides.get(owner) || 0) + 1); }
+    const keyOf = o => `${o.object_type}:${o.object_id}`;
+    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.t("markEffHides", { n: this.formatNumber(hides.get(keyOf(o))) }) : this.t("markEffNone"));
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: o => o.name || o.object_id }, { key: "kind", label: "markKind", dir: "asc", get: o => this.t(`mark_${o.mark.kind}`) }, { key: "review", label: "markReview", dir: "asc", get: o => o.mark.until || "9999" }];
+    const filters = [{ name: "kind", all: this.t("decAllMarks"), options: [["due", this.t("decReviewDueShort")], ...["expected_offline", "seasonal", "spare", "keep", "replaced"].filter(k => list.some(o => o.mark.kind === k)).map(k => [k, this.t(`mark_${k}`)])] }];
+    const st = this.lvState("marks", "name", "asc");
+    this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
+    const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
+    const sorted = this.refine("marks", list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due)];
+    const pg = this.paginate("marks", refined);
+    st.shown = refined.length;
+    const row = o => {
+      const key = keyOf(o);
+      return `<div class="row${o.mark_due ? " duerow" : ""}">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<span class="row-text"><button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(o.name || o.object_id)}</button><small>${this.esc(this.t(o.object_type))} · ${this.esc(this.markLine(o.mark))}</small></span><span class="pill ${o.mark_due ? "warn" : "mute"}">${this.esc(effect(o))}</span><span class="rowacts"><button class="btn quiet" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}"><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("markClear")}</button></span></div>`;
+    };
+    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -228,7 +273,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => `${this.excCard()}${this.hiddenCard()}`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => this.excCard(), scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 

@@ -5445,12 +5445,15 @@ test("the settings list every file Housekeeper keeps with size and purpose, grou
   assert.ok(html.includes("<table") && html.includes("Audit trail") && el._exporters.storedfiles.rows()[0].length === 5, "the files are a table with an export");
 });
 
-test("the settings list the hidden findings as rows with a filter by kind, and the event list has no inline style", () => {
+test("the settings list the findings with a status and every mark, each in its own card, and the event list has no inline style", () => {
   const { el } = panel("en");
-  el.data = { ...DATA, findings: [{ key: "h1", rule_id: "r", object_id: "sensor.a", ignored: true, ignored_by: "label" }, { key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true }] };
-  const html = el.hiddenCard();
-  assert.ok(!html.includes("<table") && html.includes('class="row"') && html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"'), "only a manual decision can be shown again");
-  assert.ok(el._exporters.hidden && html.includes("Hidden findings (2)"));
+  const mark = { kind: "seasonal", reason: "", until: "2026-01-01T00:00:00+00:00", at: "2025-10-01T00:00:00+00:00" };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "device", object_id: "d1", name: "Tree lights", mark, mark_due: true }], findings: [{ key: "h1", rule_id: "r", object_id: "sensor.a", ignored: true, ignored_by: "label" }, { key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "ignore", reason: "", until: null } }, { key: "h3", rule_id: "r", object_id: "sensor.c", ignored: false, resurfaced: true }] };
+  const html = el.statusCard();
+  assert.ok(html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"') && html.indexOf('data-decide-open="h3"') < html.indexOf('data-decide-open="h2"'), "own status only, a run-out one first; label, mark and rule have their own cards");
+  assert.ok(el._exporters.decided && html.includes("(2)"));
+  const marks = el.marksCard();
+  assert.ok(marks.includes('data-mark-clear="device:d1"') && marks.includes("review date reached"), "a mark is listed even when it hides nothing");
   assert.ok(el.eventsCard().includes('class="evtable"') && !el.eventsCard().includes("style="));
 });
 

@@ -91,7 +91,7 @@ const TEXT = {
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honig", schemeLagoon: "Lagune", schemeEmerald: "Smaragd", schemeFrost: "Frost", schemeMidnight: "Mitternacht", schemeOlive: "Olive", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
-    hiddenFindings: "Ausgeblendete Befunde", decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Bekannt", decideKind_snooze: "Zurückgestellt", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "Bewusst behalten braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
+    decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Bekannt", decideKind_snooze: "Zurückgestellt", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "Bewusst behalten braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig",
     sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
     denseOn: "Kompakte Zeilen", denseOff: "Ausführliche Zeilen", sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
@@ -276,7 +276,7 @@ const TEXT = {
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honey", schemeLagoon: "Lagoon", schemeEmerald: "Emerald", schemeFrost: "Frost", schemeMidnight: "Midnight", schemeOlive: "Olive", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
-    hiddenFindings: "Hidden findings", decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Known", decideKind_snooze: "Snoozed", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "Keeping on purpose needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
+    decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Known", decideKind_snooze: "Snoozed", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "Keeping on purpose needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again",
     sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
     denseOn: "Compact rows", denseOff: "Detailed rows", sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
@@ -493,6 +493,7 @@ const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
+const HK_LABELS = ["housekeeper_keep", "housekeeper_ignore", "housekeeper_critical"];
 // One icon per action, the same in the selection bar and in the menu of a row.
 const FSEL_ICONS = { status: "mdi:checkbox-marked-circle-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
 
@@ -1085,7 +1086,13 @@ Object.assign(TEXT.de, {
   storeChanged: "geändert",
   storeNone: "Noch keine Daten gespeichert.",
   stoColFile: "Datei", stoColGroup: "Gruppe", stoColSize: "Größe", stoColChanged: "Geändert", stoAllGroups: "Alle Gruppen",
-  hidColObject: "Objekt", hidColFinding: "Befund", hidColDecision: "Entscheidung", hidColAction: "Aktion", hidAllWays: "Alle Arten", hidByManual: "Von dir ausgeblendet", hidByLabel: "Durch Label", hidByMark: "Durch Markierung",
+  decStatusKpi: "Befunde mit Status", decMarksKpi: "Vermerke", decRulesKpi: "Ausnahmeregeln", decLabelsKpi: "Objekte mit Label", decDue: "{n} fällig", decReviewDue: "{n} Prüfdatum erreicht", decReviewDueShort: "Prüfdatum erreicht", decRuleHides: "{n} Befunde ausgeblendet",
+  decStatusTitle: "Befunde mit eigenem Status", decStatusHint: "Was du an einzelnen Befunden entschieden hast: bekannt, zurückgestellt, ausgeblendet. Gilt nur für diesen Befund; ein neuer Befund am selben Objekt ist wieder offen. Abgelaufene stehen oben.", decStatusNone: "Kein Befund hat einen eigenen Status.",
+  decAllStates: "Alle", decColStatus: "Status", decColUntil: "Bis", decChange: "Status ändern", decColEffect: "Wirkt gerade",
+  decMarksTitle: "Vermerke", decMarksHint: "Aussagen über ein Objekt: absichtlich offline, saisonal, Ersatz, nicht entfernen, ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jeder Vermerk, auch wenn er gerade nichts ausblendet.", decMarksNone: "Noch kein Vermerk. Du setzt ihn an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
+  markEffDue: "Prüfdatum erreicht, blendet nichts mehr aus", markEffKeep: "sperrt Aufräumen", markEffHides: "{n} Befunde ausgeblendet", markEffNone: "blendet gerade nichts aus",
+  decAllLink: "Alle Ausnahmen und Vermerke",
+  hidColObject: "Objekt", hidColFinding: "Befund",
   storeHintBytes: "Nur Art und Größe, nie Inhalte. Löschen ist hier nicht vorgesehen.",
   store_observations: "Beobachtungen", storeText_observations: "Seit wann ein Objekt in seinem Zustand ist. Bleibt, solange das Objekt existiert.",
   store_history: "Scanverlauf", storeText_history: "Der letzte Scan jedes Tages als Vergleichspunkt, {days} Tage lang.",
@@ -1125,7 +1132,13 @@ Object.assign(TEXT.en, {
   storeChanged: "changed",
   storeNone: "No data stored yet.",
   stoColFile: "File", stoColGroup: "Group", stoColSize: "Size", stoColChanged: "Changed", stoAllGroups: "All groups",
-  hidColObject: "Object", hidColFinding: "Finding", hidColDecision: "Decision", hidColAction: "Action", hidAllWays: "All kinds", hidByManual: "Hidden by you", hidByLabel: "By label", hidByMark: "By mark",
+  decStatusKpi: "Findings with a status", decMarksKpi: "Marks", decRulesKpi: "Exception rules", decLabelsKpi: "Objects with a label", decDue: "{n} due", decReviewDue: "{n} review date reached", decReviewDueShort: "Review date reached", decRuleHides: "{n} findings hidden",
+  decStatusTitle: "Findings with a status of their own", decStatusHint: "What you decided about single findings: known, snoozed, hidden. It applies to that finding only; a new finding on the same object is open again. Run-out ones come first.", decStatusNone: "No finding has a status of its own.",
+  decAllStates: "All", decColStatus: "Status", decColUntil: "Until", decChange: "Change status", decColEffect: "Acting now",
+  decMarksTitle: "Marks", decMarksHint: "Statements about an object: offline on purpose, seasonal, spare, do not remove, replaced. They also apply to future outages, on a device to its entities. Every mark is listed here, also one that hides nothing right now.", decMarksNone: "No mark yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
+  markEffDue: "review date reached, hides nothing any more", markEffKeep: "blocks cleanup", markEffHides: "{n} findings hidden", markEffNone: "hides nothing right now",
+  decAllLink: "All exceptions and marks",
+  hidColObject: "Object", hidColFinding: "Finding",
   storeHintBytes: "Only kind and size, never contents. Deleting is not offered here.",
   store_observations: "Observations", storeText_observations: "Since when an object has been in its state. Kept as long as the object exists.",
   store_history: "Scan history", storeText_history: "The last scan of each day as a comparison point, for {days} days.",
@@ -1710,6 +1723,7 @@ class StylesMixin {
       .mcprow .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.mcprow .seg{flex-wrap:nowrap;justify-content:flex-end}@media(max-width:640px){.mcprow .seg{grid-column:1/-1;grid-row:2;justify-content:flex-start;padding-left:52px}}.mcpneeds{color:var(--hk-amber)}.mcpnote{display:flex;gap:10px;align-items:flex-start;margin:12px 16px;padding:10px 12px;border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1));line-height:1.5}.mcpnote ha-icon{--mdc-icon-size:18px;flex:none;margin-top:1px;color:var(--hk-muted)}.mcpcalls{margin-left:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));font-weight:400}.mcphow .mcpsteps{display:grid;gap:8px;margin:6px 0 0;padding-left:20px;font-size:calc(13px*var(--hk-fs,1));line-height:1.6}.mcpchip{display:inline-block;margin:1px 2px;padding:1px 7px;border-radius:6px;background:var(--hk-soft);border:1px solid var(--hk-border);font-size:calc(12px*var(--hk-fs,1))}
       .statusopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.statusopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;cursor:pointer;background:var(--hk-surface)}.statusopt.on{border-color:var(--hk-blue-solid);box-shadow:0 0 0 1px var(--hk-blue-solid)}.statusopt input{margin:3px 0 0;flex:none}.statusopt span{display:grid;gap:2px;min-width:0}.statusopt small{color:var(--hk-muted);font-size:12.5px;white-space:normal}.statusform{display:grid;gap:10px}.statusrow{display:flex;gap:8px;flex-wrap:wrap}.statusrow input{flex:1 1 220px;min-width:0}.statusform .mbtns{display:flex;gap:8px;justify-content:flex-end}.menuitem span{display:grid;text-align:left}.menuitem small{color:var(--hk-muted);font-size:12px}.fbtns .btn.ha{background:none;box-shadow:none;border-color:var(--hk-border)}
       .statustext h2 .headlink{text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:color-mix(in srgb,currentColor 25%,transparent);text-underline-offset:5px}.statustext p .link{font-size:inherit}.todogrp{display:flex;gap:8px;align-items:center}.foldhd small{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}.todogrp.red{color:var(--hk-red)}.whygroups{display:grid;gap:4px;margin-bottom:10px}.whygroups p{margin:0}.why-red{color:var(--hk-red)}.why-open{color:var(--hk-amber)}.why-care{color:var(--hk-muted)}
+      .decbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.decbar .kpi{text-align:left}.decbar .warntext{color:var(--hk-amber)}@media(max-width:640px){.decbar{grid-template-columns:repeat(2,minmax(0,1fr))}}.row.duerow{background:color-mix(in srgb,var(--hk-amber) 7%,transparent)}.rowacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.link.strong{font-weight:600;color:inherit;text-align:left}
       ${this.themeCss()}
     </style>`;
   }
@@ -2942,7 +2956,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const status = this.statusChips();
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${status ? `<span class="seg">${status}</span>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenCard()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${status ? `<span class="seg">${status}</span>` : ""}${["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -3336,7 +3350,11 @@ class SettingsMixin {
     const v = m.vacation, rules = this.exc?.rules ? this.exc.rules.length : m.exception_rules || 0;
     const pills = [{ text: this.t(rules === 1 ? "setRuleOne" : "setRulesCount", { n: rules }) }, { text: hidden ? this.t("setHiddenCount", { n: hidden }) : this.t("setNoneHidden") }];
     pills.push(v ? { text: this.t(v.active ? "setVacationOn" : "setVacationOff"), tone: v.active ? "warn" : "mute" } : { text: this.t("setVacationNone"), tone: "warn" });
-    return pills;
+    // What wants a look again: marks whose review date passed, findings whose status ran out.
+    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length, statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
+    if (marksDue) pills.unshift({ text: this.t("decReviewDue", { n: marksDue }), tone: "warn" });
+    if (statusDue) pills.unshift({ text: this.t("decDue", { n: statusDue }), tone: "warn" });
+    return pills.slice(0, 3); // more do not fit the tile; what is due comes first
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -3400,26 +3418,67 @@ class SettingsMixin {
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save disabled>${this.t("saveOptions")}</button></div></section>`;
   }
 
-  hiddenCard() {
-    const hidden = (this.data?.findings || []).filter(f => f.ignored);
-    const by = f => (f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? f.ignored_by : "manual");
+  // The numbers of the tab, one per card: findings with a status, marks, rules and labelled objects; each jumps to its card.
+  decisionsBar() {
+    const findings = this.data?.findings || [], objects = this.data?.objects || [];
+    const status = findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), statusDue = status.filter(f => !f.ignored).length;
+    const marks = objects.filter(o => o.mark), marksDue = marks.filter(o => o.mark_due).length;
+    const rules = this.exc?.rules?.length ?? this.data?.meta?.exception_rules ?? 0, byRule = findings.filter(f => f.ignored_by === "rule").length;
+    const labelled = this.invObjects().filter(o => (o.labels || []).some(l => HK_LABELS.includes(l))).length;
+    const kpi = (sec, label, n, extra, warn) => `<button type="button" class="kpi" data-sec-go="${sec}"><small>${this.t(label)}</small><strong>${this.formatNumber(n)}</strong>${extra ? `<small class="${warn ? "warntext" : ""}">${this.esc(extra)}</small>` : ""}</button>`;
+    return `<div class="kpis decbar">${kpi("status", "decStatusKpi", status.length, statusDue ? this.t("decDue", { n: this.formatNumber(statusDue) }) : "", true)}${kpi("marks", "decMarksKpi", marks.length, marksDue ? this.t("decReviewDue", { n: this.formatNumber(marksDue) }) : "", true)}${kpi("rules", "decRulesKpi", rules, byRule ? this.t("decRuleHides", { n: this.formatNumber(byRule) }) : "")}${kpi("labels", "decLabelsKpi", labelled, "housekeeper_*")}</div>`;
+  }
+
+  // The findings with a status of their own: known, snoozed, hidden, and the ones whose time ran out (due), those first.
+  // Marks, rules and labels have their own cards.
+  statusCard() {
+    const list = (this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored));
+    const state = f => (f.ignored ? this.decidedState(f) : "due");
     const objectName = f => this.findObject(this.findingKey(f))?.name || f.object_id;
-    const decision = f => (f.ignore_info ? this.decisionLabel(f) : "") + (f.mark ? ` ${this.markLine(f.mark)}` : "") + (f.ignored_by === "rule" ? this.findingRuleLine(f) : "");
-    const action = f => (by(f) === "manual" ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : f.ignored_by === "rule" ? "hidRuleLink" : "ignoredByLabel")}</span>`);
-    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }];
-    const filters = [{ name: "by", all: this.t("hidAllWays"), options: [["manual", this.t("hidByManual")], ["label", this.t("hidByLabel")], ["mark", this.t("hidByMark")], ["rule", this.t("hidByRule")]] }];
-    const st = this.lvState("hidden", "name", "asc");
-    this.setExporter("hidden", "hidden-findings", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("hidColDecision")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), decision(f).trim()]));
-    const bar = hidden.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("hidden", { sorts, filters }) : "";
-    const refined = this.refine("hidden", hidden, { text: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f)].join(" "), filters: { by: (f, v) => by(f) === v }, sorts, tie: f => f.key });
-    const pg = this.paginate("hidden", refined);
+    const until = f => (f.ignore_info?.until ? this.t("decideUntil", { date: this.formatDate(f.ignore_info.until) }) : f.ignored ? this.t("decideForever") : "");
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }, { key: "until", label: "decColUntil", dir: "asc", get: f => f.ignore_info?.until || "9999" }];
+    const filters = [{ name: "state", all: this.t("decAllStates"), options: ["known", "snoozed", "hidden", "due"].map(s => [s, this.t(s === "due" ? "dueLabel" : `state_${s}`)]) }];
+    const st = this.lvState("decided", "name", "asc");
+    this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f)]));
+    const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("decided", { sorts, filters }) : "";
+    const sorted = this.refine("decided", list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v }, sorts, tie: f => f.key });
+    const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored)];
+    const pg = this.paginate("decided", refined);
     st.shown = refined.length;
+    const tone = { known: "ok", snoozed: "warn", hidden: "mute", due: "warn" };
     const row = f => {
-      const key = this.findingKey(f), object = this.findObject(key), why = decision(f).trim();
-      return `<div class="row" ${object ? `data-object="${this.esc(key)}" tabindex="0" role="button" aria-label="${this.esc(objectName(f))}"` : ""} title="${this.esc(f.object_id)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text"><strong>${this.esc(objectName(f))}</strong><small>${this.esc(this.findingTitle(f))}${why ? ` · ${this.esc(why)}` : ""}</small></span>${action(f)}</div>`;
+      const key = this.findingKey(f), object = this.findObject(key), s = state(f);
+      const facts = [this.findingTitle(f), f.ignore_info?.reason, until(f)].filter(Boolean).map(x => this.esc(x)).join(" · ");
+      const back = f.ignored ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : "";
+      const form = this.decide?.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : "";
+      return `<div class="row${s === "due" ? " duerow" : ""}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text">${object ? `<button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(objectName(f))}</button>` : `<strong>${this.esc(objectName(f))}</strong>`}<small>${facts}</small></span><span class="pill ${tone[s]}">${this.t(s === "due" ? "dueLabel" : `state_${s}`)}</span><span class="rowacts"><button class="btn quiet" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "keep"}"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t(f.ignored ? "decChange" : "fselStatus")}</button>${back}</span></div>${form}`;
     };
-    const table = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${hidden.length ? this.noMatches("hidden") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("hiddenNone")}`}</div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${bar}${table}${pg.footer}</section>`;
+    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
+  }
+
+  // Every mark, also one that hides nothing right now: what it says, when it applies and what it does at the moment.
+  marksCard() {
+    const list = (this.data?.objects || []).filter(o => o.mark);
+    const hides = new Map();
+    for (const f of this.data?.findings || []) if (f.ignored_by === "mark") { const owner = this.markOwner(f); if (owner) hides.set(owner, (hides.get(owner) || 0) + 1); }
+    const keyOf = o => `${o.object_type}:${o.object_id}`;
+    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.t("markEffHides", { n: this.formatNumber(hides.get(keyOf(o))) }) : this.t("markEffNone"));
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: o => o.name || o.object_id }, { key: "kind", label: "markKind", dir: "asc", get: o => this.t(`mark_${o.mark.kind}`) }, { key: "review", label: "markReview", dir: "asc", get: o => o.mark.until || "9999" }];
+    const filters = [{ name: "kind", all: this.t("decAllMarks"), options: [["due", this.t("decReviewDueShort")], ...["expected_offline", "seasonal", "spare", "keep", "replaced"].filter(k => list.some(o => o.mark.kind === k)).map(k => [k, this.t(`mark_${k}`)])] }];
+    const st = this.lvState("marks", "name", "asc");
+    this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
+    const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
+    const sorted = this.refine("marks", list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due)];
+    const pg = this.paginate("marks", refined);
+    st.shown = refined.length;
+    const row = o => {
+      const key = keyOf(o);
+      return `<div class="row${o.mark_due ? " duerow" : ""}">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<span class="row-text"><button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(o.name || o.object_id)}</button><small>${this.esc(this.t(o.object_type))} · ${this.esc(this.markLine(o.mark))}</small></span><span class="pill ${o.mark_due ? "warn" : "mute"}">${this.esc(effect(o))}</span><span class="rowacts"><button class="btn quiet" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}"><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("markClear")}</button></span></div>`;
+    };
+    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -3534,7 +3593,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => `${this.excCard()}${this.hiddenCard()}`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => this.excCard(), scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
@@ -11374,7 +11433,7 @@ Object.assign(TEXT.de, {
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
   stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
-  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen", setHintExceptions: "Ausnahmeregeln und ausgeblendete Befunde.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
+  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen & Vermerke", setHintExceptions: "Status, Vermerke, Regeln und Labels.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setNoneHidden: "nichts ausgeblendet", setRuleOne: "1 Regel", setRulesCount: "{n} Regeln", setVacationOn: "Urlaubsmodus an", setVacationOff: "Urlaubsmodus aus", setVacationNone: "Urlaubsmodus nicht eingerichtet", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
   actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
@@ -11423,7 +11482,7 @@ Object.assign(TEXT.en, {
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
   stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
-  setTabProtection: "Protection mode", setTabExceptions: "Exceptions", setHintExceptions: "Exception rules and hidden findings.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
+  setTabProtection: "Protection mode", setTabExceptions: "Exceptions & marks", setHintExceptions: "Status, marks, rules and labels.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setNoneHidden: "nothing hidden", setRuleOne: "1 rule", setRulesCount: "{n} rules", setVacationOn: "Vacation mode on", setVacationOff: "Vacation mode off", setVacationNone: "Vacation mode not set up", setOn: "on", setOff: "off",
   maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
   actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
@@ -12356,7 +12415,6 @@ Object.assign(TEXT.de, {
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
   excOn: "Regel aktiv", excDue: "Frist abgelaufen",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
-  hidRuleLink: "Regel",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
@@ -12399,7 +12457,6 @@ Object.assign(TEXT.en, {
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
   excOn: "Rule active", excDue: "Time has passed",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
-  hidRuleLink: "Rule",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
@@ -12520,7 +12577,8 @@ class ExceptionsMixin {
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
     const pill = state ? ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>` : "";
-    return `${this.excRulesCard()}${this.labelsCard()}<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section>`;
+    // In the order of the actions of a finding: status, mark, exception (with the vacation mode), label.
+    return `${this.decisionsBar()}${this.statusCard()}${this.marksCard()}<div id="hk-sec-rules" class="stack">${this.excRulesCard()}<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section></div><div id="hk-sec-labels">${this.labelsCard()}</div>`;
   }
 
   vacationHtml() {
@@ -12720,6 +12778,8 @@ class ExceptionsMixin {
       if (rule) this.excScope = rule.scope || "always";
       this.openException(el.dataset.excGoto);
     });
+    root.querySelectorAll("[data-sec-go]").forEach(el => el.onclick = () => { const sec = root.querySelector(`#hk-sec-${el.dataset.secGo}`); sec?.scrollIntoView?.({ block: "start", behavior: "smooth" }); });
+    root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
     root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excToggle ? { ...r, enabled: el.checked } : r)), null));
@@ -12744,8 +12804,9 @@ class ExceptionsMixin {
     });
     root.querySelectorAll("[data-vac-go]").forEach(el => el.onclick = ev => {
       ev.preventDefault();
-      this.selected = null; this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
-      if (el.dataset.vacGo === "hidden") { this.lvState("hidden", "name", "asc"); this.lv.hidden.f.by = "rule"; }
+      this.selected = null; this.pages = {};
+      // The findings held back are on the findings page, hidden for an exception; the rules in the settings.
+      if (el.dataset.vacGo === "hidden") { this.view = "findingsNav"; this.findingStatus = "hidden"; this.lvState("findings", "impact", "desc").f.by = "rule"; } else { this.view = "settings"; this.settingsTab = "exceptions"; }
       this.render();
     });
     root.querySelectorAll("[data-exc-scope]").forEach(el => el.onclick = () => { this.excScope = el.dataset.excScope; this.render(); });
@@ -17629,6 +17690,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "monitor" && this.monitorFunctions().some(item => item.id === params.get("function"))) this.monitorSelected = params.get("function");
     this._pendingTab = params.get("tab");
     if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
+    if (this.view === "settings" && params.get("tab")) this.settingsTab = params.get("tab"); // the settings keep their tab apart
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
