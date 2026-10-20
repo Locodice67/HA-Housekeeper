@@ -5952,6 +5952,24 @@ test("a series named in a database finding opens its entity on the page and stay
   assert.ok(!el.dbFindingText(f).includes("<button"));
 });
 
+test("while the full database check runs, the page looks again quietly and only while the Recorder is open", async () => {
+  const queue = [];
+  const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  let calls = 0;
+  el._hass = { language: "en", callWS: async () => { calls += 1; return { ...DBH, integrity: { running: true } }; } };
+  let loading = false;
+  el.render = () => { loading ||= el.dbLoading; };
+  el.view = "overview";
+  await el.loadDbHealth(false, true);
+  assert.equal(queue.length, 1);
+  loading = false;
+  queue.shift()();
+  assert.equal(calls, 1, "elsewhere the timer only waits");
+  el.view = "recorder";
+  await queue.shift()();
+  assert.equal(calls, 2); assert.ok(!loading, "no flash of reading");
+});
+
 test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {
   const { el, shadow } = panel("en");
   const tabs = el.searchPages().filter(page => page.view === "maintenance" && page.viewTab).map(page => page.viewTab);

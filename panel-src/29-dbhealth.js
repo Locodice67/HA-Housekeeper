@@ -1,17 +1,20 @@
-// DbHealthMixin: the database card in Maintenance; mixed into the panel in 99-register.js.
+// DbHealthMixin: the database tab of the Recorder; mixed into the panel in 99-register.js.
 class DbHealthMixin {
-  async loadDbHealth(refresh = false, check = false) {
-    this.dbLoading = true; this.dbError = ""; this.render();
+  // quiet: a look while the full check runs; the page keeps its state instead of flashing "reading".
+  async loadDbHealth(refresh = false, check = false, quiet = false) {
+    if (!quiet) { this.dbLoading = true; this.dbError = ""; this.render(); }
     try { this.dbHealth = await this._hass.callWS({ type: "ha_housekeeper/db_health", refresh, ...(check ? { check } : {}) }); }
     catch (err) { this.dbError = this.errText(err); }
     this.dbLoading = false; this.render();
     this.followUp("db", "recorder", this.dbHealth, r => this.loadDbHealth(r), refresh);
-    // The full check runs on in the background: look again until it is done (cached reply, no new query).
+    // The full check runs on in the background: look again until it is done (cached reply, no new query),
+    // but only while the Recorder is open; elsewhere the timer just waits for the way back.
     globalThis.clearTimeout?.(this._dbCheckTimer);
-    if (this.dbHealth?.integrity?.running) this._dbCheckTimer = setTimeout(() => this.loadDbHealth(false), 5000);
+    const look = () => { this._dbCheckTimer = setTimeout(() => (this.view === "recorder" ? this.loadDbHealth(false, false, true) : look()), 5000); };
+    if (this.dbHealth?.integrity?.running) look();
   }
 
-  // Loads on the first visit of Maintenance only: the query reads the recorder, so the overview never starts it.
+  // Loads on the first visit of the Recorder only: the query reads the recorder, so the overview never starts it.
   ensureDbHealth() {
     if (this.dbLoading || this._dbRequested) return;
     this._dbRequested = true;
