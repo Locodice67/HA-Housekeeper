@@ -6611,3 +6611,17 @@ test("a battery entity that is unavailable stays in the battery list, counted, w
   const html = el.batteriesView();
   assert.ok(html.includes('data-battery-filter="unavailable"') && html.includes("reports nothing"));
 });
+
+test("the policies list shows its note and status columns only while a row has something for them, and switches hidden rows below the list", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  el.policies = { available: true, enabled: 1, violations: 1, rules: [{ id: "entity_area", enabled: true, count: 1, ignored: 1, items: [
+    { object_type: "entity", object_id: "light.a", name: "A", key: "k1", ignored: false, by: null },
+    { object_type: "entity", object_id: "light.b", name: "B", key: "k2", ignored: true, by: "user" }] }] };
+  const heads = html => (html.match(/<th[^>]*>.*?<\/th>/g) || []).map(x => x.replace(/<[^>]+>/g, "").replace(/[↑↓]/g, "").trim());
+  let html = el.policiesView();
+  assert.ok(!heads(html).includes("Status") && !heads(html).includes("Note"), "nothing to show, no column");
+  assert.ok(html.indexOf("data-policy-hidden") > html.indexOf("<table"), "the switch for hidden rows sits below the list");
+  el.policyShowHidden = true;
+  assert.ok(heads(el.policiesView()).includes("Status"));
+});

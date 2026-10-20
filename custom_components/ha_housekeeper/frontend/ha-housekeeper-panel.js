@@ -8035,8 +8035,10 @@ class PoliciesMixin {
         return `<div class="statcell">${this.expandBtn("data-pol-open", item.key, open, this.t(open ? "polCloseRow" : "polOpenRow"))}<div>${link}</div></div>`;
       } },
       { key: "rule", label: "polColRule", dir: "asc", cell: item => this.esc(ruleName(item)) },
-      { key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" },
-      { key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } },
+      // Note: a fact of the rule (days unused, retention, expected prefix) or why a row is hidden; status: hidden or due.
+      // Each column only stands while a row of the list has something for it.
+      ...(shown.some(item => this.polItemNote(item) || this.polItemParts(item).decision) ? [{ key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" }] : []),
+      ...(shown.some(item => item.ignored || item.resurfaced) ? [{ key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } }] : []),
       { key: "act", label: "btColAct", sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
@@ -8044,7 +8046,8 @@ class PoliciesMixin {
       return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item, button)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
     };
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
-    const note = hidden && !this.policyShowHidden ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(hidden) })}</p>` : "";
+    // Showing the hidden rows belongs to the list: the line below it counts them and switches them on and off.
+    const note = hidden ? `<p class="factnote pad">${this.policyShowHidden ? "" : `${this.t("polHiddenN", { n: this.formatNumber(hidden) })} · `}<button class="link" data-policy-hidden aria-pressed="${Boolean(this.policyShowHidden)}">${this.t(this.policyShowHidden ? "polHideHidden" : "polShowHidden")}</button></p>` : "";
     const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "pols", rowAttrs: item => `data-pol-row="${this.esc(item.key)}"`, after }) : `<div class="emptymsg">${items.length ? this.noMatches(id) : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("polNoViolations")}`}</div>`;
     return `<div class="panel">${bar}${this.polSelBar(shown.length)}${table}${pg.footer}${note}</div>`;
   }
@@ -8052,9 +8055,7 @@ class PoliciesMixin {
   policiesView() {
     this.ensurePolicies();
     const r = this.policies;
-    const anyHidden = r?.rules?.some(rule => rule.ignored);
-    const left = anyHidden ? `<button class="chip ${this.policyShowHidden ? "active" : ""}" data-policy-hidden aria-pressed="${Boolean(this.policyShowHidden)}">${this.t(this.policyShowHidden ? "polHideHidden" : "polShowHidden")}</button>` : "";
-    const head = this.pageBar({ left, at: this.policiesAt, loading: this.policiesLoading, attr: "data-policy-refresh" });
+    const head = this.pageBar({ at: this.policiesAt, loading: this.policiesLoading, attr: "data-policy-refresh" });
     if (this.policiesError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.policiesError)}</div></div>`;
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("polLoading")}</div></div>`;
     const on = r.rules.filter(rule => rule.enabled);
