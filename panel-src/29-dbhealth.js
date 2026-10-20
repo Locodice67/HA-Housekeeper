@@ -169,14 +169,28 @@ class DbHealthMixin {
     return folds ? `<div class="panel">${folds}</div>` : "";
   }
 
-  // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog.
+  // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog. A list like the
+  // ones of Storage & system: the table in words with its name below, the size with a bar, its share of the database.
   dbTablesCard(r) {
     const tables = r.tables || [];
     if (!tables.length) return "";
-    const total = r.db_bytes || tables.reduce((sum, t) => sum + t.bytes, 0);
-    const rows = tables.map(t => `<div class="fact"><span>${this.esc(t.name)}</span><b>${this.esc(this.formatBytes(t.bytes))}${total ? `<small>${this.formatNumber(Math.round(t.bytes / total * 100))} %</small>` : ""}</b></div>`).join("");
+    const total = r.db_bytes || tables.reduce((sum, t) => sum + t.bytes, 0), max = Math.max(0, ...tables.map(t => t.bytes));
+    // One share column: the bar and the number both against the whole database.
+    const label = t => { const key = `dbTable_${t.name}`, text = this.t(key); return text === key ? t.name : text; };
+    const share = t => (total ? Math.round(t.bytes / total * 100) : 0);
+    const list = this.sysList("dbtables", tables, {
+      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "dbColTable", dir: "asc", get: label }],
+      text: t => `${label(t)} ${t.name}`, tie: t => t.name, empty: "dbSeriesNone",
+      columns: [
+        { key: "name", label: "dbColTable", dir: "asc", cell: t => this.nameCell(label(t), label(t) !== t.name ? t.name : "") },
+        this.sysSizeColumns(max)[0],
+        { key: "share", label: "dbColPct", sortable: false, cell: t => `<span class="dbshare">${this.sysShare(t.bytes, total)}<b>${this.esc(`${this.formatNumber(share(t))} %`)}</b></span>` },
+      ],
+      exportName: "recorder-tables", header: [this.t("dbColTable"), "Name", "Bytes", "%"], rows: t => [label(t), t.name, t.bytes, share(t)],
+    });
     const more = r.tables_total > tables.length ? `<p class="factnote">${this.t("dbTablesMore", { n: this.formatNumber(r.tables_total - tables.length) })}</p>` : "";
     const at = r.tables_at ? ` ${this.t("dbTablesAt", { at: this.esc(this.relTime(new Date(r.tables_at * 1000).toISOString())) })}` : "";
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div></div><div class="facts">${rows}</div>${more}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div></div>${list}${more}</div>`;
   }
+
 }
