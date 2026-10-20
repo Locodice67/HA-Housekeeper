@@ -2696,7 +2696,7 @@ class OverviewMixin {
       ...(d.dialect === "sqlite" ? [[this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)]] : []),
       ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
       ...(this.dbFirst ? [[this.t("dbOvFirst"), `${this.esc(this.formatDate(new Date(this.dbFirst * 1000).toISOString()))}<small>${this.esc(this.relTime(new Date(this.dbFirst * 1000).toISOString()))}</small>`]] : []),
-      [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
+      [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.dbGrowthSize(d.per_day) }) : this.t("dbOvObserving")],
     ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(this.dbDialect(d.dialect)) })]];
     const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbOvTitle")}</h2><p>${this.t("dbOvHint")}</p></div><button class="link" data-jump="recorder">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${purgeOff}</div>`;
@@ -7137,7 +7137,7 @@ class StormsMixin {
     const dbFacts = [
       purge === false ? { text: this.t("recSumPurgeOff"), tone: "warn" } : null,
       bytes !== null && bytes !== undefined ? { text: this.formatBytes(bytes), tone: "mute" } : null,
-      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }), tone: "mute" } : null,
+      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.dbGrowthSize(perDay) }), tone: "mute" } : null,
     ].filter(Boolean);
     const tabs = [
       { id: "load", icon: "mdi:chart-timeline-variant", label: this.t("stormTitle"), hint: this.t("recTileLoadHint"), count: st ? stormFindings : null, facts: loadFacts, tone: stormTone },
@@ -7246,6 +7246,11 @@ class DbHealthMixin {
     return series.map(s => this.dbSeriesName(s, links)).join(", ");
   }
 
+  // Growth a day with its sign: a database that shrank after a purge shows minus, not zero. plus also marks growth.
+  dbGrowthSize(bytes, plus = false) {
+    return `${bytes < 0 ? "−" : plus ? "+" : ""}${this.formatBytes(Math.abs(bytes))}`;
+  }
+
   // The recorder names MariaDB "mysql"; the panel names both.
   dbDialect(dialect) {
     return { sqlite: "SQLite", mysql: "MariaDB/MySQL", postgresql: "PostgreSQL" }[dialect] || dialect || "?";
@@ -7325,7 +7330,7 @@ class DbHealthMixin {
     const facts = [];
     if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(server ? this.t(r.estimated ? "dbSizeEstimated" : "dbSizeServer", { db: this.formatBytes(r.db_bytes), dialect }) : this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
     else facts.push(this.t("dbNoSize", { dialect }));
-    if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.formatBytes(Math.max(0, r.growth.per_day)) }));
+    if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.dbGrowthSize(r.growth.per_day) }));
     else facts.push(this.t("dbGrowthUnknown"));
     if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
     if (r.auto_purge === false) facts.push(this.t("dbOvPurgeOff"));
@@ -7354,7 +7359,7 @@ class DbHealthMixin {
     const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
     const tiles = this.sumTiles([
       sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: server ? this.t(r.estimated ? "dbTileEstimated" : "dbTileServer", { dialect }) : this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
-      growthKnown ? { label: this.t("dbTileGrowth"), value: `+${this.formatBytes(Math.max(0, r.growth.per_day))}`, tone: "mute" } : null,
+      growthKnown ? { label: this.t("dbTileGrowth"), value: this.dbGrowthSize(r.growth.per_day, true), tone: "mute" } : null,
       r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
       r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
     ]);

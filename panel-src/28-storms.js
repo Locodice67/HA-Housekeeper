@@ -198,7 +198,7 @@ class StormsMixin {
     const dbFacts = [
       purge === false ? { text: this.t("recSumPurgeOff"), tone: "warn" } : null,
       bytes !== null && bytes !== undefined ? { text: this.formatBytes(bytes), tone: "mute" } : null,
-      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }), tone: "mute" } : null,
+      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.dbGrowthSize(perDay) }), tone: "mute" } : null,
     ].filter(Boolean);
     const tabs = [
       { id: "load", icon: "mdi:chart-timeline-variant", label: this.t("stormTitle"), hint: this.t("recTileLoadHint"), count: st ? stormFindings : null, facts: loadFacts, tone: stormTone },

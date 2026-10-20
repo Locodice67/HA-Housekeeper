@@ -28,6 +28,11 @@ class DbHealthMixin {
     return series.map(s => this.dbSeriesName(s, links)).join(", ");
   }
 
+  // Growth a day with its sign: a database that shrank after a purge shows minus, not zero. plus also marks growth.
+  dbGrowthSize(bytes, plus = false) {
+    return `${bytes < 0 ? "−" : plus ? "+" : ""}${this.formatBytes(Math.abs(bytes))}`;
+  }
+
   // The recorder names MariaDB "mysql"; the panel names both.
   dbDialect(dialect) {
     return { sqlite: "SQLite", mysql: "MariaDB/MySQL", postgresql: "PostgreSQL" }[dialect] || dialect || "?";
@@ -107,7 +112,7 @@ class DbHealthMixin {
     const facts = [];
     if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(server ? this.t(r.estimated ? "dbSizeEstimated" : "dbSizeServer", { db: this.formatBytes(r.db_bytes), dialect }) : this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
     else facts.push(this.t("dbNoSize", { dialect }));
-    if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.formatBytes(Math.max(0, r.growth.per_day)) }));
+    if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.dbGrowthSize(r.growth.per_day) }));
     else facts.push(this.t("dbGrowthUnknown"));
     if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
     if (r.auto_purge === false) facts.push(this.t("dbOvPurgeOff"));
@@ -136,7 +141,7 @@ class DbHealthMixin {
     const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
     const tiles = this.sumTiles([
       sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: server ? this.t(r.estimated ? "dbTileEstimated" : "dbTileServer", { dialect }) : this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
-      growthKnown ? { label: this.t("dbTileGrowth"), value: `+${this.formatBytes(Math.max(0, r.growth.per_day))}`, tone: "mute" } : null,
+      growthKnown ? { label: this.t("dbTileGrowth"), value: this.dbGrowthSize(r.growth.per_day, true), tone: "mute" } : null,
       r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
       r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
     ]);
