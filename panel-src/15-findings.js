@@ -426,9 +426,20 @@ class FindingsMixin {
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }
 
+  // A status on the finding of an outage ends the outage: its follow-ups then count one by one. When the object can carry
+  // a mark, the form says so and offers the mark, which hides the outage and what follows from it.
+  outageStatusHint(f) {
+    if (!["device.down", "config_entry.not_loaded", "app.stopped_in_use"].includes(f.rule_id) || f.ignored) return "";
+    const cause = this.causeList().find(c => c.finding_key === f.key), n = cause ? cause.follower_count || 0 : 0;
+    const key = this.findingKey(f), object = this.findObject(key);
+    if (!n || !object || !MARK_TYPES.includes(object.object_type) || object.mark) return "";
+    const btn = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("outageMarkInstead")}</button>`;
+    return `<div class="notice warn outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t(n === 1 ? "outageStatusHint1" : "outageStatusHint", { n: this.formatNumber(n) }))}</p>${btn}</div></div>`;
+  }
+
   decideForm(f) {
     const d = this.decide;
-    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.statusFields(d, "decide")}
+    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.outageStatusHint(f)}${this.statusFields(d, "decide")}
       <div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }

@@ -26,6 +26,8 @@ const DONE_RESULTS = Object.fromEntries([
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";
+// A mark on an object that has run this many days without a gap asks whether it is still needed.
+const MARK_QUIET_DAYS = 30;
 // The page sizes every paged list offers, unless it has its own.
 const PAGE_SIZES = [20, 50, 100, 250];
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };

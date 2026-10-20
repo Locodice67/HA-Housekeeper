@@ -6715,3 +6715,26 @@ test("a decided finding has the same row menu as an open one; only its top block
   assert.ok(known.includes("Show again") && known.includes("Change status …") && !known.includes("Set status …"));
   for (const part of ["data-watch-mark", "data-finding-note"]) assert.ok(open.includes(part) && known.includes(part), part);
 });
+
+test("a status on an outage says that its entities then count one by one and offers the mark instead", () => {
+  const { el } = panel("en");
+  const own = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false };
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Hub", status: "active" }], findings: [own], causes: [{ id: "c", kind: "device_down", object_type: "device", object_id: "d1", name: "Hub", finding_key: own.key, follower_count: 5, child_ids: [], consumers: {} }] };
+  el.findingKey = () => "device:d1";
+  el.decide = { key: own.key, kind: "keep", days: 0, reason: "", error: "" };
+  const form = el.decideForm(own);
+  assert.ok(form.includes("5 entities behind it") && form.includes('data-watch-mark="device:d1"'));
+  el.data.objects[0].mark = { kind: "expected_offline" };
+  assert.ok(!el.decideForm(own).includes("data-watch-mark"), "an object with a mark is not offered one again");
+});
+
+test("a mark on an object that has run without a gap for a month asks whether it is still needed", () => {
+  const { el } = panel("en");
+  const old = new Date(Date.now() - 40 * 864e5).toISOString(), fresh = new Date(Date.now() - 2 * 864e5).toISOString();
+  const dev = id => ({ object_type: "device", object_id: id, name: id, status: "active", mark: { kind: "expected_offline" } });
+  const ent = (id, device, since) => ({ object_type: "entity", object_id: id, name: id, status: "active", status_since: since, device_id: device });
+  el.data = { ...DATA, objects: [dev("calm"), dev("busy"), ent("sensor.a", "calm", old), ent("sensor.b", "busy", fresh)], findings: [] };
+  assert.equal(el.markQuietDays(el.data.objects[0]), 40);
+  assert.equal(el.markQuietDays(el.data.objects[1]), null, "a short run asks nothing");
+  assert.ok(el.marksCard().includes("no outage for 40 days – still needed?"));
+});
