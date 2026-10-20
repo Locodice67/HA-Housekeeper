@@ -6353,3 +6353,15 @@ test("a number in the menu says what it counts", () => {
   assert.equal(el.navCountHint("secrets", 2), "2 items to look at");
   assert.ok(el.topbar().includes(`title="${el.navCountHint("findingsNav", el.findingTotal())}"`));
 });
+
+test("a missing target in the overview opens the findings filtered to it and what it explains", () => {
+  const { el } = panel("en");
+  const cause = { id: "service_missing:notify.phone", kind: "service_missing", object_type: "service", object_id: "notify.phone", name: "notify.phone", virtual: true, impact: "medium", follower_count: 2, total_followers: 2, child_ids: [], consumers: {} };
+  const f = (key, cid) => ({ key, rule_id: "automation.missing_service", object_id: key, classification: "broken_reference", confidence: 0.9, ignored: false, impact: "medium", affected_object: "notify.phone", cause_id: cid });
+  el.data = { ...DATA, objects: [], edges: [], causes: [cause], findings: [f("automation.a", cause.id), f("automation.b", cause.id), f("automation.c")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.ok(el.overviewCause(cause).includes(`data-jump-cause="${cause.id}"`));
+  el.findingCause = cause.id;
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "automation.a,automation.b");
+  assert.ok(el.findingsView().includes('data-fclear="cause"'));
+});

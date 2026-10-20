@@ -68,6 +68,12 @@ class FindingStatusMixin {
     return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && counts(f)).map(f => f.key));
   }
 
+  // The findings below one cause, at any depth: the jump of a cause that has no page of its own.
+  causeKeys(id) {
+    const below = f => { for (let c = this.causeById(f.cause_id), n = 0; c && n < 20; c = this.causeById(c.parent_id), n++) if (c.id === id) return true; return false; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && below(f)).map(f => f.key));
+  }
+
   // The findings the vacation mode holds back right now or until its grace ends: what the vacation bar counts.
   heldKeys() { return new Set((this.data?.findings || []).filter(f => f.ignored_by === "rule" && ["vacation", "after"].includes(f.ignore_rule?.phase)).map(f => f.key)); }
 
