@@ -585,3 +585,42 @@ def test_spikes_are_found_only_far_outside_what_the_sensor_normally_reports() ->
     stays = temp[:100] + [(t, 85.0) for t, _ in temp[100:]]
     assert find_spikes(stays) == []
     assert find_spikes([(i * 300.0, 5.0) for i in range(200)]) == []
+
+
+async def test_the_scan_finds_a_spike_in_a_measurement(recorder_mock, hass) -> None:
+    """A temperature with one wrong reading of 500 °C is a measurement with one finding."""
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.models import StatisticMeanType
+    from homeassistant.components.recorder.statistics import async_import_statistics
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    from custom_components.ha_housekeeper import counter_repair
+
+    means = [20 + (i % 3) * 0.5 for i in range(40)]
+    means[20] = 500.0
+    async_import_statistics(
+        hass,
+        {
+            "mean_type": StatisticMeanType.ARITHMETIC,
+            "has_sum": False,
+            "name": None,
+            "source": "recorder",
+            "statistic_id": "sensor.temperature",
+            "unit_class": "temperature",
+            "unit_of_measurement": "°C",
+        },
+        [
+            {"start": BASE + timedelta(hours=i), "mean": m, "min": m, "max": m}
+            for i, m in enumerate(means)
+        ],
+    )
+    await async_wait_recording_done(hass)
+    found = await get_instance(hass).async_add_executor_job(
+        counter_repair.scan_blocking, hass, None, None, counter_repair.MAX_SPAN
+    )
+    assert found["checked"] == 1
+    (item,) = found["items"]
+    assert item["statistic_id"] == "sensor.temperature" and item["kind"] == "measurement"
+    assert len(item["findings"]) == 1 and item["unit"] == "°C"
