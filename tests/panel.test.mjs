@@ -6420,7 +6420,7 @@ test("the overview tiles count every finding, the faults and the tidying up, and
   el.series = { points: [{ at: "2026-10-18T00:00:00+00:00", reasons: { unavailable: 1, orphaned: 3 } }, { at: "2026-10-19T00:00:00+00:00", reasons: { unavailable: 2, orphaned: 2 } }, { at: "2026-10-20T00:00:00+00:00", reasons: { unavailable: 1, stale: 1, unused: 1, orphaned: 1 } }] };
   el._seriesFor = el.data; el.view = "overview"; el.render();
   const html = shadow.innerHTML, tile = id => html.slice(html.indexOf(`data-filter="group:${id}"`), html.indexOf("</button>", html.indexOf(`data-filter="group:${id}"`)));
-  assert.ok(html.includes("<small>Findings</small><strong>4</strong>"), "Findings counts all four");
+  assert.ok(html.includes(">Findings</small><strong>4</strong>"), "Findings counts all four");
   assert.ok(tile("red").includes("Faults") && tile("red").includes("<strong>2</strong>") && tile("red").includes("+1 in 2 days"));
   assert.ok(tile("tidy").includes("Tidying up") && tile("tidy").includes("<strong>2</strong>") && tile("tidy").includes("−1 in 2 days"));
 });
