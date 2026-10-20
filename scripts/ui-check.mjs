@@ -178,6 +178,10 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         apps_memory: 21 * MB, cards_total: 100 * MB,
         cards: [{ id: "1", type: "module", url: "/hacsfiles/button-card/button-card.js?hacstag=1", bytes: 1.2 * MB, scope: "folder" }, { id: "2", type: "module", url: "/local/my-card.js", bytes: 40 * 1024, scope: "file" }, { id: "3", type: "module", url: "https://cdn.example.org/x.js", bytes: null, scope: null }],
         blueprints: [{ domain: "automation", path: "homeassistant/motion_light.yaml", name: "Motion-activated Light", author: "Home Assistant", bytes: 1800 }, { domain: "script", path: "homeassistant/confirmable_notification.yaml", name: "Confirmable Notification", author: "Home Assistant", bytes: 2400 }] };
+      // The Blueprints tab of Maintenance reads its own command: one unused blueprint and one an automation misses.
+      if (t.endsWith("/blueprints")) return { available: true, schema: 1, unused: 1, missing: 1, broken: 0, domains: [
+        { domain: "automation", unused: [{ path: "homeassistant/motion_light.yaml", name: "Motion-activated Light", bytes: 1800 }], missing: [{ path: "custom/old_light.yaml", count: 1, users: [{ id: "automation.a1", name: "Automation 1" }] }], broken: [] },
+        { domain: "script", unused: [], missing: [], broken: [] }] };
       if (t.endsWith("/sensitive_fields")) return { schema: 1, entries: [
         { entry_id: "c1", domain: "alexa_media", title: "Alexa", disabled: false, fields: [{ source: "data", key: "password", kind: "password", set: true }, { source: "data", key: "token.refresh_token", kind: "token", set: true }] },
         { entry_id: "c2", domain: "tado", title: "Tado", disabled: false, fields: [{ source: "data", key: "api_key", kind: "api_key", set: false }, { source: "data", key: "webhook_id", kind: "webhook", set: true }] },
@@ -193,7 +197,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
           { slug: "a0d7b954_ssh", name: "Advanced SSH & Web Terminal", state: "started", version: "21.0.0", checked: true, risk: "high", access: [{ kind: "full_access", detail: null, level: "high" }, { kind: "privileged", detail: "SYS_ADMIN, NET_ADMIN", level: "high" }, { kind: "supervisor_api", detail: "manager", level: "high" }, { kind: "host_network", detail: null, level: "medium" }, { kind: "apparmor_off", detail: null, level: "medium" }] },
           { slug: "core_mosquitto", name: "Mosquitto broker", state: "started", version: "6.5.1", checked: true, risk: "medium", access: [{ kind: "supervisor_api", detail: "default", level: "medium" }, { kind: "auth_api", detail: null, level: "medium" }] },
           { slug: "core_zwave_js", name: "Z-Wave JS", state: "stopped", version: "0.9.0", checked: true, risk: "low", access: [{ kind: "devices", detail: "/dev/ttyUSB0", level: "low" }] }] };
-      if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
+      if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 70 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);
   const plan = q.get("plan");
