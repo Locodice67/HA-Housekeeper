@@ -914,7 +914,7 @@ Object.assign(TEXT.de, {
   relMinutes: "{n} Min.", relHours: "{n} Std.", relDays: "{n} Tage",
   relUnstableNone: "Keine Entität fällt auffällig oft aus.", relUnstableCoverage: "Beobachtet: {days} Tage, {withData} Entitäten mit Daten. Ausfälle während gemeinsamer Ausfälle sind herausgerechnet; sie zählen für die Integration.",
   relUnstable: "instabil", relFlapping: "flatternd", relEpisodes: "{n} Ausfälle in {days} Tagen ({rate} pro Tag) · zusammen {total}, im Mittel {mean}",
-  relPattern: "wiederkehrend, meist zwischen {from} und {to} Uhr", relFollowers: "wird von {n} Automationen, Skripten oder Szenen verwendet", relUnstableMore: "{shown} von {total} Entitäten gezeigt.",
+  relPattern: "wiederkehrend, meist zwischen {from} und {to} Uhr", relFollowers: "wird von {n} Automationen, Skripten oder Szenen verwendet", relUnstableMore: "Gezeigt werden die {shown} auffälligsten von {total} Entitäten.", relUnstableShownSub: "die {n} auffälligsten in der Liste",
   relUnstableFootnote: "Instabil: mindestens {episodes} Ausfälle und {rate} pro Tag, flatternd ab {flap} pro Tag. Ausfälle während eines gemeinsamen Ausfalls der Integration zählen für die Integration, nicht für die Entität. Dauerhaft ausgefallene, deaktivierte und ignorierte Entitäten fehlen.",
   relCoverage: "Letzte {days} Tage · {withData} von {known} Entitäten mit Daten · im Mittel {share} % des Zeitraums beobachtet (neue Entitäten kürzer).",
   relCompare: "Mit Zeitraum davor vergleichen", relDelta: "{delta} Prozentpunkte gegenüber dem Zeitraum davor ({before} %)", relDeltaNone: "Für den Zeitraum davor liegen keine Daten vor.",
@@ -943,7 +943,7 @@ Object.assign(TEXT.en, {
   relMinutes: "{n} min", relHours: "{n} h", relDays: "{n} days",
   relUnstableNone: "No entity fails unusually often.", relUnstableCoverage: "Observed: {days} days, {withData} entities with data. Failures during shared outages are taken out; they count for the integration.",
   relUnstable: "unstable", relFlapping: "flapping", relEpisodes: "{n} failures in {days} days ({rate} a day) · {total} in all, {mean} on average",
-  relPattern: "recurring, mostly between {from} and {to} o'clock", relFollowers: "used by {n} automations, scripts or scenes", relUnstableMore: "{shown} of {total} entities shown.",
+  relPattern: "recurring, mostly between {from} and {to} o'clock", relFollowers: "used by {n} automations, scripts or scenes", relUnstableMore: "The {shown} most noticeable of {total} entities are shown.", relUnstableShownSub: "the {n} most noticeable in the list",
   relUnstableFootnote: "Unstable: at least {episodes} failures and {rate} a day, flapping from {flap} a day. Failures during a shared outage of the integration count for the integration, not the entity. Entities that are down all the time, disabled or ignored are left out.",
   relCoverage: "Last {days} days · {withData} of {known} entities with data · on average {share} % of the period observed (new entities less).",
   relCompare: "Compare with the period before", relDelta: "{delta} percentage points against the period before ({before} %)", relDeltaNone: "There is no data for the period before.",
@@ -6831,7 +6831,8 @@ class ReliabilityMixin {
     });
     const count = level => u.items.filter(item => item.level === level).length;
     const tiles = this.sumTiles([
-      { label: this.t("relSumAll"), value: this.formatNumber(u.items.length), tone: "mute", lf: ["relunstable", "", ""] },
+      // "All" counts every unstable entity; the list holds the most noticeable of them, which the sub line says.
+      { label: this.t("relSumAll"), value: this.formatNumber(u.total ?? u.items.length), sub: u.total > u.items.length ? this.esc(this.t("relUnstableShownSub", { n: this.formatNumber(u.items.length) })) : "", tone: "mute", lf: ["relunstable", "", ""] },
       { label: this.t("relOnlyFlapping"), value: this.formatNumber(count("flapping")), tone: count("flapping") ? "red" : "ok", lf: ["relunstable", "level", "flapping"] },
       { label: this.t("relOnlyUnstable"), value: this.formatNumber(count("unstable")), tone: count("unstable") ? "warn" : "ok", lf: ["relunstable", "level", "unstable"] },
     ]);

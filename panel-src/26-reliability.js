@@ -281,7 +281,8 @@ class ReliabilityMixin {
     });
     const count = level => u.items.filter(item => item.level === level).length;
     const tiles = this.sumTiles([
-      { label: this.t("relSumAll"), value: this.formatNumber(u.items.length), tone: "mute", lf: ["relunstable", "", ""] },
+      // "All" counts every unstable entity; the list holds the most noticeable of them, which the sub line says.
+      { label: this.t("relSumAll"), value: this.formatNumber(u.total ?? u.items.length), sub: u.total > u.items.length ? this.esc(this.t("relUnstableShownSub", { n: this.formatNumber(u.items.length) })) : "", tone: "mute", lf: ["relunstable", "", ""] },
       { label: this.t("relOnlyFlapping"), value: this.formatNumber(count("flapping")), tone: count("flapping") ? "red" : "ok", lf: ["relunstable", "level", "flapping"] },
       { label: this.t("relOnlyUnstable"), value: this.formatNumber(count("unstable")), tone: count("unstable") ? "warn" : "ok", lf: ["relunstable", "level", "unstable"] },
     ]);

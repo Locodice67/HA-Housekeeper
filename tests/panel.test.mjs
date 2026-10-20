@@ -6642,3 +6642,11 @@ test("the state of an integration in the reliability view is named in words", ()
   assert.equal(el.entryStateLabel("setup_retry"), "Retrying setup");
   assert.equal(el.entryStateLabel("something_new"), "something_new");
 });
+
+test("All of the unstable entities counts every one, and the list says it shows the most noticeable", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const item = { entity_id: "sensor.a", name: "A", level: "flapping", episodes: 3, per_day: 1, total_seconds: 60, mean_seconds: 20, pattern_hour: null, used: 0 };
+  const html = el.unstableCard({ window_days: 7, unstable: { items: [item], total: 31, excluded: 0 } });
+  assert.ok(html.includes(">31<") && html.includes("the 1 most noticeable in the list") && html.includes("The 1 most noticeable of 31"));
+});
