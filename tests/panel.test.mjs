@@ -6375,3 +6375,15 @@ test("the goals of batteries and statistics land on their lists without filters 
   assert.ok(el.goalJump("orphaned_statistics").includes('data-jump-tab="stats" data-jump-clear="orphanstats"'));
   assert.ok(el.goalJump("recurring_devices").includes('data-jump-clear="cleanup"'));
 });
+
+test("a type in the inventory table shows every object of it, without a search left over", () => {
+  const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
+  el.view = "inventory"; el.render();
+  el.invState().q = "zzz"; el.labelFilter = "old";
+  const pick = { dataset: { invFilter: "entity|" } };
+  shadow.querySelectorAll = selector => (selector === "[data-inv-filter]" ? [pick] : []);
+  el.bind();
+  pick.onclick();
+  assert.equal(`${el.typeFilter}|${el.query}|${el.labelFilter}`, "entity||");
+  assert.equal(el.filtered().length, DATA.objects.filter(o => o.object_type === "entity").length);
+});
