@@ -2221,9 +2221,32 @@ class ListsMixin {
     const from = (page - 1) * size;
     const rows = items.slice(from, from + size);
     if (items.length <= (own ? own[0] : 20)) return { rows, footer: "" };
+    return { rows, footer: this.pageFooter(id, { page, count, from, shown: rows.length, total: items.length, size, own }) };
+  }
+
+  // The bar below a paged list: which rows of how many, the page size, and the way to the other pages.
+  pageFooter(id, { page, count, from, shown, total, size, own }) {
     const sizes = (own || [20, 50, 100]).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
-    const footer = `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
-    return { rows, footer };
+    return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + shown)} ${this.t("of")} ${this.formatNumber(total)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
+  }
+
+  // Pages over the rows a grouped list shows, whole groups kept together: a unit is a head with the rows below it.
+  // A group larger than a page fills pages of its own, its head repeated on top of each.
+  paginateUnits(id, units) {
+    const size = this.pageSize, pages = [[]], rowsOf = list => list.reduce((sum, u) => sum + 1 + u.rows.length, 0);
+    for (const u of units) {
+      if (1 + u.rows.length > size) {
+        for (let i = 0; i < u.rows.length; i += size - 1) { if (pages.at(-1).length) pages.push([]); pages.at(-1).push({ ...u, rows: u.rows.slice(i, i + size - 1) }); }
+        continue;
+      }
+      if (pages.at(-1).length && rowsOf(pages.at(-1)) + 1 + u.rows.length > size) pages.push([]);
+      pages.at(-1).push(u);
+    }
+    const count = pages.length, page = Math.min(Math.max(1, this.pages[id] || 1), count), total = rowsOf(pages.flat());
+    this.pages[id] = page;
+    const rows = pages[page - 1], from = rowsOf(pages.slice(0, page - 1).flat());
+    if (total <= 20) return { rows, footer: "" };
+    return { rows, footer: this.pageFooter(id, { page, count, from, shown: rowsOf(rows), total, size }) };
   }
 
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
@@ -2826,7 +2849,8 @@ class FindingsMixin {
     return `<div class="rowwrap">${pick ? `<input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">` : ""}${button}${this.rowMenu(finding)}</div>${this.rowDecide(finding)}`;
   }
 
-  findingsTable(items) {
+  // `body`: rows already rendered, as a grouped list pages them.
+  findingsTable(items, body = null) {
     const st = this.lv.findings, header = (key, label, dir = "asc") => {
       const on = st.sort === key;
       return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
@@ -2834,7 +2858,7 @@ class FindingsMixin {
     const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
     const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
-    const rows = items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
+    const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
   }
 
@@ -3038,8 +3062,11 @@ class FindingsMixin {
     const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     const count = this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
-    const pg = this.paginate("findings", items);
-    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, count)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
+    // Grouped, the pages count the rows shown, heads and what is open below them, not only the heads.
+    const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
+    const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);
+    const pageItems = grouped ? pg.rows.map(u => u.item) : pg.rows;
+    const body = fixedView ? this.fixedList() : `${this.findSelBar(pageItems, count)}${items.length ? this.findingsTable(pageItems, grouped ? pg.rows.map(u => u.head + u.rows.join("")).join("") : null) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, this._autoOpen));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";

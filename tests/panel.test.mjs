@@ -6490,3 +6490,27 @@ test("the head of an object selects all its findings, the head of an outage only
   assert.ok(html.includes('data-fsel-group="og:automation:automation.a1"'));
   assert.equal(el._findGroups["og:automation:automation.a1"].sort().join(), "a,b");
 });
+
+test("a grouped findings list pages the rows it shows, keeps a group whole, and repeats the head of a group larger than a page", () => {
+  const { el } = panel("en");
+  const causes = [], findings = [];
+  for (let i = 0; i < 6; i++) causes.push({ id: `c${i}`, kind: "device_down", object_type: "device", object_id: `d${i}`, name: `Dev ${i}`, follower_count: 6, total_followers: 6, child_ids: [], consumers: {}, impact: "medium", finding_key: `f${i}` });
+  causes.forEach(c => { findings.push({ key: c.finding_key, rule_id: "device.down", object_id: c.object_id, classification: "unavailable", confidence: 0.9, impact: "medium", ignored: false, cause_id: c.id }); for (let k = 0; k < 6; k++) findings.push({ key: `${c.id}-${k}`, rule_id: "entity.state_unavailable", object_id: `sensor.${c.id}_${k}`, classification: "unavailable", confidence: 0.9, impact: "medium", ignored: false, cause_id: c.id }); });
+  el.data = { ...DATA, causes, findings };
+  el.view = "findingsNav";
+  el.folds = Object.fromEntries(causes.map(c => [`og:device:${c.object_id}`, true]));
+  let html = el.findingsView();
+  assert.ok(html.includes("tablefoot") && html.includes("Page 1 of 3"), "six open heads of seven rows each: three per page would pass 20, so two");
+  assert.equal((html.match(/finding-cause og lvl0/g) || []).length, 2);
+  causes.push({ ...causes[0], id: "big", object_id: "dbig", finding_key: "fbig" });
+  findings.push({ key: "fbig", rule_id: "device.down", object_id: "dbig", classification: "unavailable", confidence: 0.9, impact: "high", ignored: false, cause_id: "big" });
+  for (let k = 0; k < 30; k++) findings.push({ key: `big-${k}`, rule_id: "entity.state_unavailable", object_id: `sensor.big_${k}`, classification: "unavailable", confidence: 0.9, impact: "high", ignored: false, cause_id: "big" });
+  el.data = { ...DATA, causes: [...causes], findings: [...findings] };
+  el.folds["og:device:dbig"] = true; el.pages = {};
+  html = el.findingsView();
+  assert.equal((html.match(/<tr class="finding-data/g) || []).length, 20, "the large group fills the first page");
+  el.pages.findings = 2;
+  const second = el.findingsView();
+  const head = second.indexOf('data-fold="og:device:dbig"');
+  assert.ok(head > 0 && second.indexOf('data-fsel="big-', head) > head, "its head stands again on top of the second page, its rows below");
+});
