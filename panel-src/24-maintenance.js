@@ -242,7 +242,7 @@ class MaintenanceMixin {
       { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
       { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.formatNumber(updates) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");

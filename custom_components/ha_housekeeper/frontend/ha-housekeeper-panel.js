@@ -723,8 +723,8 @@ Object.assign(TEXT.de, {
   abort_meter_changed: "Entitäten oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
   abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
   // maintenance
-  maintHint: "Backups, Updates, Blueprints und Wartungsziele",
-  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor, Blueprints und Wartungsziele. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
+  maintHint: "Backups, Updates, Blueprints und Ziele",
+  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor, Blueprints und Ziele. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
   recorderTitle: "Speicherbedarf", 
   recorderLoad: "Analyse starten", recorderReload: "Neu berechnen", recorderLoading: "Datenbank wird ausgewertet …", recorderUnavailable: "Der Recorder läuft nicht, daher gibt es nichts auszuwerten.",
   recorderSummary: "{states} gespeicherte Zustände · {size} · Aufbewahrung {days} Tage · {stats} Statistikwerte", recorderSizeUnknown: "Größe unbekannt", recorderPerDay: "{count} pro Tag", recorderTook: "berechnet in {ms} ms", recorderCached: "Ergebnis von vor wenigen Minuten ({ms} ms)", recorderShare: "{share} % aller Zustände",
@@ -768,8 +768,8 @@ Object.assign(TEXT.en, {
   result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
   abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
   abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
-  maintHint: "Backups, updates, blueprints and maintenance goals",
-  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them, blueprints and maintenance goals. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
+  maintHint: "Backups, updates, blueprints and goals",
+  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them, blueprints and goals. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
   recorderTitle: "Storage use", 
   recorderLoad: "Start analysis", recorderReload: "Recalculate", recorderLoading: "Evaluating the database …", recorderUnavailable: "The recorder is not running, so there is nothing to evaluate.",
   recorderSummary: "{states} stored states · {size} · kept {days} days · {stats} statistics values", recorderSizeUnknown: "size unknown", recorderPerDay: "{count} per day", recorderTook: "calculated in {ms} ms", recorderCached: "result from a few minutes ago ({ms} ms)", recorderShare: "{share} % of all states",
@@ -6307,7 +6307,7 @@ class MaintenanceMixin {
       { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
       { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.formatNumber(updates) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
@@ -9368,14 +9368,14 @@ Object.assign(TEXT.en, {
 
 // Maintenance goals: what "in order" means for this house and whether it is so (see goals.py); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
+  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsTab: "Ziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
   goal_broken_references: "Defekte Referenzen", goal_unavailable: "Nicht verfügbare Entitäten", goal_backup_age: "Alter des letzten Backups", goal_restore_test_age: "Alter des Wiederherstellungstests", goal_recorder_growth: "Datenbankwachstum", goal_weak_batteries: "Schwache Batterien", goal_devices_without_area: "Geräte ohne Bereich", goal_stale_sensors: "Sensoren ohne neue Meldung", goal_recurring_devices: "Wiederkehrende Ausfälle (Geräte)", goal_automation_errors: "Automationen mit Fehlern (30 Tage)", goal_blocked_automations: "Blockierte Automationen", goal_orphaned_statistics: "Verwaiste Statistiken",
   goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar",
   goalState_met: "Erfüllt", goalState_missed: "Verfehlt", goalState_unknown: "Unbekannt", goalState_off: "Aus",
   goalUnit_mb_per_day: "{n} MB pro Tag", goalEdit: "Anpassen", goalLimitLabel: "Grenze", goalEnabled: "Ziel beachten", goalDefault: "Standard: {n}", goalFailed: "Nicht gespeichert: {reason}", goalSave: "Speichern", goalsAdjust: "Grenzen anpassen", goalsAllMet: "Alle {n} beachteten Ziele sind erreicht.",
 });
 Object.assign(TEXT.en, {
-  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
+  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsTab: "Goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
   goal_broken_references: "Broken references", goal_unavailable: "Unavailable entities", goal_backup_age: "Age of the latest backup", goal_restore_test_age: "Age of the restore test", goal_recorder_growth: "Database growth", goal_weak_batteries: "Weak batteries", goal_devices_without_area: "Devices without an area", goal_stale_sensors: "Sensors without a new report", goal_recurring_devices: "Recurring outages (devices)", goal_automation_errors: "Automations with errors (30 days)", goal_blocked_automations: "Blocked automations", goal_orphaned_statistics: "Orphaned statistics",
   goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet",
   goalState_met: "Met", goalState_missed: "Missed", goalState_unknown: "Unknown", goalState_off: "Off",
@@ -10730,11 +10730,11 @@ Object.assign(TEXT.de, {
   bvLine: "Jetzt {now} · erkannt als {kind} · Grenze {limit}", bvNote: "Der Typ ist eine Schätzung; liegt er falsch, ist auch die Grenze falsch. Ohne Angabe: {unknown} (zu wenige Tage oder eine Spannung, die zu keinem Typ passt).",
   bvType_cell15: "Einzelzelle 1,5 V (AA/AAA, Alkaline oder NiMH)", bvType_coin3: "3-V-Zelle (z. B. CR2032 oder 2 × AA)", bvType_lithium: "Lithium-Ionen-Zelle", bvType_cells3: "3 Zellen in Reihe (4,5 V)", bvType_cells4: "4 Zellen in Reihe (6 V)", bvType_block9: "9-V-Block", bvType_lead12: "12-V-Akku",
   btTitle: "Alle Batterien", btHint: "Stand, Verbrauch und die Prognose, wann eine Batterie die Grenze erreicht (bis 90 Tage).", btLoading: "Prognose wird berechnet …", btNoRecorder: "Ohne Recorder gibt es keine Prognose.",
-  remTitle: "Wartungserinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und Fälligkeit ein, Housekeeper sagt, wann es dran ist, und merkt sich, wann du es erledigt hast. Es ändert nichts in Home Assistant.", remEmpty: "Noch keine Erinnerung. Lege zum Beispiel den Wasserfilter oder den Rauchmelder-Test an.",
+  remTitle: "Deine Erinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und Fälligkeit ein, Housekeeper sagt, wann es dran ist, und merkt sich, wann du es erledigt hast. Es ändert nichts in Home Assistant.", remEmpty: "Noch keine Erinnerung. Lege zum Beispiel den Wasserfilter oder den Rauchmelder-Test an.",
   remName: "z. B. Wasserfilter", remNote: "z. B. Batterietyp CR2032", remAdd: "Hinzufügen", remSave: "Speichern", remCancel: "Abbrechen", remDone: "Erledigt", remDelete: "Löschen", remEdit: "Ändern", remNew: "+ Erinnerung hinzufügen",
   remFName: "Name", remFEvery: "Abstand in Tagen", remFDue: "Fällig am", remFNote: "Notiz (optional)", remAllStates: "Alle Zustände", remSumAll: "Alle", remStateDue: "Überfällig", remStateSoon: "Bald fällig", remStateOk: "In Ordnung", remColName: "Name", remColEvery: "Abstand", remColLast: "Zuletzt erledigt", remColDue: "Fällig", remColActions: "Aktionen",
   remDialogNew: "Neue Erinnerung", remDialogEdit: "Erinnerung bearbeiten", remEveryN: "alle {n} Tage", remHistory: "Historie · {n}× erledigt", remNoHistory: "Noch nie erledigt.", remHistoryOpen: "Historie aufklappen", remHistoryClose: "Historie zuklappen", remToday: "heute", remOverdue: "{n} Tage überfällig", remIn: "in {n} Tagen", remInvalid: "Nicht gespeichert, bitte prüfen: {field}",
-  reminders: "Erinnerungen", remindersSubtitle: "Eigene Wartungstermine: Filter, Entkalken, Batteriewechsel.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
+  reminders: "Erinnerungen", remindersSubtitle: "Termine für das, was du regelmäßig erledigst.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
   relSetup: "Einrichtungsfehler: {n} in {days} Tagen, zuletzt {last}", relSetupNow: "Gerade im Zustand {state}", relSetupNote: "Aus den Scans gezählt, so fein wie das Scan-Intervall.",
   event_reminder_due: "Wartungserinnerung fällig",
 });
@@ -10743,11 +10743,11 @@ Object.assign(TEXT.en, {
   bvLine: "Now {now} · recognised as {kind} · limit {limit}", bvNote: "The type is a guess; if it is wrong, so is the limit. Without a result: {unknown} (too few days or a voltage that fits no type).",
   bvType_cell15: "single 1.5 V cell (AA/AAA, alkaline or NiMH)", bvType_coin3: "3 V cell (e.g. CR2032 or 2 × AA)", bvType_lithium: "lithium-ion cell", bvType_cells3: "3 cells in series (4.5 V)", bvType_cells4: "4 cells in series (6 V)", bvType_block9: "9 V block", bvType_lead12: "12 V battery",
   btTitle: "All batteries", btHint: "Level, drain and the forecast of when a battery reaches the limit (up to 90 days).", btLoading: "Calculating the forecast …", btNoRecorder: "There is no forecast without a recorder.",
-  remTitle: "Maintenance reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the due date, Housekeeper tells you when it is due and keeps when you did it. It changes nothing in Home Assistant.", remEmpty: "No reminder yet. Add the water filter or the smoke detector test, for example.",
+  remTitle: "Your reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the due date, Housekeeper tells you when it is due and keeps when you did it. It changes nothing in Home Assistant.", remEmpty: "No reminder yet. Add the water filter or the smoke detector test, for example.",
   remName: "e.g. water filter", remNote: "e.g. battery type CR2032", remAdd: "Add", remSave: "Save", remCancel: "Cancel", remDone: "Done", remDelete: "Delete", remEdit: "Edit", remNew: "+ Add reminder",
   remFName: "Name", remFEvery: "Interval in days", remFDue: "Due on", remFNote: "Note (optional)", remAllStates: "All states", remSumAll: "All", remStateDue: "Overdue", remStateSoon: "Due soon", remStateOk: "On track", remColName: "Name", remColEvery: "Interval", remColLast: "Last done", remColDue: "Due", remColActions: "Actions",
   remDialogNew: "New reminder", remDialogEdit: "Edit reminder", remEveryN: "every {n} days", remHistory: "History · done {n}×", remNoHistory: "Never done yet.", remHistoryOpen: "Show history", remHistoryClose: "Hide history", remToday: "today", remOverdue: "{n} days overdue", remIn: "in {n} days", remInvalid: "Not saved, please check: {field}",
-  reminders: "Reminders", remindersSubtitle: "Your own maintenance dates: filter, descaling, changing batteries.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
+  reminders: "Reminders", remindersSubtitle: "Dates for what you do regularly.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
   relSetup: "Setup failures: {n} in {days} days, last {last}", relSetupNow: "Currently in state {state}", relSetupNote: "Counted from the scans, as fine as the scan interval.",
   event_reminder_due: "maintenance reminder due",
 });
