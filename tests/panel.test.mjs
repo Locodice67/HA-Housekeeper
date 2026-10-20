@@ -6594,3 +6594,10 @@ test("the To check tile of the backups says how many problems and hints it adds 
   const html = el.bhTiles({ checks: [], counts: { problem: 2, note: 1 }, backup_count: 3 });
   assert.ok(html.includes(">3<") && html.includes("2 problems, 1 hint"));
 });
+
+test("the sizes of the last backups are columns from zero with date, size and change as tooltip", () => {
+  const { el } = panel("en");
+  const MB = 1024 ** 2, b = n => ({ date: `2026-10-1${n}T10:00:00+00:00`, size: (800 + n * 10) * MB, own: false, partial: false });
+  const html = el.bhSizes({ backups: [b(3), b(2), b(1)], checks: [] });
+  assert.ok(html.includes('class="bhaxis"') && html.includes("+10 MB") && /height:\d+%/.test(html));
+});

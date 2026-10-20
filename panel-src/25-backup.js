@@ -189,9 +189,13 @@ class BackupMixin {
     if (rows.length < 3) return "";
     const max = Math.max(...rows.map(x => x.size)), last = rows[rows.length - 1], first = rows[0];
     const tone = b.checks.find(c => c.id === "size")?.level === "note" ? " warn" : "";
-    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(4, Math.round((x.size / max) * 100))}%" title="${this.esc(`${this.formatDate(x.date)} · ${this.formatBytes(x.size)}`)}"></i>`).join("");
-    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhsizes" role="img" aria-label="${this.esc(this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) }))}">${bars}</div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
+    // Columns from zero, one per backup, each with its date, size and change to the one before as a tooltip.
+    const tip = (x, i) => { const d = i ? x.size - rows[i - 1].size : 0; return [this.formatDate(x.date), this.formatBytes(x.size), i ? `${d >= 0 ? "+" : "−"}${this.formatBytes(Math.abs(d))}` : ""].filter(Boolean).join(" · "); };
+    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(3, Math.round((x.size / max) * 100))}%" title="${this.esc(tip(x, i))}"><span class="sr-only">${this.esc(tip(x, i))}</span></i>`).join("");
+    const label = this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) });
+    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhchart"><span class="bhaxis"><b>${this.esc(this.formatBytes(max))}</b><b>0</b></span><div class="bhsizes" role="img" aria-label="${this.esc(label)}">${bars}</div><span class="bhdates"><b>${this.esc(this.bhDay(first.date))}</b><b>${this.esc(this.bhDay(last.date))}</b></span></div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
   }
+
 
   // The checks in the order a person thinks in: does it run, where is it kept and what is in it, can it be restored, what Housekeeper adds.
   bhGroups(checks) {
