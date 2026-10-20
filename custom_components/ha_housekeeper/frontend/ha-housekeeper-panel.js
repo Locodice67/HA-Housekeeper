@@ -401,6 +401,8 @@ const DONE_RESULTS = Object.fromEntries([
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";
+// The page sizes every paged list offers, unless it has its own.
+const PAGE_SIZES = [20, 50, 100, 250];
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
@@ -1315,7 +1317,7 @@ class ThemeMixin {
     if (SCHEMES[scheme]) prefs.scheme = scheme;
     if (["normal", "compact"].includes(saved.density)) prefs.density = saved.density;
     if (["auto", "reduced"].includes(saved.motion)) prefs.motion = saved.motion;
-    if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
+    if (PAGE_SIZES.includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
@@ -2231,31 +2233,12 @@ class ListsMixin {
 
   // The bar below a paged list: which rows of how many, the page size, and the way to the other pages.
   pageFooter(id, { page, count, from, shown, total, size, own }) {
-    const sizes = (own || [20, 50, 100]).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
+    const sizes = (own || PAGE_SIZES).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
     return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + shown)} ${this.t("of")} ${this.formatNumber(total)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
   }
 
-  // Pages over the rows a grouped list shows, whole groups kept together: a unit is a head with the rows below it.
-  // A group larger than a page fills pages of its own, its head repeated on top of each.
-  paginateUnits(id, units) {
-    const size = this.pageSize, pages = [[]], rowsOf = list => list.reduce((sum, u) => sum + 1 + u.rows.length, 0);
-    for (const u of units) {
-      if (1 + u.rows.length > size) {
-        for (let i = 0; i < u.rows.length; i += size - 1) { if (pages.at(-1).length) pages.push([]); pages.at(-1).push({ ...u, rows: u.rows.slice(i, i + size - 1) }); }
-        continue;
-      }
-      if (pages.at(-1).length && rowsOf(pages.at(-1)) + 1 + u.rows.length > size) pages.push([]);
-      pages.at(-1).push(u);
-    }
-    const count = pages.length, page = Math.min(Math.max(1, this.pages[id] || 1), count), total = rowsOf(pages.flat());
-    this.pages[id] = page;
-    const rows = pages[page - 1], from = rowsOf(pages.slice(0, page - 1).flat());
-    if (total <= 20) return { rows, footer: "" };
-    return { rows, footer: this.pageFooter(id, { page, count, from, shown: rowsOf(rows), total, size }) };
-  }
-
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
-  // head: { tone, title, sub, pill }; the state lives in this.folds and survives a render.
+  // head: { tone, title, sub, pill, count }; the state lives in this.folds and survives a render.
   foldOpen(id, def) { return this.folds?.[id] ?? def; }
 
   // The size of the current view at the right end of a selection row: what the filters and search leave over.
@@ -3079,9 +3062,9 @@ class FindingsMixin {
     const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
     const count = outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
       : this.t(of ? (objects === 1 ? "ogViewCountOf1" : "ogViewCountOf") : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
-    // Grouped, the pages count the rows shown, heads and what is open below them, not only the heads.
+    // Grouped, the pages count the heads at the top; an open head shows everything below it on the same page.
     const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
-    const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);
+    const pg = this.paginate("findings", grouped ? units : items);
     const pageItems = grouped ? pg.rows.map(u => u.item) : pg.rows;
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pageItems, count)}${items.length ? this.findingsTable(pageItems, grouped ? pg.rows.map(u => u.head + u.rows.join("")).join("") : null) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
@@ -3559,7 +3542,7 @@ class SettingsMixin {
     const select = (key, options) => `<select data-pref-select="${key}" aria-label="${this.esc(this.t(key === "startView" ? "startView" : "pageSizeSetting"))}">${options.map(([v, l]) => `<option value="${v}" ${String(p[key]) === String(v) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
     return `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
       ${row(this.t("startView"), select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
-      ${row(this.t("pageSizeSetting"), select("pageSize", [20, 50, 100].map(n => [n, n])))}
+      ${row(this.t("pageSizeSetting"), select("pageSize", PAGE_SIZES.map(n => [n, n])))}
       <div class="setrow quietreset"><small>${this.t("prefsNote")}</small><button class="btn quiet" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
   }
 

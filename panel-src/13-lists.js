@@ -446,31 +446,12 @@ class ListsMixin {
 
   // The bar below a paged list: which rows of how many, the page size, and the way to the other pages.
   pageFooter(id, { page, count, from, shown, total, size, own }) {
-    const sizes = (own || [20, 50, 100]).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
+    const sizes = (own || PAGE_SIZES).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
     return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + shown)} ${this.t("of")} ${this.formatNumber(total)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
   }
 
-  // Pages over the rows a grouped list shows, whole groups kept together: a unit is a head with the rows below it.
-  // A group larger than a page fills pages of its own, its head repeated on top of each.
-  paginateUnits(id, units) {
-    const size = this.pageSize, pages = [[]], rowsOf = list => list.reduce((sum, u) => sum + 1 + u.rows.length, 0);
-    for (const u of units) {
-      if (1 + u.rows.length > size) {
-        for (let i = 0; i < u.rows.length; i += size - 1) { if (pages.at(-1).length) pages.push([]); pages.at(-1).push({ ...u, rows: u.rows.slice(i, i + size - 1) }); }
-        continue;
-      }
-      if (pages.at(-1).length && rowsOf(pages.at(-1)) + 1 + u.rows.length > size) pages.push([]);
-      pages.at(-1).push(u);
-    }
-    const count = pages.length, page = Math.min(Math.max(1, this.pages[id] || 1), count), total = rowsOf(pages.flat());
-    this.pages[id] = page;
-    const rows = pages[page - 1], from = rowsOf(pages.slice(0, page - 1).flat());
-    if (total <= 20) return { rows, footer: "" };
-    return { rows, footer: this.pageFooter(id, { page, count, from, shown: rowsOf(rows), total, size }) };
-  }
-
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
-  // head: { tone, title, sub, pill }; the state lives in this.folds and survives a render.
+  // head: { tone, title, sub, pill, count }; the state lives in this.folds and survives a render.
   foldOpen(id, def) { return this.folds?.[id] ?? def; }
 
   // The size of the current view at the right end of a selection row: what the filters and search leave over.

@@ -77,7 +77,7 @@ class SettingsMixin {
     const select = (key, options) => `<select data-pref-select="${key}" aria-label="${this.esc(this.t(key === "startView" ? "startView" : "pageSizeSetting"))}">${options.map(([v, l]) => `<option value="${v}" ${String(p[key]) === String(v) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
     return `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
       ${row(this.t("startView"), select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
-      ${row(this.t("pageSizeSetting"), select("pageSize", [20, 50, 100].map(n => [n, n])))}
+      ${row(this.t("pageSizeSetting"), select("pageSize", PAGE_SIZES.map(n => [n, n])))}
       <div class="setrow quietreset"><small>${this.t("prefsNote")}</small><button class="btn quiet" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
   }
 

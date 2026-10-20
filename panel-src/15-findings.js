@@ -312,9 +312,9 @@ class FindingsMixin {
     const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
     const count = outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
       : this.t(of ? (objects === 1 ? "ogViewCountOf1" : "ogViewCountOf") : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
-    // Grouped, the pages count the rows shown, heads and what is open below them, not only the heads.
+    // Grouped, the pages count the heads at the top; an open head shows everything below it on the same page.
     const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
-    const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);
+    const pg = this.paginate("findings", grouped ? units : items);
     const pageItems = grouped ? pg.rows.map(u => u.item) : pg.rows;
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pageItems, count)}${items.length ? this.findingsTable(pageItems, grouped ? pg.rows.map(u => u.head + u.rows.join("")).join("") : null) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));

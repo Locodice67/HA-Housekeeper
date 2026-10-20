@@ -6497,28 +6497,21 @@ test("the head of an object selects all its findings, the head of an outage only
   assert.equal(el._findGroups["og:automation:automation.a1"].sort().join(), "a,b");
 });
 
-test("a grouped findings list pages the rows it shows, keeps a group whole, and repeats the head of a group larger than a page", () => {
+test("a grouped findings list pages its heads at the top; an open head keeps everything below it on its page", () => {
   const { el } = panel("en");
   const causes = [], findings = [];
-  for (let i = 0; i < 6; i++) causes.push({ id: `c${i}`, kind: "device_down", object_type: "device", object_id: `d${i}`, name: `Dev ${i}`, follower_count: 6, total_followers: 6, child_ids: [], consumers: {}, impact: "medium", finding_key: `f${i}` });
+  for (let i = 0; i < 25; i++) causes.push({ id: `c${i}`, kind: "device_down", object_type: "device", object_id: `d${i}`, name: `Dev ${i}`, follower_count: 6, total_followers: 6, child_ids: [], consumers: {}, impact: "medium", finding_key: `f${i}` });
   causes.forEach(c => { findings.push({ key: c.finding_key, rule_id: "device.down", object_id: c.object_id, classification: "unavailable", confidence: 0.9, impact: "medium", ignored: false, cause_id: c.id }); for (let k = 0; k < 6; k++) findings.push({ key: `${c.id}-${k}`, rule_id: "entity.state_unavailable", object_id: `sensor.${c.id}_${k}`, classification: "unavailable", confidence: 0.9, impact: "medium", ignored: false, cause_id: c.id }); });
   el.data = { ...DATA, causes, findings };
   el.view = "findingsNav";
-  el.folds = Object.fromEntries(causes.map(c => [`og:device:${c.object_id}`, true]));
   let html = el.findingsView();
-  assert.ok(html.includes("tablefoot") && html.includes("Page 1 of 3"), "six open heads of seven rows each: three per page would pass 20, so two");
-  assert.equal((html.match(/finding-cause og lvl0/g) || []).length, 2);
-  causes.push({ ...causes[0], id: "big", object_id: "dbig", finding_key: "fbig" });
-  findings.push({ key: "fbig", rule_id: "device.down", object_id: "dbig", classification: "unavailable", confidence: 0.9, impact: "high", ignored: false, cause_id: "big" });
-  for (let k = 0; k < 30; k++) findings.push({ key: `big-${k}`, rule_id: "entity.state_unavailable", object_id: `sensor.big_${k}`, classification: "unavailable", confidence: 0.9, impact: "high", ignored: false, cause_id: "big" });
-  el.data = { ...DATA, causes: [...causes], findings: [...findings] };
-  el.folds["og:device:dbig"] = true; el.pages = {};
+  assert.ok(html.includes("tablefoot") && html.includes("Page 1 of 2") && html.includes("1–20 of 25"), "25 heads: twenty on the first page");
+  assert.equal((html.match(/finding-cause og lvl0/g) || []).length, 20);
+  assert.ok(html.includes('<option value="250"'), "250 is a page size");
+  el.folds = Object.fromEntries(causes.map(c => [`og:device:${c.object_id}`, true]));
   html = el.findingsView();
-  assert.equal((html.match(/<tr class="finding-data/g) || []).length, 20, "the large group fills the first page");
-  el.pages.findings = 2;
-  const second = el.findingsView();
-  const head = second.indexOf('data-fold="og:device:dbig"');
-  assert.ok(head > 0 && second.indexOf('data-fsel="big-', head) > head, "its head stands again on top of the second page, its rows below");
+  assert.equal((html.match(/finding-cause og lvl0/g) || []).length, 20, "open heads do not push others to the next page");
+  assert.equal((html.match(/<tr class="finding-data/g) || []).length, 20 * 7, "each open head shows its rows on the same page");
 });
 
 test("a database finding is a fold with its level and count; the periods and sensors of missing hours are inside, closed at first", () => {

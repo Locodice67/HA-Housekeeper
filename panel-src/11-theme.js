@@ -15,7 +15,7 @@ class ThemeMixin {
     if (SCHEMES[scheme]) prefs.scheme = scheme;
     if (["normal", "compact"].includes(saved.density)) prefs.density = saved.density;
     if (["auto", "reduced"].includes(saved.motion)) prefs.motion = saved.motion;
-    if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
+    if (PAGE_SIZES.includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
