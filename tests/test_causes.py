@@ -105,7 +105,8 @@ def test_the_device_hangs_below_the_integration_and_the_integration_below_its_ap
         "integration_down:e1": 0,
         "device_down:d1": 3,
     }
-    assert causes["app_down:mosquitto"]["total_followers"] == 3, "the totals run up the chain"
+    # The totals run up the chain; the device that is down below is one of them.
+    assert causes["app_down:mosquitto"]["total_followers"] == 4
     assert {f["cause_id"] for f in entity_findings} == {"device_down:d1"}
     assert app_finding["cause_id"] == "app_down:mosquitto"
 
@@ -156,7 +157,9 @@ def test_a_device_is_down_when_all_its_entities_are_and_one_has_a_finding() -> N
         ("device.down", "d1", "2026-10-03T00:00:00+00:00")
     ]
     assert device_down_findings(entities, devices, []) == [], "too early: no entity finding yet"
-    assert device_down_findings(entities[:2], devices, flagged) == [], "fewer than three entities"
+    assert len(device_down_findings(entities[:1], devices, flagged)) == 1, "one entity is enough"
+    leftover = _entity("sensor.old", device_id="d1", status="orphaned")
+    assert len(device_down_findings([*entities, leftover], devices, flagged)) == 1, "a leftover"
     entities[0]["status"] = "active"
     assert device_down_findings(entities, devices, flagged) == [], "one entity works"
 
@@ -181,15 +184,11 @@ def test_a_device_in_standby_is_down_and_collects_its_unknown_entities() -> None
     assert [(c["id"], c["follower_count"]) for c in causes] == [("device_down:d1", 1)]
 
 
-def test_a_device_with_some_entities_without_a_value_groups_their_findings() -> None:
+def test_a_device_with_some_entities_without_a_value_is_no_cause() -> None:
     objects = [DEVICE, *(_entity(f"sensor.{n}", device_id="d1") for n in "abc")]
     objects[3]["status"] = "active"
     findings = [_finding("sensor.a"), _finding("sensor.b", classification="unknown")]
-    causes = apply_causes(objects, [], findings)
-    assert [(c["id"], c["follower_count"], c["virtual"]) for c in causes] == [
-        ("device_partial:d1", 2, False)
-    ]
-    assert apply_causes(objects, [], findings[:1]) == [], "one finding is no group"
+    assert apply_causes(objects, [], findings) == [], "the list groups them under the device"
 
 
 def test_an_integration_that_is_down_is_a_cause_even_without_follow_up_findings() -> None:

@@ -2,7 +2,8 @@
 
 Stored by Housekeeper only; Home Assistant stays untouched. A mark of an object hides the
 "not available" findings of that object (of a device: of its entities; of an integration or app: its
-"not loaded" and "app stopped" findings), never a broken reference.
+"not loaded" and "app stopped" findings, and while it is down also the outages of its devices and
+entities), never a broken reference.
 "Keep" also blocks every cleanup step on the object; the label ``housekeeper_keep`` does the same. A mark with a review date that has passed no
 longer hides anything; the finding comes back as due.
 A mark can carry a time window (fixed hours, or while the sun is below the horizon): it hides only
@@ -229,6 +230,7 @@ def apply_marks(
     now = now or datetime.now(UTC)
     local_now = dt_util.as_local(now)
     device_of: dict[str, str | None] = {}
+    entry_of: dict[str, list[str]] = {}
     devices: dict[str, dict[str, Any]] = {}
     for item in objects:
         item.pop("mark", None)
@@ -236,8 +238,10 @@ def apply_marks(
         item.pop("marked_keep", None)
         if item["object_type"] == "entity":
             device_of[item["object_id"]] = item.get("device_id")
+            entry_of[f"entity:{item['object_id']}"] = [item.get("config_entry_id") or ""]
         elif item["object_type"] == "device":
             devices[item["object_id"]] = item
+            entry_of[f"device:{item['object_id']}"] = item.get("config_entry_ids") or []
         if KEEP_LABEL in (
             item.get("labels") or []
         ):  # the label is a "keep" mark made in Home Assistant
@@ -254,13 +258,33 @@ def apply_marks(
         device = devices.get(item.get("device_id") or "")
         if item["object_type"] == "entity" and device and device.get("marked_keep"):
             item["marked_keep"] = True
+    # An integration that is down, and the app it hangs on: their marks cover the outages below them.
+    down = {
+        f["object_id"]
+        for f in findings
+        if f.get("rule_id") in ("config_entry.not_loaded", "config_entry.reauth")
+    }
+    app_of = {
+        f["affected_object"]: f["object_id"]
+        for f in findings
+        if f.get("rule_id") == "app.stopped_in_use" and f.get("affected_object")
+    }
+
+    def above(key: str) -> tuple[str, ...]:
+        entries = [e for e in entry_of.get(key, []) if e in down]
+        return (
+            *(mark_key("config_entry", e) for e in entries),
+            *(mark_key("app", app_of[e]) for e in entries if e in app_of),
+        )
+
     for finding in findings:
         finding.pop("mark", None)
         finding.pop("mark_outside_window", None)
         if finding.get("rule_id") in ("config_entry.not_loaded", "config_entry.reauth"):
             keys = (mark_key("config_entry", finding["object_id"]),)
         elif finding.get("rule_id") == "device.down":
-            keys = (mark_key("device", finding["object_id"]),)
+            key = mark_key("device", finding["object_id"])
+            keys = (key, *above(key))
         elif finding.get("rule_id") == "app.stopped_in_use":
             keys = (
                 mark_key("app", finding["object_id"]),
@@ -271,6 +295,7 @@ def apply_marks(
             keys = (
                 mark_key("entity", entity_id),
                 mark_key("device", device_of.get(entity_id) or ""),
+                *above(mark_key("entity", entity_id)),
             )
         else:
             continue

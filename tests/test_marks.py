@@ -217,3 +217,15 @@ def test_listed_objects_drop_the_entity_of_an_automation_and_count_its_mark_once
     ]
     assert [i["object_type"] for i in listed_objects(objects)] == ["automation", "entity"]
     assert marked_status_counts(objects) == {"active": 1}
+
+
+def test_a_mark_of_an_integration_covers_its_outages_only_while_it_is_down() -> None:
+    objects, findings = _world()
+    objects[1]["config_entry_id"] = "e1"
+    marks = {"config_entry:e1": _mark("expected_offline")}
+    apply_marks(objects, findings, marks, NOW)
+    assert not findings[0]["ignored"], "the integration runs: a dead entity is news"
+    down = {"rule_id": "config_entry.not_loaded", "object_id": "e1", "classification": "problem"}
+    findings[0]["ignored"] = False
+    apply_marks(objects, [*findings, {**down, "ignored": False}], marks, NOW)
+    assert findings[0]["ignored_by"] == "mark"
