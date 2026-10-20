@@ -18,6 +18,7 @@ The detailed documentation of HA Housekeeper. For a short overview and the quick
   - [Using the interface and settings](#using-the-interface-and-settings)
 - [Safety model](#safety-model)
 - [Usage](#usage)
+- [Examples](#examples)
 - [Troubleshooting](#troubleshooting)
 - [Current limitations](#current-limitations)
 
@@ -425,6 +426,78 @@ Open **Housekeeper** from the Home Assistant sidebar. The overview starts with a
 - **Back**: detail pages, the graph and jumps through links have a “Back to …”. The graph goes back node by node and finally to the page it was opened from; detail pages reopen the tab you left, lists jump back to the old spot. The browser's back button takes the same way back one step.
 
 The first scan establishes the initial observation timestamps. Later scans preserve the start of an unchanged classification and reset it when the classification changes.
+
+## Examples
+
+Automations that use what Housekeeper offers for your own dashboards and automations. Each one uses `persistent_notification.create`; replace it with your own notify action (for example `notify.mobile_app_…`) to get a message on your phone. The entity ids are the ones of a new installation; check yours under **Settings → Devices & services → HA Housekeeper**.
+
+**Report a new critical finding.** The event `ha_housekeeper_critical_finding` fires once per new finding with the impact high; its data holds `object_id`, `rule_id` and `classification`.
+
+```yaml
+alias: "Housekeeper: critical finding"
+triggers:
+  - trigger: event
+    event_type: ha_housekeeper_critical_finding
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "Housekeeper: critical finding"
+      message: "{{ trigger.event.data.object_id }} ({{ trigger.event.data.rule_id }})"
+```
+
+**Say when a home function is impaired.** The event `ha_housekeeper_monitor` carries `event_type` (`beeintraechtigt`, `pruefung_unvollstaendig`, `pruefung_wieder_moeglich`, `wieder_unauffaellig`), `function_id`, `name`, `reason` and `at`. The same transitions are on the event entity “Home functions”.
+
+```yaml
+alias: "Housekeeper: home function impaired"
+triggers:
+  - trigger: event
+    event_type: ha_housekeeper_monitor
+    event_data:
+      event_type: beeintraechtigt
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "{{ trigger.event.data.name }} is impaired"
+      message: "Reason: {{ trigger.event.data.reason }}"
+```
+
+**Scan every Monday morning and report the numbers.** With `wait: true` the action returns `status`, `findings`, `high`, `scanned_at` and `preliminary`. A scan right after another one is not repeated (`status: recent`); during a plan or while Home Assistant starts the action is refused.
+
+```yaml
+alias: "Housekeeper: weekly report"
+triggers:
+  - trigger: time
+    at: "07:00:00"
+conditions:
+  - condition: time
+    weekday: mon
+actions:
+  - action: ha_housekeeper.scan
+    data:
+      wait: true
+    response_variable: result
+  - action: persistent_notification.create
+    data:
+      title: "Housekeeper"
+      message: "{{ result.findings }} findings, {{ result.high }} of them high."
+```
+
+**Warn about broken references.** The sensors count from the level medium on and stay unknown while Home Assistant starts.
+
+```yaml
+alias: "Housekeeper: broken references"
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.ha_housekeeper_broken_references
+    above: 0
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "Housekeeper"
+      message: "{{ states('sensor.ha_housekeeper_broken_references') }} broken references, see the Findings page."
+```
+
+The other events (`ha_housekeeper_backup_overdue`, `ha_housekeeper_quarantine_expired`, `ha_housekeeper_followup_regression`, `ha_housekeeper_integration_down`, `ha_housekeeper_reminder_due`) work the same way as the first example. Their data: `age_hours` and `limit_hours`; `object_type`, `object_id` and `days`; `plan_id` and `new_count`; `object_id`, `domain` and `follower_count`; `reminder_id` and `days_overdue`.
 
 ## Troubleshooting
 

@@ -18,6 +18,7 @@ Die ausführliche Dokumentation von HA Housekeeper. Einen kurzen Überblick und 
   - [Bedienung und Einstellungen](#bedienung-und-einstellungen)
 - [Sicherheitsmodell](#sicherheitsmodell)
 - [Verwendung](#verwendung)
+- [Beispiele](#beispiele)
 - [Fehlersuche](#fehlersuche)
 - [Aktuelle Einschränkungen](#aktuelle-einschränkungen)
 
@@ -426,6 +427,78 @@ Housekeeper schreibt dynamische Templates, YAML-Dashboards, Helfer oder Gruppen 
 - **Zurück**: Detailseiten, der Graph und Sprünge über Links haben ein „Zurück zu …“. Der Graph geht Knoten für Knoten zurück und zuletzt zur Seite, von der er geöffnet wurde; Detailseiten öffnen den Tab, den man verlassen hat, Listen springen an die alte Stelle. Die Zurück-Taste des Browsers geht denselben Weg einen Schritt zurück.
 
 Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende Scans behalten den Beginn einer unveränderten Klassifikation bei und setzen ihn zurück, sobald sich die Klassifikation ändert.
+
+## Beispiele
+
+Automationen mit dem, was Housekeeper für eigene Dashboards und Automationen anbietet. Jede nutzt `persistent_notification.create`; mit einer eigenen Benachrichtigungs-Aktion (zum Beispiel `notify.mobile_app_…`) kommt die Meldung aufs Handy. Die Entitäts-IDs sind die einer neuen Installation; deine stehen unter **Einstellungen → Geräte & Dienste → HA Housekeeper**.
+
+**Einen neuen kritischen Befund melden.** Das Ereignis `ha_housekeeper_critical_finding` kommt einmal je neuem Befund mit der Auswirkung hoch; seine Daten enthalten `object_id`, `rule_id` und `classification`.
+
+```yaml
+alias: "Housekeeper: kritischer Befund"
+triggers:
+  - trigger: event
+    event_type: ha_housekeeper_critical_finding
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "Housekeeper: kritischer Befund"
+      message: "{{ trigger.event.data.object_id }} ({{ trigger.event.data.rule_id }})"
+```
+
+**Melden, wenn eine Hausfunktion beeinträchtigt ist.** Das Ereignis `ha_housekeeper_monitor` trägt `event_type` (`beeintraechtigt`, `pruefung_unvollstaendig`, `pruefung_wieder_moeglich`, `wieder_unauffaellig`), `function_id`, `name`, `reason` und `at`. Dieselben Wechsel zeigt die Event-Entität „Hausfunktionen“.
+
+```yaml
+alias: "Housekeeper: Hausfunktion beeinträchtigt"
+triggers:
+  - trigger: event
+    event_type: ha_housekeeper_monitor
+    event_data:
+      event_type: beeintraechtigt
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "{{ trigger.event.data.name }} ist beeinträchtigt"
+      message: "Grund: {{ trigger.event.data.reason }}"
+```
+
+**Jeden Montagmorgen scannen und die Zahlen melden.** Mit `wait: true` liefert die Aktion `status`, `findings`, `high`, `scanned_at` und `preliminary`. Ein Scan direkt nach einem anderen wird nicht wiederholt (`status: recent`); während eines Plans oder beim Start von Home Assistant wird die Aktion abgelehnt.
+
+```yaml
+alias: "Housekeeper: Wochenbericht"
+triggers:
+  - trigger: time
+    at: "07:00:00"
+conditions:
+  - condition: time
+    weekday: mon
+actions:
+  - action: ha_housekeeper.scan
+    data:
+      wait: true
+    response_variable: result
+  - action: persistent_notification.create
+    data:
+      title: "Housekeeper"
+      message: "{{ result.findings }} Befunde, davon {{ result.high }} hoch."
+```
+
+**Vor defekten Verweisen warnen.** Die Sensoren zählen ab der Stufe mittel und bleiben beim Start von Home Assistant unbekannt.
+
+```yaml
+alias: "Housekeeper: defekte Verweise"
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.ha_housekeeper_broken_references
+    above: 0
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "Housekeeper"
+      message: "{{ states('sensor.ha_housekeeper_broken_references') }} defekte Verweise, siehe Befunde."
+```
+
+Die übrigen Ereignisse (`ha_housekeeper_backup_overdue`, `ha_housekeeper_quarantine_expired`, `ha_housekeeper_followup_regression`, `ha_housekeeper_integration_down`, `ha_housekeeper_reminder_due`) funktionieren wie das erste Beispiel. Ihre Daten: `age_hours` und `limit_hours`; `object_type`, `object_id` und `days`; `plan_id` und `new_count`; `object_id`, `domain` und `follower_count`; `reminder_id` und `days_overdue`.
 
 ## Fehlersuche
 
