@@ -5624,8 +5624,10 @@ test("the search finds pages, settings tabs and finding filters, puts the better
   el.quickQuery = "known"; el.quickOpen = true;
   const html = el.quickSearchBox();
   assert.ok(html.includes('class="grp"') && html.includes("Filters") && html.includes("data-quick-entry=\"0\""));
+  el.findingFilter = "unused"; el.lvState("findings", "impact", "desc").q = "old";
   el.quickGo(el.quickEntries()[0]);
-  assert.equal(el.view, "findingsNav"); assert.equal(el.findingStatus, "known"); assert.equal(el.quickQuery, ""); assert.equal(el.quickOpen, false);
+  assert.equal(el.view, "findingsNav"); assert.equal(el.findingStatus, "known");
+  assert.equal(`${el.findingFilter}|${el.lv.findings.q}`, "|", "the filter from the search starts without what was kept before"); assert.equal(el.quickQuery, ""); assert.equal(el.quickOpen, false);
   el.quickQuery = "appearance"; el.quickGo(el.quickEntries().find(e => e.settingsTab === "look"));
   assert.equal(el.view, "settings"); assert.equal(el.settingsTab, "look");
   el.quickQuery = "unavailable"; el.quickGo(el.quickEntries().find(e => e.objectStatus === "unavailable"));

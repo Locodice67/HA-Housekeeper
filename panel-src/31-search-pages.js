@@ -106,8 +106,13 @@ class SearchPagesMixin {
     this.view = view; this.pages = {}; this.selected = null; this.trail = []; this.graphTrail = []; this.graphOrigin = null;
     if (entry.settingsTab) this.settingsTab = entry.settingsTab;
     if (entry.viewTab) (this.viewTab ||= {})[view] = entry.viewTab;
-    if (entry.kind === "filter" && entry.objectStatus) { this.statusFilter = entry.objectStatus; this.typeFilter = ""; this.originFilter = ""; }
+    // A filter from the search shows what its count said: the list starts without the search and filters kept before.
+    if (entry.kind === "filter" && entry.objectStatus) {
+      const st = this.invState(); st.q = ""; st.f = {}; // type, origin, label and status live in the filters of the list
+      this.statusFilter = entry.objectStatus;
+    }
     if (entry.kind === "filter" && !entry.objectStatus) {
+      this.clearFindingFilters();
       this.findingStatus = entry.findingStatus; // new and in work are chips of the status row like the others
     }
     this.render();
