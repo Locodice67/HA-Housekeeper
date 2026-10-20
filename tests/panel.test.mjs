@@ -6102,6 +6102,7 @@ test("an exception is added from the menu of a finding or the selection bar, wit
   assert.equal(el.excForm.picks.map(p => `${p.kind}:${p.id}`).join(), "entity:light.a");
   el.view = "findingsNav";
   assert.ok(el.findingsView().includes("data-exc-form"));
+  assert.ok(el.findingsView().includes('data-exp-menu="findings"') && !el.findingsView().includes("data-export="), "the shared export button, no CSV and JSON chips");
 });
 
 test("the status of the selection is set in one form; an exception from a finding offers its device, area and integration", async () => {
