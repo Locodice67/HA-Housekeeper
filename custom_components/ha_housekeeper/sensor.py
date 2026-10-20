@@ -112,6 +112,10 @@ def activity(scanner: Any) -> str | None:
     return "idle"
 
 
+# Push only: Home Assistant never polls these entities, so updates need no limit.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: HousekeeperConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

@@ -629,6 +629,76 @@ async def test_scan_button_stays_available_while_a_scan_runs(hass: HomeAssistant
     assert hass.states.get("sensor.ha_housekeeper_activity").state == "scanning"
 
 
+async def test_the_button_and_the_service_refuse_a_scan_with_a_translated_reason(
+    hass: HomeAssistant,
+) -> None:
+    """While Home Assistant starts, a press and a call say why; without a loaded entry the call says so."""
+    from homeassistant.exceptions import ServiceValidationError
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    loaded_scanner(hass).begin_warmup(300)
+    button = next(state.entity_id for state in hass.states.async_all("button"))
+    with pytest.raises(ServiceValidationError) as refused:
+        await hass.services.async_call("button", "press", {"entity_id": button}, blocking=True)
+    assert refused.value.translation_key == "starting"
+    with pytest.raises(ServiceValidationError) as refused:
+        await hass.services.async_call(DOMAIN, "scan", {}, blocking=True, return_response=True)
+    assert refused.value.translation_key == "starting"
+
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    with pytest.raises(ServiceValidationError) as refused:
+        await hass.services.async_call(DOMAIN, "scan", {}, blocking=True, return_response=True)
+    assert refused.value.translation_key == "not_loaded"
+
+
+async def test_a_home_function_gets_a_sensor_events_and_loses_the_sensor_when_deleted(
+    hass: HomeAssistant,
+) -> None:
+    """The sensor follows the definition; the event entity carries the transitions."""
+    from custom_components.ha_housekeeper.const import SIGNAL_MONITOR_EVENT
+
+    registry = er.async_get(hass)
+    registry.async_get_or_create("light", "test", "flur", suggested_object_id="flur")
+    hass.states.async_set("light.flur", "on")
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    scanner = loaded_scanner(hass)
+    await scanner.async_scan()
+    item_id = scanner.monitor.upsert(
+        None,
+        "Flur",
+        "",
+        False,
+        [{"object_key": "entity:light.flur", "required": True}],
+        scanner.snapshot,
+        scanner.health_report(),
+    )
+    await hass.async_block_till_done()
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    sensor = registry.async_get_entity_id("sensor", DOMAIN, f"{entry.entry_id}_monitor_{item_id}")
+    assert sensor is not None
+
+    event = registry.async_get_entity_id("event", DOMAIN, f"{entry.entry_id}_monitor_event")
+    async_dispatcher_send(
+        hass, SIGNAL_MONITOR_EVENT, "beeintraechtigt", {"function_id": item_id, "name": "Flur"}
+    )
+    await hass.async_block_till_done()
+    assert hass.states.get(event).attributes["event_type"] == "beeintraechtigt"
+
+    scanner.monitor.delete(item_id)
+    await hass.async_block_till_done()
+    assert registry.async_get(sensor) is None
+    assert hass.states.get(sensor) is None
+
+
 async def test_scan_survives_a_scene_that_lists_non_names(hass: HomeAssistant) -> None:
     hass.states.async_set("scene.odd", "unknown", {"entity_id": [1, 2, "light.real"]})
     scanner = InventoryScanner(hass)
