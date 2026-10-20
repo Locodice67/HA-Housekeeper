@@ -78,7 +78,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.hiddenWhy(finding)}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   // pick = false outside the findings list: there is no bar for the actions on a selection there.
@@ -132,7 +132,7 @@ class FindingsMixin {
     this.lvState("findings", "impact", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => (v === "_causes" ? Boolean(f.cause_id) : this.findingType(f) === v), fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
+      filters: { type: (f, v) => (v === "_causes" ? Boolean(f.cause_id) : this.findingType(f) === v), fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v, by: (f, v) => (["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -206,7 +206,7 @@ class FindingsMixin {
     const grouped = !this.showFollowers;
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
     const causeOption = all.some(f => f.cause_id) ? [["_causes", this.t("causesOnly")]] : [];
-    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: [...causeOption, ...types.map(x => [x, this.t(x)])] }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
+    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: [...causeOption, ...types.map(x => [x, this.t(x)])] }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }, ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : [])] });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     const classTone = c => { const tone = c === "outage" ? "red" : this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
@@ -256,12 +256,12 @@ class FindingsMixin {
     const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
-    const btn = (icon, label, attr, extra = "") => `<button class="btn" ${attr}><ha-icon icon="${FSEL_ICONS[icon]}"></ha-icon>${this.t(label)}${extra}</button>`;
+    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon]}"></ha-icon>${this.t(label)}${extra}</button>`;
     const exc = this.excForm?.here && this.exc ? `<div class="pad">${this.excFormHtml(this.excForm)}</div>` : "";
     if (!pageRows.length && !n) return exc;
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
     if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>${exc}`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns">${btn("known", "fselKnown", 'data-fsel-state="known"')}${btn("snoozed", "fselSnooze", 'data-fsel-state="snoozed"')}${btn("hide", "fselHide", "data-fsel-hide")}${marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : ""}${excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : ""}${this.selectionOnlyBroken() ? "" : btn("label", "fselLabel", 'data-fsel-state="label"', part(labels))}</div>`}${total}</div>${this.bulkForm()}${exc}`;
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns">${btn("status", "fselStatus", 'data-fsel-state="status"')}${marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : ""}${excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : ""}${this.selectionOnlyBroken() ? "" : btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels))}</div>`}${total}</div>${this.bulkForm()}${exc}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
@@ -303,19 +303,24 @@ class FindingsMixin {
     return `${this.t(`decideKind_${info.kind}`)}${until}${info.reason ? ` · ${info.reason}` : ""}${info.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
-  // The small form that asks what to do with a finding: hide it, keep it on purpose, or look again later.
+  // The status of one finding or of the selection: known, snoozed or hidden, each with what it means. Row and bar share it.
+  statusFields(d, p, kind = d.kind) {
+    const opt = k => `<label class="statusopt${kind === k ? " on" : ""}"><input type="radio" name="${p}-kind" value="${k}" data-${p}-kind ${kind === k ? "checked" : ""}><span><b>${this.t(`decideKind_${k}`)}</b><small>${this.t(`decideKindHint_${k}`)}</small></span></label>`;
+    const days = [...(kind === "snooze" ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
+    return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
+      <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
+      <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
+      <small class="factnote">${this.t("statusScopeHint")}</small>`;
+  }
+
   decideForm(f) {
-    const d = this.decide, snooze = d.kind === "snooze";
-    const kinds = ["ignore", "keep", "snooze"].map(k => `<option value="${k}" ${d.kind === k ? "selected" : ""}>${this.t(`decideKind_${k}`)}</option>`).join("");
-    const days = [...(snooze ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
-    return `<form class="polform" data-decide-form="${this.esc(f.key)}"><select data-decide-kind aria-label="${this.esc(this.t("decideKind"))}">${kinds}</select>
-      <input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
-      <select data-decide-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button>
+    const d = this.decide;
+    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.statusFields(d, "decide")}
+      <div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
 
-  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]")?.focus?.(); }
+  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
 
   async commitDecide() {
     const d = this.decide;
@@ -347,7 +352,7 @@ class FindingsMixin {
     const fixes = item ? this.fixItems(item, key).items : [];
     const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.label}</button>`).join("");
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
-      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="snooze"><ha-icon icon="mdi:clock-outline"></ha-icon>${this.t("fselSnooze")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button></div>`;
+      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t("fselStatus")}</button></div>`;
     const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }

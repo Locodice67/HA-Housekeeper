@@ -988,7 +988,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
-      form.querySelector("[data-decide-kind]").onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; if (this.decide.kind === "snooze" && !Number(this.decide.days)) this.decide.days = 30; this.render(); };
+      form.querySelectorAll("[data-decide-kind]").forEach(el => el.onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; this.decide.days = this.decide.kind === "snooze" ? 30 : 0; this.render(); });
       form.querySelector("[data-decide-reason]").oninput = ev => { this.decide.reason = ev.target.value; };
       form.querySelector("[data-decide-days]").onchange = ev => { this.decide.days = Number(ev.target.value); };
       form.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.decide = null; this.render(); } };

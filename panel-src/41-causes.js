@@ -136,21 +136,48 @@ class CausesMixin {
   // The menu at the end of a row: what can be decided about the finding, and where it applies the removal.
   // An open decision shows its form below the row.
   rowMenu(f) {
-    if (!f || f.ignored) return "";
+    if (!f) return "";
+    if (f.ignored) return this.hiddenMenu(f);
     const key = this.esc(f.key);
-    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
     const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
     const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    // The same actions in the same order as the selection bar: first about the finding, then about its object.
-    const decide = `${item(FSEL_ICONS.known, "fselKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item(FSEL_ICONS.snoozed, "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item(FSEL_ICONS.hide, "fselHide", `data-decide-open="${key}"`)}`;
+    // The same actions in the same order as the selection bar: the status of the finding, then its object, then Home Assistant.
+    const status = item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`);
     const objectKey = this.findingKey(f), object = this.findObject(objectKey);
-    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`) : "";
+    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : "";
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
-    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`) : "";
-    const about = mark + exc + label;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${decide}${about ? `<hr class="menusep">${about}` : ""}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
+    const about = mark + exc;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+  }
+
+  // The menu of a hidden finding: the way back, where the reason was set.
+  hiddenMenu(f) {
+    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const key = this.esc(f.key), owner = this.markOwner(f);
+    const items = f.ignored_by === "mark" && owner ? item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)
+      : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
+      : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
+      : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
+    return items ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items}</div></details>` : "";
+  }
+
+  // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.
+  markOwner(f) {
+    const m = f.mark;
+    if (!m) return "";
+    const owner = (this.data?.objects || []).find(o => o.mark && o.mark.at === m.at && o.mark.kind === m.kind);
+    return owner ? `${owner.object_type}:${owner.object_id}` : "";
+  }
+
+  // Why a finding is hidden, as the row says it: by its own status, a mark, an exception rule or the label.
+  hiddenWhy(f) {
+    const by = ["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user";
+    const text = by === "mark" ? this.markLine(f.mark) : by === "rule" ? this.findingRuleLine(f) : by === "label" ? "housekeeper_ignore" : this.decisionLabel(f);
+    return `<span class="pill mute">${this.t(`hiddenBy_${by}`)}</span> ${this.esc(text)}`;
   }
 
   // The menu of a cause: that of its own finding, or that of its object when it has none. A device that is down completely
@@ -158,7 +185,7 @@ class CausesMixin {
   causeMenu(c, own) {
     const link = `${c.object_type}:${c.object_id}`;
     const canMark = c.kind === "device_down" && this.findObject(link) && !this.findObject(link).mark;
-    if (own && !own.ignored) return this.rowMenu(own);
+    if (own) return this.rowMenu(own);
     return canMark ? this.objectMenu(link) : "";
   }
 

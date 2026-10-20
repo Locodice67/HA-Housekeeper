@@ -26,6 +26,9 @@ Object.assign(TEXT.de, {
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
+  excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
+  excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
+  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist der Vermerk da. Label, Typ oder eine andere Auswahl:", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
   excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt das Ausblenden, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
@@ -66,6 +69,9 @@ Object.assign(TEXT.en, {
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
+  excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
+  excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
+  excForMore: "A single object with a reason or a time window: that is what a mark is for. Label, type or another choice:", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
   excOverlap: "These objects are already hit by: {rules}. In the vacation hiding applies, afterwards the delay of the other rule, counted from the end of the vacation.",
@@ -258,13 +264,17 @@ class ExceptionsMixin {
       : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
         ${f.action === "delay" ? `<input type="number" min="1" max="${this.exc.days_max || 365}" data-exc-days value="${this.esc(f.days)}" aria-label="${this.esc(this.t("excDays"))}"> <span>${this.t("excDays")}</span>` : ""}</div>
         ${f.action === "delay" ? `<small class="factnote">${this.t("excDelayHint")}</small>` : ""}</div>`;
+    const scopeChips = `<div class="mfield"><span>${this.t("excScope")}</span><div class="chips bare">${["always", "vacation"].map(s => `<button type="button" class="chip${(f.scope || "always") === s ? " active" : ""}" data-exc-scope-set="${s}" aria-pressed="${(f.scope || "always") === s}">${this.t(`excScope_${s}`)}</button>`).join("")}</div></div>`;
+    const what = f.scopes ? `${this.excScopeCards(f)}${scopeChips}`
+      : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
+      <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
+    const more = f.scopes ? `<small class="factnote">${this.t("excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform" data-exc-form>
       <strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>
-      <div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
-      <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>
+      ${what}
       ${action}
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${preview}${f.error ? this.notice("err", f.error) : ""}
+      ${preview}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 
@@ -293,19 +303,38 @@ class ExceptionsMixin {
     this.excPreview();
   }
 
-  // A new rule from the findings: the objects already picked, the form above the list instead of in the settings.
+  // A new rule from the findings, the form above the list: "for what" offers the objects themselves, their devices,
+  // areas and integrations, so a rule can reach beyond the object. Other kinds are set in the settings.
   async openExceptionFor(objectKeys) {
     if (!this.exc) await this.loadExceptions();
-    const picks = [];
-    for (const key of objectKeys) {
-      const o = this.findObject(key), t = o && this.excTargetOf(o);
-      if (t && !picks.some(p => p.kind === t.kind && p.id === t.id)) picks.push({ ...t, name: o.name || t.id });
-    }
-    if (!picks.length) return;
-    this.excForm = { id: "", kind: "any", targets: [], picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true };
+    const objects = objectKeys.map(key => this.findObject(key)).filter(Boolean);
+    const device = o => (o.object_type === "device" ? o : o.device_id ? this.findObject(`device:${o.device_id}`) : null);
+    const named = (list, id) => (list || []).find(x => x.id === id)?.name || id;
+    const domains = o => (o.object_type === "entity" ? [o.platform] : o.object_type === "config_entry" ? [o.domain] : (device(o)?.config_entry_ids || []).map(e => this.findObject(`config_entry:${e}`)?.domain));
+    const uniq = picks => picks.filter((p, i) => p && picks.findIndex(q => q && q.kind === p.kind && q.id === p.id) === i);
+    const scopes = [
+      ["objects", uniq(objects.map(o => { const t = this.excTargetOf(o); return t && { ...t, name: o.name || t.id }; }))],
+      ["devices", uniq(objects.map(device).filter(Boolean).map(d => ({ kind: "device", id: d.object_id, name: d.name || d.object_id })))],
+      ["areas", uniq(objects.map(o => o.area_id || device(o)?.area_id).filter(Boolean).map(id => ({ kind: "area", id, name: named(this.exc?.areas, id) })))],
+      ["integrations", uniq(objects.flatMap(domains).filter(Boolean).map(id => ({ kind: "integration", id, name: named(this.exc?.integrations, id) })))],
+    ].filter(([, picks], i, all) => picks.length && !all.slice(0, i).some(([, other]) => other.length === picks.length && other.every(p => picks.some(q => q.kind === p.kind && q.id === p.id))))
+      .map(([id, picks]) => ({ id, picks }));
+    if (!scopes.length) return;
+    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id };
     this.render();
     this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });
     this.excPreview();
+  }
+
+  // "For what" of a rule made from findings: one card per reach, the names below.
+  excScopeCards(f) {
+    const card = s => {
+      const names = s.picks.map(p => p.name), many = s.picks.length > 1;
+      const title = this.t(`excFor_${s.id}${many ? "_n" : ""}`, { n: s.picks.length, name: names[0] });
+      const sub = many ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : s.id === "objects" ? s.picks[0].id : this.t(`excForSub_${s.id}`);
+      return `<label class="statusopt${f.scopeSel === s.id ? " on" : ""}"><input type="radio" name="exc-for" value="${s.id}" data-exc-for-pick ${f.scopeSel === s.id ? "checked" : ""}><span><b>${this.esc(title)}</b><small>${this.esc(sub)}</small></span></label>`;
+    };
+    return `<div class="mfield"><span>${this.t("excForLabel")}</span><div class="statusopts">${f.scopes.map(card).join("")}</div></div>`;
   }
 
   async excPreview() {
@@ -348,6 +377,15 @@ class ExceptionsMixin {
       try { await globalThis.navigator?.clipboard?.writeText(el.dataset.copy); el.textContent = this.t("lblCopied"); } catch (_) { /* no clipboard: the name stays selectable */ }
     });
     const rules = () => this.excRules();
+    // "Open rule" from a hidden finding: the rule in its form in the settings.
+    root.querySelectorAll("[data-exc-goto]").forEach(el => el.onclick = async ev => {
+      ev.stopPropagation();
+      this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
+      if (!this.exc) await this.loadExceptions();
+      const rule = this.exc?.rules?.find(r => r.id === el.dataset.excGoto);
+      if (rule) this.excScope = rule.scope || "always";
+      this.openException(el.dataset.excGoto);
+    });
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
     root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excToggle ? { ...r, enabled: el.checked } : r)), null));
@@ -381,6 +419,10 @@ class ExceptionsMixin {
     root.querySelectorAll("[data-exc-form]").forEach(form => {
       const f = this.excForm;
       form.onsubmit = ev => { ev.preventDefault(); this.commitException(); };
+      form.querySelectorAll("[data-exc-for-pick]").forEach(el => el.onchange = () => { const s = f.scopes.find(x => x.id === el.value); f.scopeSel = s.id; f.picks = s.picks; f.error = ""; f.preview = null; this.render(); this.excPreview(); });
+      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; f.error = ""; this.render(); this.excPreview(); });
+      const settings = form.querySelector("[data-exc-settings]");
+      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.excScope = f.scope; this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); };
       form.querySelectorAll("[data-exc-kind]").forEach(el => el.onclick = () => { f.error = ""; f.kind = el.dataset.excKind; f.targets = []; f.picks = []; f.search = ""; f.preview = null; this._picker = null; this.render(); });
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };

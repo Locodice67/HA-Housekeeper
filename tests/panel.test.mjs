@@ -2196,7 +2196,7 @@ test("the sort and filter of a list come back, the search text does not; finding
   el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1" }] };
   el.view = "findingsNav"; el.findSel = new Set(["k1"]);
   el.render();
-  assert.ok(shadow.innerHTML.includes("data-fsel-hide"), "the selection bar is shown");
+  assert.ok(shadow.innerHTML.includes('data-fsel-state="status"'), "the selection bar is shown");
   assert.ok(!/data-fsel-group="og:/.test(shadow.innerHTML), "the head of its object has no box of its own, so it is not ticked with it");
   assert.equal(el.exportRows().length, 1);
 });
@@ -4137,7 +4137,7 @@ test("the overview of an object offers its actions: decide a finding, replace a 
     { ...DATA.findings[0], key: "k1", ignored: false },
   ] };
   const auto = el.actionsCard(el.findObject("automation:automation.c"), "automation:automation.c");
-  assert.ok(auto.includes('data-act-replace="sensor.gone"') && auto.includes('data-decide-preset="snooze"') && !auto.includes("data-act-label-plan") && auto.includes("edit it there"));
+  assert.ok(auto.includes('data-act-replace="sensor.gone"') && auto.includes('data-decide-open=') && !auto.includes("data-act-label-plan") && auto.includes("edit it there"));
   assert.ok(!auto.includes("data-act-disable"));
   const entity = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
   assert.ok(entity.includes('data-act-disable="sensor.a"'));
@@ -5625,13 +5625,13 @@ test("the bar shows what the scan counted for the security and runs views, and n
   assert.equal(num("inventory"), undefined, "the stock has none");
 });
 
-test("a finding row ends in an impact chip and a menu with the decisions; a hidden one has no menu", () => {
+test("a finding row ends in an impact chip and a menu with the status; a hidden one offers the way back", () => {
   const { el } = panel("en");
   const f = { key: "k1", rule_id: "automation.stale", object_id: "automation.a", impact: "info" };
   assert.ok(el.impactChip("info").includes("Info") && el.impactChip("none") === "");
   const menu = el.rowMenu(f);
-  assert.ok(["keep", "snooze"].every(p => menu.includes(`data-decide-preset="${p}"`)) && menu.includes('data-decide-open="k1"') && menu.includes('data-auto-delete="automation.a"'));
-  assert.equal(el.rowMenu({ ...f, ignored: true }), "");
+  assert.ok(menu.includes('data-decide-open="k1"') && menu.includes('data-auto-delete="automation.a"'));
+  assert.ok(el.rowMenu({ ...f, ignored: true, ignored_by: "user" }).includes('data-ignore-value="0"'), "a finding hidden by its own status can be opened again");
   assert.equal(el.rowDecide(f), "");
   assert.ok(el.rowMenu({ key: "k2", rule_id: "entity.possible_duplicate", object_id: "sensor.a_2", affected_object: "sensor.a" }).includes('data-object="entity:sensor.a"'), "a duplicate row opens its working twin from the menu");
 });
@@ -6097,9 +6097,26 @@ test("an exception is added from the menu of a finding or the selection bar, wit
   el.data = { ...DATA, objects: [object], edges: [], findings: [finding] };
   el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
   const menu = el.rowMenu(finding);
-  assert.ok(["fselKnown", "fselSnooze", "fselHide", "markSet", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
+  assert.ok(["fselStatus", "markSet", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
   await el.openExceptionFor(["entity:light.a"]);
   assert.equal(el.excForm.picks.map(p => `${p.kind}:${p.id}`).join(), "entity:light.a");
   el.view = "findingsNav";
   assert.ok(el.findingsView().includes("data-exc-form"));
+});
+
+test("the status of the selection is set in one form; an exception from a finding offers its device, area and integration", async () => {
+  const { el } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return {}; } };
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "k1", object_id: "light.a", confidence: 0.75, impact: "medium", ignored: false };
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", device_id: "d1", platform: "hue" }, { object_type: "device", object_id: "d1", name: "Hue bridge", area_id: "hall", config_entry_ids: [] }], edges: [], findings: [finding] };
+  el.findSel = new Set(["k1"]);
+  el.bulk = { kind: "status", state: "ignore", reason: "", days: 90, markKind: "", error: "" };
+  assert.ok(el.bulkForm().includes("data-bulk-kind"));
+  await el.commitBulk();
+  assert.equal(`${sent[0].kind}|${sent[0].days}`, "ignore|90");
+  assert.ok(el.findingRowContent(el.data.findings[0]).subtitle.includes("Own status"), "the row says why it is hidden");
+  el.exc = { rules: [], areas: [{ id: "hall", name: "Hall" }], labels: [], integrations: [{ id: "hue", name: "Philips Hue" }], domains: [], devices: [], entities: [] };
+  await el.openExceptionFor(["entity:light.a"]);
+  assert.equal(el.excForm.scopes.map(s => `${s.id}:${s.picks.map(p => p.id).join()}`).join(" "), "objects:light.a devices:d1 areas:hall integrations:hue");
 });

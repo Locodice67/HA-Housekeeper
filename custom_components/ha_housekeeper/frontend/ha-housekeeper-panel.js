@@ -83,7 +83,7 @@ const TEXT = {
     INCLUDES: "hat als Mitglied", missing_member: "Gruppenmitglied",
     cause_group_broken: "Die Gruppe enthält {count} Mitglied(er), die nicht mehr existieren.", hint_group_broken: "Die Gruppe bearbeiten und die fehlenden Mitglieder entfernen.",
     cause_helper_broken: "Dieser Helfer baut auf {count} Entität/Entitäten auf, die nicht mehr existieren.", hint_helper_broken: "Den Helfer bearbeiten und die fehlenden Quellen ersetzen.",
-    hideFinding: "Befund ausblenden", showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
+    showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
     batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryAll: "Alle",
     settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
@@ -268,7 +268,7 @@ const TEXT = {
     INCLUDES: "has as member", missing_member: "Group member",
     cause_group_broken: "The group contains {count} member(s) that no longer exist.", hint_group_broken: "Edit the group and remove the missing members.",
     cause_helper_broken: "This helper builds on {count} entity/entities that no longer exist.", hint_helper_broken: "Edit the helper and replace the missing sources.",
-    hideFinding: "Hide finding", showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
+    showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
     batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryAll: "All",
     settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
@@ -494,7 +494,7 @@ const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
 // One icon per action, the same in the selection bar and in the menu of a row.
-const FSEL_ICONS = { known: "mdi:bookmark-check-outline", snoozed: "mdi:clock-outline", hide: "mdi:eye-off-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
+const FSEL_ICONS = { status: "mdi:checkbox-marked-circle-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
@@ -1708,6 +1708,7 @@ class StylesMixin {
       .optswitch{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:2px solid var(--hk-blue);border-radius:12px;background:var(--hk-soft);cursor:pointer}.optswitch .policyswitch{margin-top:2px}.optswitch span{display:grid;gap:2px}.optswitch small{color:var(--hk-muted)}
       .mcplog tr.undone td{opacity:.55}.logwhat{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;min-width:0}.logwhat code{overflow-wrap:anywhere}.logwhat small,.logn{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.logdetail{padding:4px 0 8px}.logdetail small{color:var(--hk-muted)}.logdetail pre{margin:4px 0 0;padding:8px 10px;border-radius:8px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));overflow:auto}.mcpbulk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}.mcprow select,.mcpbulk select{font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--hk-border);background:var(--hk-card,transparent);color:var(--hk-text)}
       .mcprow .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.mcprow .seg{flex-wrap:nowrap;justify-content:flex-end}@media(max-width:640px){.mcprow .seg{grid-column:1/-1;grid-row:2;justify-content:flex-start;padding-left:52px}}.mcpneeds{color:var(--hk-amber)}.mcpnote{display:flex;gap:10px;align-items:flex-start;margin:12px 16px;padding:10px 12px;border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1));line-height:1.5}.mcpnote ha-icon{--mdc-icon-size:18px;flex:none;margin-top:1px;color:var(--hk-muted)}.mcpcalls{margin-left:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));font-weight:400}.mcphow .mcpsteps{display:grid;gap:8px;margin:6px 0 0;padding-left:20px;font-size:calc(13px*var(--hk-fs,1));line-height:1.6}.mcpchip{display:inline-block;margin:1px 2px;padding:1px 7px;border-radius:6px;background:var(--hk-soft);border:1px solid var(--hk-border);font-size:calc(12px*var(--hk-fs,1))}
+      .statusopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.statusopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;cursor:pointer;background:var(--hk-surface)}.statusopt.on{border-color:var(--hk-blue-solid);box-shadow:0 0 0 1px var(--hk-blue-solid)}.statusopt input{margin:3px 0 0;flex:none}.statusopt span{display:grid;gap:2px;min-width:0}.statusopt small{color:var(--hk-muted);font-size:12.5px;white-space:normal}.statusform{display:grid;gap:10px}.statusrow{display:flex;gap:8px;flex-wrap:wrap}.statusrow input{flex:1 1 220px;min-width:0}.statusform .mbtns{display:flex;gap:8px;justify-content:flex-end}.menuitem span{display:grid;text-align:left}.menuitem small{color:var(--hk-muted);font-size:12px}.fbtns .btn.ha{background:none;box-shadow:none;border-color:var(--hk-border)}
       ${this.themeCss()}
     </style>`;
   }
@@ -2762,7 +2763,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.hiddenWhy(finding)}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   // pick = false outside the findings list: there is no bar for the actions on a selection there.
@@ -2816,7 +2817,7 @@ class FindingsMixin {
     this.lvState("findings", "impact", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => (v === "_causes" ? Boolean(f.cause_id) : this.findingType(f) === v), fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
+      filters: { type: (f, v) => (v === "_causes" ? Boolean(f.cause_id) : this.findingType(f) === v), fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v, by: (f, v) => (["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -2890,7 +2891,7 @@ class FindingsMixin {
     const grouped = !this.showFollowers;
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
     const causeOption = all.some(f => f.cause_id) ? [["_causes", this.t("causesOnly")]] : [];
-    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: [...causeOption, ...types.map(x => [x, this.t(x)])] }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
+    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: [...causeOption, ...types.map(x => [x, this.t(x)])] }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }, ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : [])] });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     const classTone = c => { const tone = c === "outage" ? "red" : this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
@@ -2940,12 +2941,12 @@ class FindingsMixin {
     const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
-    const btn = (icon, label, attr, extra = "") => `<button class="btn" ${attr}><ha-icon icon="${FSEL_ICONS[icon]}"></ha-icon>${this.t(label)}${extra}</button>`;
+    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon]}"></ha-icon>${this.t(label)}${extra}</button>`;
     const exc = this.excForm?.here && this.exc ? `<div class="pad">${this.excFormHtml(this.excForm)}</div>` : "";
     if (!pageRows.length && !n) return exc;
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
     if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>${exc}`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns">${btn("known", "fselKnown", 'data-fsel-state="known"')}${btn("snoozed", "fselSnooze", 'data-fsel-state="snoozed"')}${btn("hide", "fselHide", "data-fsel-hide")}${marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : ""}${excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : ""}${this.selectionOnlyBroken() ? "" : btn("label", "fselLabel", 'data-fsel-state="label"', part(labels))}</div>`}${total}</div>${this.bulkForm()}${exc}`;
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns">${btn("status", "fselStatus", 'data-fsel-state="status"')}${marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : ""}${excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : ""}${this.selectionOnlyBroken() ? "" : btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels))}</div>`}${total}</div>${this.bulkForm()}${exc}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
@@ -2987,19 +2988,24 @@ class FindingsMixin {
     return `${this.t(`decideKind_${info.kind}`)}${until}${info.reason ? ` · ${info.reason}` : ""}${info.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
-  // The small form that asks what to do with a finding: hide it, keep it on purpose, or look again later.
+  // The status of one finding or of the selection: known, snoozed or hidden, each with what it means. Row and bar share it.
+  statusFields(d, p, kind = d.kind) {
+    const opt = k => `<label class="statusopt${kind === k ? " on" : ""}"><input type="radio" name="${p}-kind" value="${k}" data-${p}-kind ${kind === k ? "checked" : ""}><span><b>${this.t(`decideKind_${k}`)}</b><small>${this.t(`decideKindHint_${k}`)}</small></span></label>`;
+    const days = [...(kind === "snooze" ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
+    return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
+      <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
+      <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
+      <small class="factnote">${this.t("statusScopeHint")}</small>`;
+  }
+
   decideForm(f) {
-    const d = this.decide, snooze = d.kind === "snooze";
-    const kinds = ["ignore", "keep", "snooze"].map(k => `<option value="${k}" ${d.kind === k ? "selected" : ""}>${this.t(`decideKind_${k}`)}</option>`).join("");
-    const days = [...(snooze ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
-    return `<form class="polform" data-decide-form="${this.esc(f.key)}"><select data-decide-kind aria-label="${this.esc(this.t("decideKind"))}">${kinds}</select>
-      <input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
-      <select data-decide-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button>
+    const d = this.decide;
+    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.statusFields(d, "decide")}
+      <div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
 
-  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]")?.focus?.(); }
+  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
 
   async commitDecide() {
     const d = this.decide;
@@ -3031,7 +3037,7 @@ class FindingsMixin {
     const fixes = item ? this.fixItems(item, key).items : [];
     const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.label}</button>`).join("");
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
-      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="snooze"><ha-icon icon="mdi:clock-outline"></ha-icon>${this.t("fselSnooze")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button></div>`;
+      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t("fselStatus")}</button></div>`;
     const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }
@@ -8890,21 +8896,48 @@ class CausesMixin {
   // The menu at the end of a row: what can be decided about the finding, and where it applies the removal.
   // An open decision shows its form below the row.
   rowMenu(f) {
-    if (!f || f.ignored) return "";
+    if (!f) return "";
+    if (f.ignored) return this.hiddenMenu(f);
     const key = this.esc(f.key);
-    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
     const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
     const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    // The same actions in the same order as the selection bar: first about the finding, then about its object.
-    const decide = `${item(FSEL_ICONS.known, "fselKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item(FSEL_ICONS.snoozed, "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item(FSEL_ICONS.hide, "fselHide", `data-decide-open="${key}"`)}`;
+    // The same actions in the same order as the selection bar: the status of the finding, then its object, then Home Assistant.
+    const status = item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`);
     const objectKey = this.findingKey(f), object = this.findObject(objectKey);
-    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`) : "";
+    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : "";
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
-    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`) : "";
-    const about = mark + exc + label;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${decide}${about ? `<hr class="menusep">${about}` : ""}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
+    const about = mark + exc;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+  }
+
+  // The menu of a hidden finding: the way back, where the reason was set.
+  hiddenMenu(f) {
+    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const key = this.esc(f.key), owner = this.markOwner(f);
+    const items = f.ignored_by === "mark" && owner ? item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)
+      : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
+      : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
+      : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
+    return items ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items}</div></details>` : "";
+  }
+
+  // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.
+  markOwner(f) {
+    const m = f.mark;
+    if (!m) return "";
+    const owner = (this.data?.objects || []).find(o => o.mark && o.mark.at === m.at && o.mark.kind === m.kind);
+    return owner ? `${owner.object_type}:${owner.object_id}` : "";
+  }
+
+  // Why a finding is hidden, as the row says it: by its own status, a mark, an exception rule or the label.
+  hiddenWhy(f) {
+    const by = ["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user";
+    const text = by === "mark" ? this.markLine(f.mark) : by === "rule" ? this.findingRuleLine(f) : by === "label" ? "housekeeper_ignore" : this.decisionLabel(f);
+    return `<span class="pill mute">${this.t(`hiddenBy_${by}`)}</span> ${this.esc(text)}`;
   }
 
   // The menu of a cause: that of its own finding, or that of its object when it has none. A device that is down completely
@@ -8912,7 +8945,7 @@ class CausesMixin {
   causeMenu(c, own) {
     const link = `${c.object_type}:${c.object_id}`;
     const canMark = c.kind === "device_down" && this.findObject(link) && !this.findObject(link).mark;
-    if (own && !own.ignored) return this.rowMenu(own);
+    if (own) return this.rowMenu(own);
     return canMark ? this.objectMenu(link) : "";
   }
 
@@ -10923,6 +10956,11 @@ class FindingStatusMixin {
         <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></form>`;
     }
     if (b.kind === "area") return this.areaForm();
+    if (b.kind === "status") {
+      return `<form class="polform bulkform statusform" data-bulk-form><strong>${this.t("statusTitle", { n: this.formatNumber(this.findSel.size) })}</strong>${this.statusFields(b, "bulk", b.state)}
+        <div class="mbtns"><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
+        ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
+    }
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
@@ -10959,11 +10997,14 @@ class FindingStatusMixin {
     if (b.kind === "label") return this.makeLabelPlan();
     if (b.kind === "area") return this.makeAreaPlan();
     if (b.kind === "mark") return this.commitMarkBulk();
-    if (b.kind === "known" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
+    // "known" and "snoozed" are the older shortcuts of the same form.
+    const kind = b.kind === "status" ? b.state : b.kind === "known" ? "keep" : "snooze";
+    if (kind === "keep" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
     const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
     const failed = await this.runBulk(keys, async key => {
-      const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: b.kind === "known" ? "keep" : "snooze", reason: b.reason.trim() };
-      if (b.kind === "snoozed") msg.days = Number(b.days);
+      const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason: b.reason.trim() };
+      if (kind === "snooze") msg.days = Number(b.days) || 30;
+      else if (b.kind === "status" && Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) {
@@ -11006,7 +11047,7 @@ class FindingStatusMixin {
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { this.bulk = { kind: el.dataset.fselState, reason: "", days: el.dataset.fselState === "mark" ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.bulk = { kind, state: "keep", reason: "", days: ["mark", "status"].includes(kind) ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
@@ -11021,6 +11062,7 @@ class FindingStatusMixin {
       if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
+      form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = b.state === "snooze" ? 30 : 0; this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
       form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
@@ -11029,13 +11071,21 @@ class FindingStatusMixin {
 }
 Object.assign(TEXT.de, {
   stateOpen: "Offen", freshAll: "Neu und in Arbeit", freshNew: "Neu (letzte {days} Tage)", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
-  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", fselHide: "Ausblenden", excCreate: "Ausnahme anlegen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
-  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen", markKnown: "Als bekannt markieren",
+  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", excCreate: "Ausnahme anlegen", fselStatus: "Status setzen …", statusTitle: "Status setzen · {n} Befunde",
+  decideKindHint_keep: "Ist so gewollt. Bleibt still, bis du es änderst. Begründung nötig.", decideKindHint_snooze: "Kümmere ich mich später drum. Kommt nach der Frist als „fällig“ zurück.", decideKindHint_ignore: "Interessiert mich nicht. Begründung freiwillig.",
+  statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt: Vermerk oder Ausnahme.",
+  markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Eigener Status", hiddenBy_mark: "Vermerk", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
+  hiddenMarkOpen: "Vermerk ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
+  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
 Object.assign(TEXT.en, {
   stateOpen: "Open", freshAll: "New and in work", freshNew: "New (last {days} days)", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
-  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", fselHide: "Hide", excCreate: "Add exception", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
-  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
+  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", excCreate: "Add exception", fselStatus: "Set status …", statusTitle: "Set status · {n} findings",
+  decideKindHint_keep: "Meant to be this way. Stays quiet until you change it. Needs a reason.", decideKindHint_snooze: "I will see to it later. Comes back as “due” after the time.", decideKindHint_ignore: "Not of interest to me. Reason optional.",
+  statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object: a mark or an exception.",
+  markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Own status", hiddenBy_mark: "Mark", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
+  hiddenMarkOpen: "View mark", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
+  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
 });
 
 // DetailActionsMixin: the card "What you can do" on the overview of an object. It collects what the other views
@@ -12276,6 +12326,9 @@ Object.assign(TEXT.de, {
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
+  excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
+  excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
+  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist der Vermerk da. Label, Typ oder eine andere Auswahl:", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
   excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt das Ausblenden, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
@@ -12316,6 +12369,9 @@ Object.assign(TEXT.en, {
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
+  excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
+  excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
+  excForMore: "A single object with a reason or a time window: that is what a mark is for. Label, type or another choice:", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
   excOverlap: "These objects are already hit by: {rules}. In the vacation hiding applies, afterwards the delay of the other rule, counted from the end of the vacation.",
@@ -12508,13 +12564,17 @@ class ExceptionsMixin {
       : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
         ${f.action === "delay" ? `<input type="number" min="1" max="${this.exc.days_max || 365}" data-exc-days value="${this.esc(f.days)}" aria-label="${this.esc(this.t("excDays"))}"> <span>${this.t("excDays")}</span>` : ""}</div>
         ${f.action === "delay" ? `<small class="factnote">${this.t("excDelayHint")}</small>` : ""}</div>`;
+    const scopeChips = `<div class="mfield"><span>${this.t("excScope")}</span><div class="chips bare">${["always", "vacation"].map(s => `<button type="button" class="chip${(f.scope || "always") === s ? " active" : ""}" data-exc-scope-set="${s}" aria-pressed="${(f.scope || "always") === s}">${this.t(`excScope_${s}`)}</button>`).join("")}</div></div>`;
+    const what = f.scopes ? `${this.excScopeCards(f)}${scopeChips}`
+      : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
+      <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
+    const more = f.scopes ? `<small class="factnote">${this.t("excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform" data-exc-form>
       <strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>
-      <div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
-      <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>
+      ${what}
       ${action}
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${preview}${f.error ? this.notice("err", f.error) : ""}
+      ${preview}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 
@@ -12543,19 +12603,38 @@ class ExceptionsMixin {
     this.excPreview();
   }
 
-  // A new rule from the findings: the objects already picked, the form above the list instead of in the settings.
+  // A new rule from the findings, the form above the list: "for what" offers the objects themselves, their devices,
+  // areas and integrations, so a rule can reach beyond the object. Other kinds are set in the settings.
   async openExceptionFor(objectKeys) {
     if (!this.exc) await this.loadExceptions();
-    const picks = [];
-    for (const key of objectKeys) {
-      const o = this.findObject(key), t = o && this.excTargetOf(o);
-      if (t && !picks.some(p => p.kind === t.kind && p.id === t.id)) picks.push({ ...t, name: o.name || t.id });
-    }
-    if (!picks.length) return;
-    this.excForm = { id: "", kind: "any", targets: [], picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true };
+    const objects = objectKeys.map(key => this.findObject(key)).filter(Boolean);
+    const device = o => (o.object_type === "device" ? o : o.device_id ? this.findObject(`device:${o.device_id}`) : null);
+    const named = (list, id) => (list || []).find(x => x.id === id)?.name || id;
+    const domains = o => (o.object_type === "entity" ? [o.platform] : o.object_type === "config_entry" ? [o.domain] : (device(o)?.config_entry_ids || []).map(e => this.findObject(`config_entry:${e}`)?.domain));
+    const uniq = picks => picks.filter((p, i) => p && picks.findIndex(q => q && q.kind === p.kind && q.id === p.id) === i);
+    const scopes = [
+      ["objects", uniq(objects.map(o => { const t = this.excTargetOf(o); return t && { ...t, name: o.name || t.id }; }))],
+      ["devices", uniq(objects.map(device).filter(Boolean).map(d => ({ kind: "device", id: d.object_id, name: d.name || d.object_id })))],
+      ["areas", uniq(objects.map(o => o.area_id || device(o)?.area_id).filter(Boolean).map(id => ({ kind: "area", id, name: named(this.exc?.areas, id) })))],
+      ["integrations", uniq(objects.flatMap(domains).filter(Boolean).map(id => ({ kind: "integration", id, name: named(this.exc?.integrations, id) })))],
+    ].filter(([, picks], i, all) => picks.length && !all.slice(0, i).some(([, other]) => other.length === picks.length && other.every(p => picks.some(q => q.kind === p.kind && q.id === p.id))))
+      .map(([id, picks]) => ({ id, picks }));
+    if (!scopes.length) return;
+    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id };
     this.render();
     this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });
     this.excPreview();
+  }
+
+  // "For what" of a rule made from findings: one card per reach, the names below.
+  excScopeCards(f) {
+    const card = s => {
+      const names = s.picks.map(p => p.name), many = s.picks.length > 1;
+      const title = this.t(`excFor_${s.id}${many ? "_n" : ""}`, { n: s.picks.length, name: names[0] });
+      const sub = many ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : s.id === "objects" ? s.picks[0].id : this.t(`excForSub_${s.id}`);
+      return `<label class="statusopt${f.scopeSel === s.id ? " on" : ""}"><input type="radio" name="exc-for" value="${s.id}" data-exc-for-pick ${f.scopeSel === s.id ? "checked" : ""}><span><b>${this.esc(title)}</b><small>${this.esc(sub)}</small></span></label>`;
+    };
+    return `<div class="mfield"><span>${this.t("excForLabel")}</span><div class="statusopts">${f.scopes.map(card).join("")}</div></div>`;
   }
 
   async excPreview() {
@@ -12598,6 +12677,15 @@ class ExceptionsMixin {
       try { await globalThis.navigator?.clipboard?.writeText(el.dataset.copy); el.textContent = this.t("lblCopied"); } catch (_) { /* no clipboard: the name stays selectable */ }
     });
     const rules = () => this.excRules();
+    // "Open rule" from a hidden finding: the rule in its form in the settings.
+    root.querySelectorAll("[data-exc-goto]").forEach(el => el.onclick = async ev => {
+      ev.stopPropagation();
+      this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
+      if (!this.exc) await this.loadExceptions();
+      const rule = this.exc?.rules?.find(r => r.id === el.dataset.excGoto);
+      if (rule) this.excScope = rule.scope || "always";
+      this.openException(el.dataset.excGoto);
+    });
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
     root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excToggle ? { ...r, enabled: el.checked } : r)), null));
@@ -12631,6 +12719,10 @@ class ExceptionsMixin {
     root.querySelectorAll("[data-exc-form]").forEach(form => {
       const f = this.excForm;
       form.onsubmit = ev => { ev.preventDefault(); this.commitException(); };
+      form.querySelectorAll("[data-exc-for-pick]").forEach(el => el.onchange = () => { const s = f.scopes.find(x => x.id === el.value); f.scopeSel = s.id; f.picks = s.picks; f.error = ""; f.preview = null; this.render(); this.excPreview(); });
+      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; f.error = ""; this.render(); this.excPreview(); });
+      const settings = form.querySelector("[data-exc-settings]");
+      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.excScope = f.scope; this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); };
       form.querySelectorAll("[data-exc-kind]").forEach(el => el.onclick = () => { f.error = ""; f.kind = el.dataset.excKind; f.targets = []; f.picks = []; f.search = ""; f.preview = null; this._picker = null; this.render(); });
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };
@@ -17856,7 +17948,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
-      form.querySelector("[data-decide-kind]").onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; if (this.decide.kind === "snooze" && !Number(this.decide.days)) this.decide.days = 30; this.render(); };
+      form.querySelectorAll("[data-decide-kind]").forEach(el => el.onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; this.decide.days = this.decide.kind === "snooze" ? 30 : 0; this.render(); });
       form.querySelector("[data-decide-reason]").oninput = ev => { this.decide.reason = ev.target.value; };
       form.querySelector("[data-decide-days]").onchange = ev => { this.decide.days = Number(ev.target.value); };
       form.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.decide = null; this.render(); } };
