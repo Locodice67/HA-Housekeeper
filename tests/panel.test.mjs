@@ -3815,9 +3815,9 @@ test("the health card names the score and the count; the safety line shows backu
   const html = shadow.innerHTML;
   assert.ok(html.includes("class=\"statushead\"") && /topics? (urgent|open)|All good/.test(html));
   assert.ok(/of \d+ objects with a finding/.test(html));
-  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
+  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
-  assert.ok(el.safetyBar().includes("backup restore only"));
+  assert.ok(el.safetyBar().includes("Last plan: ") && el.safetyBar().includes("no longer undoable"));
   el.data = { ...DATA, causes: [{ id: "integration_down:x", kind: "integration_down", object_type: "config_entry", object_id: "x", name: "Zigbee", follower_count: 47, consumers: { automation: 12, dashboard: 2 } }] };
   assert.ok(entriesOf(el).includes("47 entities, 12 automations, 2 dashboards affected"));
 });
@@ -3912,7 +3912,7 @@ test("the protection mode shows in the safety line and the settings, and is set 
   await el.setProtection("full");
   assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
   assert.equal(el.data.meta.protection, "full");
-  assert.ok(el.safetyBar().includes("Protection mode: everything allowed"));
+  assert.ok(el.safetyBar().includes("Protection mode: standard"));
   void shadow;
 });
 
@@ -5498,7 +5498,7 @@ test("the coverage of a scan shows in the overview as one line, lists each sourc
   const cov = (extra = []) => [{ source: "registry", state: "checked", reason: null }, { source: "apps", state: "absent", reason: "no_supervisor" }, ...extra];
   el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: "2026-10-12T20:22:00+00:00", coverage: cov([{ source: "dashboards", state: "checked", reason: null }]) } };
   assert.equal(el.scanCoverageLine(), "", "no bar in the overview while all is read");
-  assert.ok(el.scanCoverageComplete() && el.safetyItems().some(i => i[0] === "coverage" && i[2] === "Check complete"), "absent sources do not count; one item in the bar under the menu");
+  assert.ok(el.scanCoverageComplete() && el.safetyItems().some(i => i[0] === "coverage" && i[2] === "Scan complete"), "absent sources do not count; one item in the bar under the menu");
   el.data.meta.coverage = cov([{ source: "dashboards", state: "partial", reason: "unreadable", read: 3, failed: 1 }, { source: "statistics", state: "skipped", reason: "not_ready" }]);
   const line = el.scanCoverageLine();
   assert.ok(line.includes("Check: 1 of 3 sources") && line.includes("Dashboards, Long-term statistics") && line.includes("data-cov-details") && line.includes('class="tile warn"'));
@@ -5993,9 +5993,14 @@ test("the AI access tab shows the two switches and the log with an undo for a ch
   assert.ok(html.includes("data-set-tab=\"mcp\""));
   assert.ok(html.includes("data-mcp-row") && html.includes("×3") && html.includes("mcplog") && html.includes('data-exp-menu="mcplog"'));
   assert.ok(html.includes("data-mcp-undoall") && html.includes("data-mcp-undoall-hours"));
+  el.journal = [{ plan_id: "r", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false, followup: "regression" }];
+  const keys = el.safetyItems().map(i => i[0]);
+  assert.ok(keys[0] === "regress" && keys.includes("ai") && el.safetyBar().includes("AI access: read-only"), "AI access is an item of the safety line; red comes first");
+  el.data.meta.mcp = { enabled: true, write: true };
+  assert.equal(el.safetyItems().find(i => i[0] === "ai")[1], "warn", "yellow while the AI may change the list");
   assert.ok(html.includes("data-mcp-autooff") && html.includes("after 8 hours") && html.includes("data-mcp-writelimit") && html.includes("data-mcp-readlimit") && html.includes("data-mcp-hide") && html.includes("data-mcp-prompt"));
   el.settingsTab = "look"; el.render();
-  assert.ok(shadow.innerHTML.includes("data-ai-go") && shadow.innerHTML.includes("AI access on"));
+  assert.ok(shadow.innerHTML.includes('data-safe-key="ai"') && shadow.innerHTML.includes("AI access: with changes to the list") && !shadow.innerHTML.includes("aibar"), "no strip of its own any more");
 });
 
 test("the exceptions card builds the editor with chips for areas and the shared search for entities", () => {

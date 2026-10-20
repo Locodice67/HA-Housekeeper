@@ -2,7 +2,7 @@
 // a list in Settings > Info. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   covLine: "Prüfung: {n} von {m} Quellen",
-  covAll: "Prüfung: alle {m} Quellen gelesen", covBar: "Prüfung vollständig",
+  covAll: "Prüfung: alle {m} Quellen gelesen", covBar: "Scan vollständig",
   covGaps: "Nicht vollständig gelesen: {list}. Befunde dort fehlen in den Zahlen.", covRetry: "Housekeeper versucht es in {n} Minuten noch einmal.",
   covDetails: "Details",
   covListTitle: "Was zuletzt geprüft wurde",
@@ -40,7 +40,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   covLine: "Check: {n} of {m} sources",
-  covAll: "Check: all {m} sources read", covBar: "Check complete",
+  covAll: "Check: all {m} sources read", covBar: "Scan complete",
   covGaps: "Not read in full: {list}. Findings there are missing from the numbers.", covRetry: "Housekeeper tries again in {n} minutes.",
   covDetails: "Details",
   covListTitle: "What was checked last",

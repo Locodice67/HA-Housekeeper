@@ -10014,7 +10014,8 @@ class SafetyMixin {
     this.ensureBackup();
   }
 
-  // Each item is [key, tone, text, target view]; running work comes first, nothing is invented when data is missing.
+  // Each item is [key, tone, text, target view]; what needs a look (red, then yellow) comes first, the rest keeps its order.
+  // Nothing is invented when data is missing.
   safetyItems() {
     const items = [], plans = this.journal || [];
     const mode = this.data?.meta?.protection || "full";
@@ -10023,16 +10024,20 @@ class SafetyMixin {
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
-    if (last) {
-      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "journal"]);
-      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "journal"]);
-    }
+    if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal"]);
     if (this.scanCoverageComplete()) items.push(["coverage", "ok", this.t("covBar"), "settings"]);
+    // AI access while it is on, so it is not forgotten; yellow while it may change the list.
+    const mcp = this.data?.meta?.mcp;
+    if (mcp?.enabled) {
+      const off = mcp.off_at ? ` · ${this.t("mcpOffAt", { date: `${this.mcpDay(mcp.off_at)}, ${this.mcpTime(mcp.off_at).slice(0, 5)}` })}` : "";
+      items.push(["ai", mcp.write ? "warn" : "mute", `${this.t("safeAi", { mode: this.t(mcp.write ? "mcpBarWrite" : "mcpBarRead") })}${off}`, "settings"]);
+    }
     const watching = plans.filter(p => p.followup === "watching").length;
     if (watching) items.push(["watch", "warn", this.t(watching === 1 ? "safeWatching1" : "safeWatching", { n: watching }), "journal"]);
     const regress = plans.filter(p => p.followup === "regression").length;
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
-    return items;
+    const rank = tone => ({ red: 0, warn: 1 })[tone] ?? 2;
+    return items.map((item, i) => [item, i]).sort((a, b) => rank(a[0][1]) - rank(b[0][1]) || a[1] - b[1]).map(([item]) => item);
   }
 
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
@@ -10064,7 +10069,7 @@ class SafetyMixin {
 }
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
-  safeLast: "Letzte Änderung: {when}", safeUndo: "Rückgängig möglich", safeNoUndo: "Rückgängig nicht mehr möglich, nur Backup-Restore",
+  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "nicht mehr rückgängig", safeAi: "KI-Zugriff: {mode}",
   safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
@@ -10072,7 +10077,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
-  safeLast: "Last change: {when}", safeUndo: "Undo available", safeNoUndo: "Undo no longer possible, backup restore only",
+  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "no longer undoable", safeAi: "AI access: {mode}",
   safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
@@ -10080,7 +10085,7 @@ Object.assign(TEXT.en, {
 });
 Object.assign(TEXT.de, {
   modeBadge_full: "Alles erlaubt", modeBadge_read_only: "Nur lesen", modeBadge_quarantine: "Nur Quarantäne", modeBadge_confirmed: "Ohne endgültiges Löschen",
-  safeMode_full: "Schutzmodus: alles erlaubt", safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne endgültiges Löschen",
+  safeMode_full: "Schutzmodus: Standard", safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne endgültiges Löschen",
   modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
   mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
   modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
@@ -10093,7 +10098,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   modeBadge_full: "Everything allowed", modeBadge_read_only: "Read only", modeBadge_quarantine: "Quarantine only", modeBadge_confirmed: "No irreversible deletions",
-  safeMode_full: "Protection mode: everything allowed", safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
+  safeMode_full: "Protection mode: standard", safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
   modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
   mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
   modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
@@ -11596,7 +11601,7 @@ class EntityTrimMixin {
 // a list in Settings > Info. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   covLine: "Prüfung: {n} von {m} Quellen",
-  covAll: "Prüfung: alle {m} Quellen gelesen", covBar: "Prüfung vollständig",
+  covAll: "Prüfung: alle {m} Quellen gelesen", covBar: "Scan vollständig",
   covGaps: "Nicht vollständig gelesen: {list}. Befunde dort fehlen in den Zahlen.", covRetry: "Housekeeper versucht es in {n} Minuten noch einmal.",
   covDetails: "Details",
   covListTitle: "Was zuletzt geprüft wurde",
@@ -11634,7 +11639,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   covLine: "Check: {n} of {m} sources",
-  covAll: "Check: all {m} sources read", covBar: "Check complete",
+  covAll: "Check: all {m} sources read", covBar: "Scan complete",
   covGaps: "Not read in full: {list}. Findings there are missing from the numbers.", covRetry: "Housekeeper tries again in {n} minutes.",
   covDetails: "Details",
   covListTitle: "What was checked last",
@@ -13403,7 +13408,7 @@ Object.assign(TEXT.de, {
   mcpResult_ok: "ok", mcpResult_disabled: "KI-Zugriff war aus", mcpResult_write_disabled: "Ändern war aus", mcpResult_not_admin: "kein Administrator", mcpResult_invalid_format: "Angaben unvollständig oder falsch", mcpResult_rate_limited: "zu viele Änderungen", mcpResult_too_many_calls: "zu viele Aufrufe", mcpResult_reason_required: "Grund fehlt", mcpResult_error: "Fehler",
   mcpUndoAll: "Zurücknehmen", mcpUndoAllHint: "Änderungen durch KI-Zugriff", mcpUndoHour: "der letzten Stunde", mcpUndoDay: "der letzten 24 Stunden", mcpUndoEverything: "alle", mcpUndoneCount: "{n} Änderungen zurückgenommen", mcpFn_undo_all: "Alles zurücknehmen",
   mcpWriteLimit: "Änderungen pro 5 Minuten", mcpWriteLimitDetail: "Mehr Änderungen werden abgewiesen. Schützt vor einem Agenten, der in Schleife läuft.", mcpReadLimit: "Lesezugriffe pro Minute", mcpReadLimitDetail: "Mehr Abfragen werden abgewiesen.", mcpAutoOff: "Automatisch ausschalten", mcpAutoOffDetail: "Schaltet KI-Zugriff und „Merkliste ändern“ nach dieser Zeit selbst aus, damit sie nicht aus Versehen an bleiben.", mcpAutoNever: "nie", mcpAutoHours: "nach {n} Stunden", mcpAutoHour: "nach 1 Stunde", mcpOffAt: "Schaltet sich aus: {date}", mcpFn_auto_off: "Automatisch ausgeschaltet",
-  mcpBarOn: "KI-Zugriff aktiv", mcpBarRead: "nur lesend", mcpBarWrite: "mit Ändern der Merkliste", mcpBarOpen: "Protokoll ansehen",
+  mcpBarRead: "nur lesend", mcpBarWrite: "mit Ändern der Merkliste",
   mcpHide: "Sensible Objekte zurückhalten", mcpHideDetail: "Schlösser, Alarmanlagen, Kameras, Sirenen, Ventile, Personen, Standort-Tracker sowie Garagen- und Tortore kommen in keiner Antwort vor. Empfohlen, vor allem bei einem Modell in der Cloud.",
   mcpTimes: "{n} Aufrufe bis {date}", mcpCount: "{n} Treffer", mcpUndo: "Rückgängig", mcpUndone: "zurückgenommen", mcpUndoFailed: "Nicht zurückgenommen: {reason}",
   mcpUserSystem: "Automation oder System", mcpUserYou: "du", mcpUserOther: "anderer Benutzer",
@@ -13431,7 +13436,7 @@ Object.assign(TEXT.en, {
   mcpResult_ok: "ok", mcpResult_disabled: "AI access was off", mcpResult_write_disabled: "changing was off", mcpResult_not_admin: "not an administrator", mcpResult_invalid_format: "invalid parameters", mcpResult_rate_limited: "too many changes", mcpResult_too_many_calls: "too many calls", mcpResult_reason_required: "reason missing", mcpResult_error: "error",
   mcpUndoAll: "Take back", mcpUndoAllHint: "Changes through AI access", mcpUndoHour: "of the last hour", mcpUndoDay: "of the last 24 hours", mcpUndoEverything: "all", mcpUndoneCount: "{n} changes taken back", mcpFn_undo_all: "Take everything back",
   mcpWriteLimit: "Changes per 5 minutes", mcpWriteLimitDetail: "More changes are refused. Protects against an agent stuck in a loop.", mcpReadLimit: "Reads per minute", mcpReadLimitDetail: "More requests are refused.", mcpAutoOff: "Switch off automatically", mcpAutoOffDetail: "Switches AI access and “Change the list” off by itself after this time, so they do not stay on by mistake.", mcpAutoNever: "never", mcpAutoHours: "after {n} hours", mcpAutoHour: "after 1 hour", mcpOffAt: "Switches off: {date}", mcpFn_auto_off: "Switched off automatically",
-  mcpBarOn: "AI access on", mcpBarRead: "read-only", mcpBarWrite: "with changes to the list", mcpBarOpen: "Show the log",
+  mcpBarRead: "read-only", mcpBarWrite: "with changes to the list",
   mcpHide: "Keep sensitive objects back", mcpHideDetail: "Locks, alarm panels, cameras, sirens, valves, people, location trackers and garage doors and gates appear in no answer. Recommended, above all with a model in the cloud.",
   mcpTimes: "{n} calls until {date}", mcpCount: "{n} results", mcpUndo: "Undo", mcpUndone: "taken back", mcpUndoFailed: "Not taken back: {reason}",
   mcpUserSystem: "Automation or system", mcpUserYou: "you", mcpUserOther: "another user",
@@ -13528,14 +13533,6 @@ class McpMixin {
     return `${bar}${table}${pg.footer}`;
   }
 
-  // A strip under the header while AI access is on, so it is not forgotten; not on its own page.
-  aiBar() {
-    const m = this.data?.meta?.mcp;
-    if (!m?.enabled || (this.view === "settings" && this.settingsTab === "mcp")) return "";
-    const off = m.off_at ? ` · ${this.t("mcpOffAt", { date: `${this.mcpDay(m.off_at)}, ${this.mcpTime(m.off_at).slice(0, 5)}` })}` : "";
-    return `<div class="vacbar aibar" role="status"><b>${this.t("mcpBarOn")}</b><span>${this.t(m.write ? "mcpBarWrite" : "mcpBarRead")}${off}</span><span class="sp"></span><a href="#" data-ai-go>${this.t("mcpBarOpen")}</a></div>`;
-  }
-
   mcpCard() {
     const m = this.data?.meta?.mcp || {};
     const on = Boolean(m.enabled), write = Boolean(m.write);
@@ -13563,11 +13560,6 @@ class McpMixin {
   }
 
   bindMcp(root) {
-    root.querySelectorAll("[data-ai-go]").forEach(el => el.onclick = ev => {
-      ev.preventDefault();
-      this.selected = null; this.view = "settings"; this.settingsTab = "mcp"; this.pages = {};
-      this.render();
-    });
     const set = async changes => {
       try {
         const res = await this._hass.callWS({ type: "ha_housekeeper/mcp_set", ...changes });
@@ -17189,7 +17181,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}${this.aiBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;
@@ -17507,6 +17499,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
+      if (el.dataset.safeKey === "ai") this.settingsTab = "mcp";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       this.render();
     });
