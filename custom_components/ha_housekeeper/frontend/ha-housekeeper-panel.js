@@ -1215,7 +1215,7 @@ Object.assign(TEXT.de, {
   dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   dbNone: "Keine Auffälligkeit in der Datenbank.", dbProblem: "Problem", dbHint: "Hinweis",
-  dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect})", dbSizeServer: "Datenbank {db} (Angabe des Servers, {dialect})", dbSizeEstimated: "Datenbank etwa {db} (Schätzung des Servers, {dialect})", dbTileServer: "laut Server ({dialect})", dbTileEstimated: "geschätzt ({dialect})", dbAbout: "etwa {size}", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
+  dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect})", dbSizeServer: "Datenbank {db} (Angabe des Servers, {dialect})", dbSizeEstimated: "Datenbank etwa {db} (Schätzung des Servers, {dialect})", dbTileServer: "laut Server ({dialect})", dbTileEstimated: "geschätzt ({dialect})", dbAbout: "etwa {size}", dbTablesTitle: "Größte Tabellen", dbTablesHint: "Daten und Indizes je Tabelle, laut Server.", dbTablesHintSqlite: "Daten und Indizes je Tabelle; einmal am Tag gemessen.", dbTablesAt: "Stand {at}.", dbTablesMore: "{n} weitere Tabellen", dbColTable: "Tabelle", dbColBytes: "Bytes", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
   dbKind_wal_large: "Große WAL-Datei", dbKind_growth: "Ungewöhnliches Wachstum", dbKind_duplicates: "Doppelte Statistikzeitpunkte", dbKind_missing_hours: "Fehlende Stunden in Statistiken", dbKind_statistics_issues: "Statistik passt nicht zur Entität", dbKind_recorder_gap: "Lücken im Recorder",
   dbWal: "Die WAL-Datei ist {wal} groß, die Datenbank {db}.", dbGrowth: "In 7 Tagen {recent} gewachsen, in den Wochen davor etwa {base} pro Woche.",
   dbDuplicates: "{n}{more} Zeitpunkte stehen doppelt in den Statistiken, vor allem bei: {list}.", dbMissing: "{n} Reihen haben Lücken im Stundenverlauf: {list}.", dbMissingHours: "{n} Std. fehlen",
@@ -1236,7 +1236,7 @@ Object.assign(TEXT.en, {
   dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbLoading: "Checking the database. On a large database this can take a few seconds …",
   dbNone: "Nothing unusual in the database.", dbProblem: "Problem", dbHint: "Hint",
-  dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect})", dbSizeServer: "Database {db} (reported by the server, {dialect})", dbSizeEstimated: "Database about {db} (estimated by the server, {dialect})", dbTileServer: "reported by the server ({dialect})", dbTileEstimated: "estimated ({dialect})", dbAbout: "about {size}", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
+  dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect})", dbSizeServer: "Database {db} (reported by the server, {dialect})", dbSizeEstimated: "Database about {db} (estimated by the server, {dialect})", dbTileServer: "reported by the server ({dialect})", dbTileEstimated: "estimated ({dialect})", dbAbout: "about {size}", dbTablesTitle: "Largest tables", dbTablesHint: "Data and indexes per table, as the server reports them.", dbTablesHintSqlite: "Data and indexes per table; measured once a day.", dbTablesAt: "As of {at}.", dbTablesMore: "{n} more tables", dbColTable: "Table", dbColBytes: "Bytes", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
   dbKind_wal_large: "Large WAL file", dbKind_growth: "Unusual growth", dbKind_duplicates: "Duplicate statistics timestamps", dbKind_missing_hours: "Missing hours in statistics", dbKind_statistics_issues: "Statistics do not fit the entity", dbKind_recorder_gap: "Gaps in the recorder",
   dbWal: "The WAL file is {wal}, the database {db}.", dbGrowth: "Grew {recent} in 7 days, about {base} a week in the weeks before.",
   dbDuplicates: "{n}{more} timestamps appear twice in the statistics, mostly in: {list}.", dbMissing: "{n} series have gaps in their hourly record: {list}.", dbMissingHours: "{n} h missing",
@@ -7170,6 +7170,7 @@ class DbHealthMixin {
     this.setPageExporter("recdb", "recorder-database", `${this.t("recorder")} · ${this.t("dbTitle")}`, [
       { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.t(`dbKind_${f.kind}`), this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.t(`dbAdvice_${f.kind}`)]) },
       { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
+      { name: "tables", title: this.t("dbTablesTitle"), header: [this.t("dbColTable"), this.t("dbColBytes")], rows: () => (r.tables || []).map(t => [t.name, t.bytes]) },
     ].filter(sec => sec.rows().length));
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
     // The figures stand as tiles; what could not be measured, and the normal restart gaps, stay as short notes.
@@ -7181,7 +7182,18 @@ class DbHealthMixin {
       r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
     ]);
     const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
-    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
+    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>${this.dbTablesCard(r)}</div>`;
+  }
+
+  // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog.
+  dbTablesCard(r) {
+    const tables = r.tables || [];
+    if (!tables.length) return "";
+    const total = r.db_bytes || tables.reduce((sum, t) => sum + t.bytes, 0);
+    const rows = tables.map(t => `<div class="fact"><span>${this.esc(t.name)}</span><b>${this.esc(this.formatBytes(t.bytes))}${total ? `<small>${this.formatNumber(Math.round(t.bytes / total * 100))} %</small>` : ""}</b></div>`).join("");
+    const more = r.tables_total > tables.length ? `<p class="factnote">${this.t("dbTablesMore", { n: this.formatNumber(r.tables_total - tables.length) })}</p>` : "";
+    const at = r.tables_at ? ` ${this.t("dbTablesAt", { at: this.esc(this.relTime(new Date(r.tables_at * 1000).toISOString())) })}` : "";
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div></div><div class="facts">${rows}</div>${more}</div>`;
   }
 }
 

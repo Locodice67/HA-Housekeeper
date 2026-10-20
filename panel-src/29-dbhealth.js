@@ -117,6 +117,7 @@ class DbHealthMixin {
     this.setPageExporter("recdb", "recorder-database", `${this.t("recorder")} · ${this.t("dbTitle")}`, [
       { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.t(`dbKind_${f.kind}`), this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.t(`dbAdvice_${f.kind}`)]) },
       { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
+      { name: "tables", title: this.t("dbTablesTitle"), header: [this.t("dbColTable"), this.t("dbColBytes")], rows: () => (r.tables || []).map(t => [t.name, t.bytes]) },
     ].filter(sec => sec.rows().length));
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
     // The figures stand as tiles; what could not be measured, and the normal restart gaps, stay as short notes.
@@ -128,6 +129,17 @@ class DbHealthMixin {
       r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
     ]);
     const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
-    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
+    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>${this.dbTablesCard(r)}</div>`;
+  }
+
+  // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog.
+  dbTablesCard(r) {
+    const tables = r.tables || [];
+    if (!tables.length) return "";
+    const total = r.db_bytes || tables.reduce((sum, t) => sum + t.bytes, 0);
+    const rows = tables.map(t => `<div class="fact"><span>${this.esc(t.name)}</span><b>${this.esc(this.formatBytes(t.bytes))}${total ? `<small>${this.formatNumber(Math.round(t.bytes / total * 100))} %</small>` : ""}</b></div>`).join("");
+    const more = r.tables_total > tables.length ? `<p class="factnote">${this.t("dbTablesMore", { n: this.formatNumber(r.tables_total - tables.length) })}</p>` : "";
+    const at = r.tables_at ? ` ${this.t("dbTablesAt", { at: this.esc(this.relTime(new Date(r.tables_at * 1000).toISOString())) })}` : "";
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div></div><div class="facts">${rows}</div>${more}</div>`;
   }
 }

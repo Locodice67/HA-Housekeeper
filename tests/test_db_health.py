@@ -564,3 +564,13 @@ def test_a_database_server_is_asked_for_its_size(monkeypatch) -> None:
     files = module.database_files(None)
     assert files["db_bytes"] == 5000 and files["estimated"] is True and files["wal_bytes"] is None
     assert module.database_files(None, False)["db_bytes"] is None and asked == ["mysql"]
+
+
+def test_table_sizes_stay_empty_when_the_database_cannot_tell(monkeypatch) -> None:
+    from homeassistant.components.recorder import util
+
+    def broken(**kwargs):
+        raise RuntimeError("no such table: dbstat")
+
+    monkeypatch.setattr(util, "session_scope", broken)
+    assert module.table_sizes(None, "sqlite") == [] and module.table_sizes(None, "oracle") == []

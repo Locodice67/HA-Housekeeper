@@ -170,6 +170,9 @@ class DbHealthResult(Reply, total=False):
     growth: dict[str, Any]
     restart_gaps: int
     integrity: dict[str, Any]
+    tables: list[dict[str, Any]]  # the largest tables: name, bytes (data and indexes)
+    tables_total: int
+    tables_at: float | None  # when the table sizes were measured (epoch seconds)
 
 
 class StatisticsLastResult(TypedDict):

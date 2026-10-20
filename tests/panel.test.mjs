@@ -5915,6 +5915,9 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   el.dbHealth = { ...DBH, dialect: "mysql", estimated: true, db_bytes: 11 * 1024 ** 3, wal_bytes: null, findings: [] };
   html = el.dbCard();
   assert.ok(html.includes("11 GB") && html.includes("estimated (MariaDB/MySQL)") && !html.includes("WAL"), "a server database has a size but no WAL file");
+  el.dbHealth = { ...el.dbHealth, tables: [{ name: "states", bytes: 8 * 1024 ** 3 }], tables_total: 3 };
+  html = el.dbCard();
+  assert.ok(html.includes("Largest tables") && html.includes("states") && html.includes("73 %") && html.includes("2 more tables"));
 });
 
 test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {

@@ -71,6 +71,18 @@ SERVER_SIZE = {
     " WHERE table_schema = DATABASE()",
     "postgresql": "SELECT pg_database_size(current_database())",
 }
+# Data and indexes per table. SQLite reads every page for it (and needs dbstat compiled in), so
+# its answer is kept for a day; a server answers from its catalog.
+TABLE_SIZES = {
+    "sqlite": "SELECT COALESCE(m.tbl_name, d.name), SUM(d.pgsize) FROM dbstat AS d"
+    " LEFT JOIN sqlite_master AS m ON m.name = d.name WHERE d.aggregate = TRUE GROUP BY 1",
+    "mysql": "SELECT table_name, data_length + index_length FROM information_schema.tables"
+    " WHERE table_schema = DATABASE()",
+    "postgresql": "SELECT relname, pg_total_relation_size(relid) FROM pg_catalog.pg_statio_user_tables",
+}
+TABLES_SECONDS = {"sqlite": DAY}
+TABLES_SECONDS_SERVER = 3600
+TABLES_LIMIT = 8
 
 
 def server_size(hass: HomeAssistant, dialect: str) -> int | None:
@@ -85,6 +97,23 @@ def server_size(hass: HomeAssistant, dialect: str) -> int | None:
         _LOGGER.debug("The database server did not report its size", exc_info=True)
         return None
     return int(size) if size else None
+
+
+def table_sizes(hass: HomeAssistant, dialect: str) -> list[dict[str, Any]]:
+    """Blocking (recorder executor): bytes per table, largest first; empty when it cannot be asked."""
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import text
+
+    if dialect not in TABLE_SIZES:
+        return []
+    try:
+        with session_scope(hass=hass, read_only=True) as session:
+            rows = session.execute(text(TABLE_SIZES[dialect])).all()
+    except Exception:  # noqa: BLE001 - no dbstat, missing rights: the list stays empty
+        _LOGGER.debug("The database did not report its table sizes", exc_info=True)
+        return []
+    found = [{"name": str(name), "bytes": int(size)} for name, size in rows if name and size]
+    return sorted(found, key=lambda t: t["bytes"], reverse=True)
 
 
 def database_files(hass: HomeAssistant, server: bool = True) -> dict[str, Any]:
@@ -711,6 +740,14 @@ async def _db_health(
             int(raw["db_bytes"]) + int(raw.get("wal_bytes") or 0),
         )
     result = evaluate(raw, names, events.sizes, events.events, datetime.now(UTC).date())
+    dialect = str(raw.get("dialect") or "")
+    tables = await cached_query(
+        hass,
+        "db_tables",
+        TABLES_SECONDS.get(dialect, TABLES_SECONDS_SERVER),
+        lambda: {"at": time.time(), "tables": table_sizes(hass, dialect)},
+    )
+    found_tables = (tables.raw or {}).get("tables") or []
     reply = {
         "available": True,
         "busy": False,
@@ -721,6 +758,9 @@ async def _db_health(
         "thresholds": THRESHOLDS,
         **recorder_retention(hass),
         **result,
+        "tables": found_tables[:TABLES_LIMIT],
+        "tables_total": len(found_tables),
+        "tables_at": (tables.raw or {}).get("at"),
     }
     if store is not None:
         store.keep("db_health", reply)
