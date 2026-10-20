@@ -164,6 +164,7 @@ class DbHealthResult(Reply, total=False):
     computed_at: float
     supported: bool
     dialect: str
+    estimated: bool  # MariaDB/MySQL: the server estimates the size
     db_bytes: int | None
     wal_bytes: int | None
     growth: dict[str, Any]

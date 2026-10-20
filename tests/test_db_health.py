@@ -200,7 +200,7 @@ def test_another_database_than_sqlite_has_no_sizes_but_is_still_judged() -> None
             duplicates=[{"statistic_id": "x", "start": 1.0, "count": 2}],
         )
     )
-    assert result["supported"] is False and kinds(result) == ["duplicates"]
+    assert result["db_bytes"] is None and kinds(result) == ["duplicates"]
 
 
 # --- the recorder ---------------------------------------------------------------------------
@@ -344,6 +344,7 @@ async def test_the_overview_summary_names_size_and_growth(
     assert summary is not None and summary["per_day"] == 100 and summary["samples"] == 2
     assert set(summary) == {
         "dialect",
+        "estimated",
         "db_bytes",
         "wal_bytes",
         "per_day",
@@ -551,3 +552,15 @@ async def test_a_damaged_file_is_recorded_as_damaged_and_a_sound_one_as_ok(
 
     assert events.states[0][0] == "damaged" and "missing from index" in events.states[0][1][0]
     assert events.states[1] == ("ok", [])
+
+
+def test_a_database_server_is_asked_for_its_size(monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    instance = SimpleNamespace(dialect_name="mysql", db_url="mysql://u@host/ha")
+    monkeypatch.setattr("homeassistant.components.recorder.get_instance", lambda hass: instance)
+    asked = []
+    monkeypatch.setattr(module, "server_size", lambda hass, dialect: asked.append(dialect) or 5000)
+    files = module.database_files(None)
+    assert files["db_bytes"] == 5000 and files["estimated"] is True and files["wal_bytes"] is None
+    assert module.database_files(None, False)["db_bytes"] is None and asked == ["mysql"]

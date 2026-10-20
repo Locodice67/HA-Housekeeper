@@ -638,7 +638,7 @@ class CleanupRunner:
         if not recorder_ready(self.hass):
             return True
         try:
-            files = await self.hass.async_add_executor_job(database_files, self.hass)
+            files = await self.hass.async_add_executor_job(database_files, self.hass, False)
         except Exception:
             return True
         free = files.get("disk_free")

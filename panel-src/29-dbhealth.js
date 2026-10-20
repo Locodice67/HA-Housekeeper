@@ -22,6 +22,11 @@ class DbHealthMixin {
     return series.map(s => this.esc(s.name || s.statistic_id)).join(", ");
   }
 
+  // The recorder names MariaDB "mysql"; the panel names both.
+  dbDialect(dialect) {
+    return { sqlite: "SQLite", mysql: "MariaDB/MySQL", postgresql: "PostgreSQL" }[dialect] || dialect || "?";
+  }
+
   dbFindingText(f) {
     const n = v => this.formatNumber(v), size = v => this.formatBytes(v);
     if (f.kind === "wal_large") return this.t("dbWal", { wal: size(f.wal_bytes), db: size(f.db_bytes) });
@@ -101,8 +106,9 @@ class DbHealthMixin {
     if (r.busy) return `<div class="stack">${head}<div class="panel">${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div></div>`;
     const th = r.thresholds || {};
     const facts = [];
-    if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
-    else facts.push(this.t("dbNoSize", { dialect: this.esc(r.dialect || "?") }));
+    const dialect = this.esc(this.dbDialect(r.dialect)), server = r.dialect !== "sqlite";
+    if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(server ? this.t(r.estimated ? "dbSizeEstimated" : "dbSizeServer", { db: this.formatBytes(r.db_bytes), dialect }) : this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
+    else facts.push(this.t("dbNoSize", { dialect }));
     if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.formatBytes(Math.max(0, r.growth.per_day)) }));
     else facts.push(this.t("dbGrowthUnknown"));
     if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
@@ -116,12 +122,12 @@ class DbHealthMixin {
     // The figures stand as tiles; what could not be measured, and the normal restart gaps, stay as short notes.
     const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
     const tiles = this.sumTiles([
-      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
+      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: server ? this.t(r.estimated ? "dbTileEstimated" : "dbTileServer", { dialect }) : this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
       growthKnown ? { label: this.t("dbTileGrowth"), value: `+${this.formatBytes(Math.max(0, r.growth.per_day))}`, tone: "mute" } : null,
       r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
       r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
     ]);
-    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect: this.esc(r.dialect || "?") }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
+    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
     return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
   }
 }

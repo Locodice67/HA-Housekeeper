@@ -5911,7 +5911,10 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   assert.ok(html.includes("Automatic purging is off") && html.includes("2 gaps from restarts (normal)"), "the sentences stay as notes");
   el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };
   html = el.dbCard();
-  assert.ok(!html.includes("Growth per day") && html.includes("Size not measurable (database: mysql)") && html.includes("Growth is being observed"));
+  assert.ok(!html.includes("Growth per day") && html.includes("Size not measurable (database: MariaDB/MySQL)") && html.includes("Growth is being observed"));
+  el.dbHealth = { ...DBH, dialect: "mysql", estimated: true, db_bytes: 11 * 1024 ** 3, wal_bytes: null, findings: [] };
+  html = el.dbCard();
+  assert.ok(html.includes("11 GB") && html.includes("estimated (MariaDB/MySQL)") && !html.includes("WAL"), "a server database has a size but no WAL file");
 });
 
 test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {

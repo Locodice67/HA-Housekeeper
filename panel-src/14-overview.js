@@ -408,19 +408,19 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("sysOvTitle")}</h2><p>${this.t("sysOvHint")}</p></div><button class="link" data-jump="storage">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows}</div></div>`;
   }
 
-  // Size of the recorder database from two file stats taken during the scan; the table queries stay in the Recorder view.
+  // Size of the recorder database from two file stats (SQLite) or one size query to the server taken during the scan; the table queries stay in the Recorder view.
   databaseCard() {
     const d = this.data.meta.database;
     if (!d) return "";
     this.ensureDbFirst();
     const measured = d.db_bytes !== null && d.db_bytes !== undefined;
     const rows = measured ? [
-      [this.t("dbOvSize"), this.formatBytes(d.db_bytes)],
-      [this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)],
+      [this.t("dbOvSize"), d.estimated ? this.t("dbAbout", { size: this.formatBytes(d.db_bytes) }) : this.formatBytes(d.db_bytes)],
+      ...(d.dialect === "sqlite" ? [[this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)]] : []),
       ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
       ...(this.dbFirst ? [[this.t("dbOvFirst"), `${this.esc(this.formatDate(new Date(this.dbFirst * 1000).toISOString()))}<small>${this.esc(this.relTime(new Date(this.dbFirst * 1000).toISOString()))}</small>`]] : []),
       [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
-    ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(d.dialect || "?") })]];
+    ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(this.dbDialect(d.dialect)) })]];
     const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbOvTitle")}</h2><p>${this.t("dbOvHint")}</p></div><button class="link" data-jump="recorder">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${purgeOff}</div>`;
   }
