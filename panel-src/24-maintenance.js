@@ -239,16 +239,16 @@ class MaintenanceMixin {
     this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
-      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.formatNumber(updates) : "", tone: pfTone },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : "", tone: backupTone },
+      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.t(updates === 1 ? "mtUpdates_1" : "mtUpdates_n", { n: this.formatNumber(updates) }) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
       { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    // A tab whose numbers are there and show nothing open says so, as on Clean up; while they load it stays plain.
+    // One status pill per tile: what is open, or "Nothing to do" once the numbers are there; while they load the place stays empty.
     const loaded = { backup: Boolean(this.backup?.available), updates: Boolean(pf), blueprints: Boolean(bp), goals: Boolean(this.goals) };
-    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok", facts: !tab.pill && loaded[tab.id] ? [{ text: this.t("cleanupNothing"), tone: "ok" }] : [] })), open, this.t("maintenance"), true);
+    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), status: true, tone: tab.pill ? tab.tone : "ok", pill: tab.pill || (loaded[tab.id] ? this.t("cleanupNothing") : "") })), open, this.t("maintenance"), true);
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
   }
 }

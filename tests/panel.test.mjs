@@ -6678,3 +6678,15 @@ test("an integration row of the write load has a greyed box that says only its e
   const html = el.stormGroupsList([{ key: "integrations:Hub", type: "integrations", items: [{ kind: "integration_share", title: "Hub", entry_id: "e1", load_share: 40, per_day: 10 }] }]);
   assert.ok(html.includes("disabled") && html.includes("An integration cannot be excluded"));
 });
+
+test("the tiles of Maintenance and Clean up keep one status pill each: what is open with its noun, or Nothing to do", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [], quarantine: [] };
+  el.preflight = { counts: { total: 2 }, state: { updates: [] }, checks: [] }; el._pfFor = el.data;
+  el.blueprints = { missing: 0, broken: 0 };
+  const html = el.maintenanceView();
+  assert.ok(html.includes(">2 updates<") && html.includes(">Nothing to do<") && html.includes("setpill slot"), "a noun on the number, Nothing to do in the pill, the slot kept");
+  assert.ok(!html.includes("navfacts"), "no extra line below the hint");
+  const tiles = el.cleanupView();
+  assert.ok((tiles.match(/>Nothing to do</g) || []).length >= 3, "an empty job says so in its pill");
+});

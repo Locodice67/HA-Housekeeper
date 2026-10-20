@@ -29,7 +29,7 @@ Object.assign(TEXT.de, {
   bhName: "Name", bhVersion: "HA-Version", bhDatabase: "Datenbank", bhApps: "Apps", bhFolders: "Ordner", bhSizes: "Größe je Ziel", bhFailed: "Fehlgeschlagen", bhId: "Backup-ID",
   bhGuideTitle: "So testest du eine Wiederherstellung", bhGuideSteps: "1. Eine Test-Instanz oder eine zweite Installation bereitstellen (nie zuerst die Hauptinstanz). 2. Dort ein aktuelles Backup einspielen: Einstellungen → System → Backups → Backup hochladen oder bei der Einrichtung wiederherstellen. 3. Prüfen, ob Integrationen, Automationen und Dashboards da sind. 4. Hier das Datum des Tests speichern. Housekeeper führt selbst nie eine Wiederherstellung aus.",
   todoBackupProblem: "Backup-Schutz: Problem",
-  mtProblems_1: "1 Problem", mtProblems_n: "{n} Probleme", mtNotes_1: "1 Hinweis", mtNotes_n: "{n} Hinweise", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
+  mtProblems_1: "1 Problem", mtProblems_n: "{n} Probleme", mtNotes_1: "1 Hinweis", mtNotes_n: "{n} Hinweise", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtUpdates_1: "1 Update", mtUpdates_n: "{n} Updates", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
 });
 Object.assign(TEXT.en, {
   backupTitle: "Backup protection", 
@@ -61,5 +61,5 @@ Object.assign(TEXT.en, {
   bhName: "Name", bhVersion: "HA version", bhDatabase: "Database", bhApps: "Apps", bhFolders: "Folders", bhSizes: "Size per target", bhFailed: "Failed", bhId: "Backup ID",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
   todoBackupProblem: "Backup protection: problem",
-  mtProblems_1: "1 problem", mtProblems_n: "{n} problems", mtNotes_1: "1 note", mtNotes_n: "{n} notes", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtRecord: "Saved state", mtNoRecord: "none",
+  mtProblems_1: "1 problem", mtProblems_n: "{n} problems", mtNotes_1: "1 note", mtNotes_n: "{n} notes", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtUpdates_1: "1 update", mtUpdates_n: "{n} updates", mtRecord: "Saved state", mtNoRecord: "none",
 });

@@ -44,7 +44,7 @@ class CleanupMixin {
 
   // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
   cleanupTiles(tabs, open) {
-    return this.navTiles("cleanup", tabs.map(t => ({ ...t, tone: t.count ? t.tone : "mute" })), open, this.t("cleanup"), true);
+    return this.navTiles("cleanup", tabs, open, this.t("cleanup"), true);
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them. Marked, labelled or excepted ones stay out.
@@ -722,14 +722,15 @@ class CleanupMixin {
       this.data.meta.recorder_available && unusedRows.length ? { text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" } : null,
       topDomain ? { text: this.t("unrefFactDomain", { name: topDomain[0] }), tone: "mute" } : null,
     ].filter(Boolean);
-    const nothing = n => (n ? [] : [{ text: this.t("cleanupNothing"), tone: "ok" }]);
+    // One status pill per tile, as on Maintenance: how many with their noun, or "Nothing to do" in green.
+    const status = (n, unit, tone) => (n ? { pill: this.tCount(unit, n), tone } : { pill: this.t("cleanupNothing"), tone: "ok" });
     // The tiles are the navigation: each one is one job, with how much there is to do.
     const tabs = [
-      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), facts: nothing(count("disable_entity")), tone: "warn" },
-      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), facts: nothing(count("disable_device")), tone: "warn" },
-      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, facts: [], pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
-      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, facts: [], tone: "mute" },
-      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
+      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), ...status(count("disable_entity"), "cuEntities", "warn") },
+      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), ...status(count("disable_device"), "cuDevices", "warn") },
+      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), ...(held.length ? { pill: heldReady ? this.t("cuHeldReady", { n: this.formatNumber(held.length), ready: this.formatNumber(heldReady) }) : this.tCount("cuHeld", held.length), tone: heldReady ? "ok" : "mute" } : status(0)) },
+      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), ...status(statsCount, "cuStats", "mute") },
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), ...status(unusedCount, "cuUnused", "mute"), facts: unusedFacts },
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
     const tiles = this.cleanupTiles(tabs, open);
