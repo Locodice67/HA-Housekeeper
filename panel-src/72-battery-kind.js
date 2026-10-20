@@ -8,7 +8,7 @@ Object.assign(TEXT.de, {
   bkKind_device: "Akku eines Geräts", bkKind_storage: "Speicher", bkKind_vehicle: "Fahrzeug", bkKind_other: "Sonstiges",
   bkProposed: "Vermutlich keine Wechselbatterie", bkProposedHint: "Geräte, die auch Leistung, Energie oder Ladevorgang melden. Sie zählen nicht in Niedrigstand und Prognose, bis du sie bestätigst oder zurückholst.",
   bkMine: "Keine Wechselbatterie", bkMineHint: "Von dir oder aus einem Vorschlag bestätigt.",
-  bkAll: "Alle bestätigen", bkAsk: "{n} Sensoren als keine Wechselbatterie speichern?", bkYes: "Ja, speichern", bkNo: "Abbrechen",
+  bkTakeN: "Übernehmen ({n})",
   bkWhy: "Gerät meldet auch {list}", bkWhyMower: "Gerät ist ein Mähroboter", bkWhyVacuum: "Gerät ist ein Staubsauger",
   bkSig_power: "Leistung", bkSig_energy: "Energie", bkSig_energy_storage: "Speicher", bkSig_current: "Strom", bkSig_battery_charging: "Ladevorgang", bkSig_plug: "Stecker",
   bkFailed: "Das hat nicht geklappt: {detail}", bkColReason: "Grund", bkColKind: "Art",
@@ -18,7 +18,7 @@ Object.assign(TEXT.en, {
   bkKind_device: "A device's own pack", bkKind_storage: "Storage", bkKind_vehicle: "Vehicle", bkKind_other: "Other",
   bkProposed: "Probably not a replaceable battery", bkProposedHint: "Devices that also report power, energy or charging. They do not count in lowest level and forecast until you confirm them or bring them back.",
   bkMine: "Not a replaceable battery", bkMineHint: "Set by you or confirmed from a proposal.",
-  bkAll: "Confirm all", bkAsk: "Save {n} sensors as not a replaceable battery?", bkYes: "Yes, save", bkNo: "Cancel",
+  bkTakeN: "Confirm ({n})",
   bkWhy: "Device also reports {list}", bkWhyMower: "Device is a mowing robot", bkWhyVacuum: "Device is a vacuum",
   bkSig_power: "power", bkSig_energy: "energy", bkSig_energy_storage: "storage", bkSig_current: "current", bkSig_battery_charging: "charging", bkSig_plug: "plug",
   bkFailed: "That did not work: {detail}", bkColReason: "Reason", bkColKind: "Kind",
@@ -73,27 +73,45 @@ class BatteryKindMixin {
       { key: "name", label: "btColName", dir: "asc", get: o => this.batteryName(o).title },
       { key: "level", label: "btColLevel", dir: "asc", get: o => level(o) ?? 1e3 },
     ];
+    // Proposals are picked with boxes and confirmed together; "Correct" stays in the row, "It is a battery" sits in the menu.
+    const sel = (this.bkSel ||= new Set());
+    for (const id of [...sel]) if (!proposed.some(o => o.object_id === id)) sel.delete(id);
+    const pickCol = items => ({ key: "sel", label: "selectPage", narrow: true, sortable: false,
+      allBox: page => { const ids = (this._bkVisible = page.map(o => o.object_id)), n = ids.filter(id => sel.has(id)).length; return `<input type="checkbox" class="selbox" data-bk-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+      cell: o => `<input type="checkbox" class="selbox" data-bk-sel="${this.esc(o.object_id)}" ${sel.has(o.object_id) ? "checked" : ""} aria-label="${this.esc(this.batteryName(o).title)}">` });
+    const menu = o => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-bk-back="${this.esc(o.object_id)}"><ha-icon icon="mdi:battery-outline"></ha-icon>${this.t("bkBack")}</button></div></details>`;
     const table = (id, items, kindOf, mineRow) => this.sysList(id, items, {
       sort: "name", sorts, tie: o => o.object_id, text: o => [this.batteryName(o).title, o.object_id, mineRow ? "" : this.bkWhy(o)].join(" "),
       rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(o).title)}"`,
       columns: [
+        ...(mineRow ? [] : [pickCol(items)]),
         { key: "name", label: "btColName", dir: "asc", cell: o => this.nameCell(this.batteryName(o).title, o.object_id) },
         ...(mineRow ? [] : [{ key: "why", label: "bkColReason", sortable: false, cell: o => this.esc(this.bkWhy(o)) }]),
         { key: "level", label: "btColLevel", dir: "asc", cell: o => (level(o) === null ? "—" : `${level(o)} %`) },
         { key: "kind", label: "bkColKind", sortable: false, cell: o => this.bkSelect(o, kindOf(o), mineRow ? "data-bk-change" : "data-bk-proposal") },
-        { key: "act", label: "btColAct", sortable: false, cell: o => `${mineRow ? "" : `<button class="btn small" data-bk-accept="${this.esc(o.object_id)}">${this.t("bkConfirm")}</button>`}<button class="btn quiet" data-bk-back="${this.esc(o.object_id)}">${this.t("bkBack")}</button>` },
+        { key: "act", label: "btColAct", sortable: false, cell: o => `<span class="remact">${mineRow ? "" : `<button class="btn small" data-bk-accept="${this.esc(o.object_id)}">${this.t("bkConfirm")}</button>`}${menu(o)}</span>` },
       ],
     });
-    const ask = this.bkAsk ? `<div class="bkask" role="alert"><strong>${this.t("bkAsk", { n: this.formatNumber(proposed.length) })}</strong><button class="btn small primary" data-bk-all-yes>${this.t("bkYes")}</button><button class="btn small" data-bk-all-no>${this.t("bkNo")}</button></div>` : "";
-    const all = proposed.length > 1 && !this.bkAsk ? `<div class="bkall"><button class="btn small" data-bk-all>${this.t("bkAll")}</button></div>` : "";
+    const n = sel.size;
+    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bk-take ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button></div>`;
+    const shown = this.selOnly?.bk_proposed ? proposed.filter(o => sel.has(o.object_id)) : proposed;
     const parts = [];
-    if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${all}${ask}${table("bk_proposed", proposed, o => o.battery_suggest?.kind || "other", false)}`, true));
+    if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${tools}${table("bk_proposed", shown, o => this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other", false)}`, true));
     if (mine.length) parts.push(this.fold("bk_mine", { tone: "mute", title: this.t("bkMine"), sub: this.t("bkMineHint"), pill: this.formatNumber(mine.length) }, table("bk_mine", mine, o => o.battery_kind, true), false));
     return `<div class="panel">${parts.join("")}${this.bkMessage ? `<p class="factnote pad" role="status">${this.esc(this.bkMessage)}</p>` : ""}</div>`;
   }
 
+  // Confirms the picked proposals with the kind their row shows (the proposal, or what was chosen there).
+  bkTakePicked() {
+    const { proposed } = this.batteryKindItems(), sel = this.bkSel || new Set();
+    const items = proposed.filter(o => sel.has(o.object_id)).map(o => ({ entity_id: o.object_id, kind: this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other" }));
+    if (!items.length) return;
+    sel.clear();
+    this.batterySetKinds(items);
+  }
+
   async batterySetKinds(items) {
-    this.bkMessage = ""; this.bkAsk = false;
+    this.bkMessage = "";
     this._btEpoch = (this._btEpoch || 0) + 1;  // a forecast that is still on its way was asked for before and is dropped
     try {
       await this._hass.callWS({ type: "ha_housekeeper/battery_kind_set", items });
@@ -117,11 +135,13 @@ class BatteryKindMixin {
     }));
     root.querySelectorAll("[data-bk-change]").forEach(el => el.addEventListener("change", () => this.batterySetKinds([{ entity_id: el.dataset.bkChange, kind: el.value }])));
     root.querySelectorAll("[data-bk-back]").forEach(el => el.addEventListener("click", () => this.batterySetKinds([{ entity_id: el.dataset.bkBack, kind: "keep" }])));
-    root.querySelector("[data-bk-all]")?.addEventListener("click", () => { this.bkAsk = true; this.render(); });
-    root.querySelector("[data-bk-all-no]")?.addEventListener("click", () => { this.bkAsk = false; this.render(); });
-    root.querySelector("[data-bk-all-yes]")?.addEventListener("click", () => {
-      const items = [...root.querySelectorAll("[data-bk-proposal]")].map(s => ({ entity_id: s.dataset.bkProposal, kind: s.value }));
-      this.batterySetKinds(items);
-    });
+    // The kind chosen in a row is kept, so a pick on another page is confirmed with what its row says.
+    root.querySelectorAll("[data-bk-proposal]").forEach(el => el.addEventListener("change", () => { (this.bkPick ||= {})[el.dataset.bkProposal] = el.value; }));
+    const sel = () => (this.bkSel ||= new Set());
+    root.querySelectorAll("[data-bk-sel]").forEach(el => el.onchange = () => { this.pickRows("bk_proposed", el.dataset.bkSel, el.checked, sel(), this._bkVisible); this.render(); });
+    const page = root.querySelector("[data-bk-page]");
+    if (page) { page.indeterminate = page.hasAttribute("data-partial"); page.onchange = ev => { (this._bkVisible || []).forEach(id => (ev.target.checked ? sel().add(id) : sel().delete(id))); this.render(); }; }
+    root.querySelector("[data-bk-clear]")?.addEventListener("click", () => { sel().clear(); this.render(); });
+    root.querySelector("[data-bk-take]")?.addEventListener("click", () => this.bkTakePicked());
   }
 }

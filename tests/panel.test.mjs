@@ -4963,6 +4963,7 @@ test("battery sensors that are no replaceable battery leave the list, wait in a 
   assert.ok(ids.includes("sensor.door_battery") && ids.includes("sensor.back_battery") && !ids.includes("sensor.bank_battery") && !ids.includes("sensor.car_battery"));
   const card = el.batteryKindCard();
   assert.ok(card.includes("Probably not a replaceable battery") && card.includes("Device also reports power, storage") && card.includes('data-bk-accept="sensor.bank_battery"'));
+  assert.ok(card.includes('data-bk-sel="sensor.bank_battery"') && card.includes("data-bk-take") && card.includes('class="menuitem" data-bk-back="sensor.bank_battery"'), "boxes and a selection bar; It is a battery sits in the menu");
   await el.batterySetKinds([{ entity_id: "sensor.bank_battery", kind: "storage" }, { entity_id: "sensor.door_battery", kind: "" }]);
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/battery_kind_set", items: [{ entity_id: "sensor.bank_battery", kind: "storage" }, { entity_id: "sensor.door_battery", kind: "" }] }));
 });
