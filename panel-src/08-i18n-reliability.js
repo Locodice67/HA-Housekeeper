@@ -25,7 +25,7 @@ Object.assign(TEXT.de, {
   relHintError: "Der Setup steht gerade im Fehler. Das ist meist ein Zugangs- oder Konfigurationsproblem: Integration neu anmelden oder neu einrichten.",
   relHintEarly: "{n} Setup-Fehler in {days} Tagen bei guter Verfügbarkeit. Die Integration startet vielleicht zu früh nach dem Neustart, bevor Netz oder Gerät bereit sind.",
   relHintUnload: "Entladen oder Migration ist fehlgeschlagen. Meist hilft ein Neustart von Home Assistant; danach nach Updates der Integration sehen.",
-  relSumAll: "Alle", relColStatus: "Status", relColLongest: "Längster Ausfall", relColLast: "Letzte Störung", relColDelta: "Veränderung (Prozentpunkte)", relColLevel: "Stufe", relColPattern: "Muster",
+  relSumAll: "Alle", relColStatus: "Status", relColLongest: "Längster Ausfall", relColLast: "Letzte Störung", relColDelta: "Veränderung (Prozentpunkte)", relColLevel: "Stufe", relColPattern: "Meist um", relPatternCell: "{from}–{to} Uhr",
   relSortRank: "Standard", relSortEpisodes: "Ausfälle", relSortRate: "Ausfälle pro Tag", relSortDuration: "Gesamtdauer", relOnlyFlapping: "Nur flatternd", relOnlyUnstable: "Nur instabil",
 });
 Object.assign(TEXT.en, {
@@ -54,6 +54,6 @@ Object.assign(TEXT.en, {
   relHintError: "Setup is in an error right now. That is usually an access or configuration problem: sign in again or set the integration up anew.",
   relHintEarly: "{n} setup failures in {days} days with good availability. The integration may start too early after a restart, before the network or device is ready.",
   relHintUnload: "Unloading or migration failed. A restart of Home Assistant usually helps; then look for updates of the integration.",
-  relSumAll: "All", relColStatus: "Status", relColLongest: "Longest outage", relColLast: "Last disruption", relColDelta: "Change (percentage points)", relColLevel: "Level", relColPattern: "Pattern",
+  relSumAll: "All", relColStatus: "Status", relColLongest: "Longest outage", relColLast: "Last disruption", relColDelta: "Change (percentage points)", relColLevel: "Level", relColPattern: "Mostly at", relPatternCell: "{from}–{to} h",
   relSortRank: "Default", relSortEpisodes: "Outages", relSortRate: "Outages per day", relSortDuration: "Total duration", relOnlyFlapping: "Flapping only", relOnlyUnstable: "Unstable only",
 });

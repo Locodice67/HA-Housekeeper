@@ -261,7 +261,9 @@ class ReliabilityMixin {
       { key: "duration", label: "relSortDuration", dir: "desc", get: item => item.total_seconds },
     ];
     const tone = item => (item.level === "flapping" ? "red" : "warn");
-    const pattern = item => (item.pattern_hour === null || item.pattern_hour === undefined ? null : `${String(item.pattern_hour).padStart(2, "0")}–${String((item.pattern_hour + 2) % 24).padStart(2, "0")}`);
+    // The hours in which most outages begin, as "3–5 Uhr", with the whole sentence as tooltip.
+    const hours = item => ({ from: String(item.pattern_hour).padStart(2, "0"), to: String((item.pattern_hour + 2) % 24).padStart(2, "0") });
+    const pattern = item => (item.pattern_hour === null || item.pattern_hour === undefined ? null : this.t("relPatternCell", hours(item)));
     const list = this.sysList("relunstable", u.items, {
       sort: "rank", dir: "asc",
       sorts: [...sorts, { key: "pattern", label: "relColPattern", dir: "asc", get: item => item.pattern_hour ?? null }],
@@ -275,7 +277,7 @@ class ReliabilityMixin {
         { key: "episodes", label: "relSortEpisodes", dir: "desc", cell: item => this.esc(this.formatNumber(item.episodes)) },
         { key: "rate", label: "relSortRate", dir: "desc", cell: item => this.esc(this.formatNumber(item.per_day)) },
         { key: "duration", label: "relSortDuration", dir: "desc", cell: item => this.esc(this.relDuration(item.total_seconds)) },
-        { key: "pattern", label: "relColPattern", dir: "asc", cell: item => this.esc(pattern(item) || "–") },
+        { key: "pattern", label: "relColPattern", dir: "asc", cell: item => (pattern(item) ? `<span title="${this.esc(this.t("relPattern", hours(item)))}">${this.esc(pattern(item))}</span>` : "–") },
       ],
       exportName: "reliability-unstable", header: [this.t("utName"), "ID", this.t("relSortEpisodes"), this.t("relSortRate"), this.t("relSortDuration")], rows: item => [item.name, item.entity_id, item.episodes, item.per_day, item.total_seconds],
     });
