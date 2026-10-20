@@ -4,7 +4,7 @@ Object.assign(TEXT.de, {
   oftenChip: "Fällt regelmäßig aus", oftenChipAt: "Fällt meist zwischen {from} und {to} Uhr aus",
   oftenTitle: "Absichtlich?", oftenText: "{lines} Wenn das gewollt ist, hält ein Vermerk es fest, und Housekeeper meldet den Ausfall dann nicht mehr.",
   oftenSet: "Vermerk mit Zeitfenster setzen", oftenSetPlain: "Vermerk setzen", oftenSkip: "Nicht mehr fragen",
-  oftenDevice: "Mehrere Entitäten dieses Geräts fallen zur selben Zeit aus.",
+  oftenDevice: "Mehrere Entitäten dieses Geräts fallen zur selben Zeit aus.", oftenGroup: "{device}: {n} Entitäten", oftenRest: "die übrigen {n} Entitäten bleiben überwacht", oftenRest1: "die übrige Entität bleibt überwacht",
   oftenCardTitle: "Vorschläge für Vermerke", oftenCardHint: "Fallen regelmäßig aus oder haben keinen Wert, etwa im Standby. Ein Vermerk „Absichtlich offline“ blendet ihre Befunde 90 Tage aus.",
   oftenCount: "{n} Vorschläge", oftenFindings1: "1 Befund", oftenFindings: "{n} Befunde", oftenSum1: "1 Objekt · {findings}", oftenSum: "{n} Objekte · zusammen {findings}", oftenTake: "Vermerken", oftenTakeAll: "Alle vermerken",
   oftenAllTitle: "Alle Vorschläge übernehmen?", oftenAllText: "{n} Vermerke „Absichtlich offline“ werden gesetzt, mit erkanntem Zeitfenster, wo es eines gibt. Sie blenden {hides} Befunde aus und lassen sich einzeln wieder entfernen.",
@@ -14,7 +14,7 @@ Object.assign(TEXT.en, {
   oftenChip: "Fails regularly", oftenChipAt: "Usually fails between {from} and {to}",
   oftenTitle: "On purpose?", oftenText: "{lines} If that is intended, a mark records it and Housekeeper stops reporting the outage.",
   oftenSet: "Set a mark with a time window", oftenSetPlain: "Set a mark", oftenSkip: "Do not ask again",
-  oftenDevice: "Several entities of this device fail at the same time.",
+  oftenDevice: "Several entities of this device fail at the same time.", oftenGroup: "{device}: {n} entities", oftenRest: "the other {n} entities stay watched", oftenRest1: "the other entity stays watched",
   oftenCardTitle: "Suggested marks", oftenCardHint: "They fail or lose their value regularly, in standby for instance. A mark “Offline on purpose” hides their findings for 90 days.",
   oftenCount: "{n} suggestions", oftenFindings1: "1 finding", oftenFindings: "{n} findings", oftenSum1: "1 object · {findings}", oftenSum: "{n} objects · {findings} in all", oftenTake: "Mark", oftenTakeAll: "Mark all",
   oftenAllTitle: "Mark all suggestions?", oftenAllText: "{n} marks “Offline on purpose” are set, with the detected time window where there is one. They hide {hides} findings and can be removed one by one.",
@@ -33,7 +33,8 @@ class OftenMixin {
     return { ...stored, ...(this._oftenSkip || {}) };
   }
 
-  // { info, days, device } for an entity or a device that falls out regularly, else null; a dismissed one stays quiet for a while.
+  // { info, days, device, members } for an entity or a device that falls out regularly, else null; a dismissed one stays quiet
+  // for a while. For a device, members are the entities that fail together at the same hour.
   oftenOut(type, id) {
     const key = `${type}:${id}`, skipped = this.oftenDismissed()[key];
     if (skipped && Date.now() - skipped < OFTEN_QUIET_DAYS * 86400000) return null;
@@ -44,11 +45,13 @@ class OftenMixin {
     }
     if (type !== "device") return null;
     const members = (this.data?.objects || []).filter(o => o.object_type === "entity" && o.device_id === id);
-    const infos = members.map(o => this.stabilityOf(o)).filter(s => s?.info && regular(s.info));
     const byHour = new Map();
-    for (const s of infos) { const h = s.info.pattern_hour; if (h !== null && h !== undefined) byHour.set(h, [...(byHour.get(h) || []), s]); }
+    for (const o of members) {
+      const s = this.oftenOut("entity", o.object_id), h = s?.info.pattern_hour;
+      if (h !== null && h !== undefined) byHour.set(h, [...(byHour.get(h) || []), { ...s, id: o.object_id }]);
+    }
     const best = [...byHour.values()].sort((a, b) => b.length - a.length)[0];
-    return best && best.length >= OFTEN_DEVICE_MIN ? { info: best[0].info, days: best[0].r.window_days, device: true } : null;
+    return best && best.length >= OFTEN_DEVICE_MIN ? { info: best[0].info, days: best[0].days, device: true, members: best.map(s => s.id) } : null;
   }
 
   oftenFor(finding) {
@@ -70,8 +73,15 @@ class OftenMixin {
     return ` · <span class="nw">${this.esc(w ? this.t("oftenChipAt", w) : this.t("oftenChip"))}</span>`;
   }
 
+  // The entities a suggestion "group:<device>" stands for: those that fail together and carry no mark yet.
+  oftenMembers(key) {
+    const id = key.slice("group:".length);
+    return (this.oftenOut("device", id)?.members || []).filter(e => !this.findObject(`entity:${e}`)?.mark);
+  }
+
   // The findings a mark "offline on purpose" on the object would hide: of a device also those of its entities.
   oftenHidden(key) {
+    if (key.startsWith("group:")) return this.oftenMembers(key).reduce((n, e) => n + this.oftenHidden(`entity:${e}`), 0);
     const [type, ...rest] = key.split(":"), id = rest.join(":");
     const outage = f => !f.ignored && ["unavailable", "unknown", "stale"].includes(f.classification);
     return (this.data?.findings || []).filter(f => type === "device"
@@ -79,7 +89,8 @@ class OftenMixin {
       : outage(f) && f.object_id === id).length;
   }
 
-  // The suggestions gathered: one per device whose entities fail together, else one per entity; most findings first.
+  // The suggestions gathered, most findings first: a device only when it is down completely, the entities of a device that
+  // fail together as one group (the mark goes on each of them, the others stay watched), else one per entity.
   oftenSuggestions() {
     const out = new Map();
     for (const f of this.data?.findings || []) {
@@ -88,7 +99,7 @@ class OftenMixin {
       let key = f.rule_id === "device.down" ? `device:${f.object_id}` : `entity:${f.object_id}`;
       const device = key.startsWith("entity:") && this.findObject(key)?.device_id;
       const together = device && this.findObject(`device:${device}`) && this.oftenOut("device", device);
-      if (together) { key = `device:${device}`; often = together; }
+      if (together?.members.includes(f.object_id) && this.oftenMembers(`group:${device}`).length > 1) { key = `group:${device}`; often = together; }
       if (out.has(key) || this.findObject(key)?.mark) continue;
       out.set(key, { key, often, hides: this.oftenHidden(key) });
     }
@@ -103,9 +114,15 @@ class OftenMixin {
     if (!items.length) return "";
     const open = this.foldOpen("often", false), pg = this.paginate("often", items);
     const rows = pg.rows.map(({ key, often, hides }) => {
-      const item = this.findObject(key), w = this.oftenWindow(often.info);
-      const sub = [w ? this.t("oftenChipAt", w) : this.t("oftenChip"), this.oftenFindings(hides)].join(" · ");
-      return `<div class="rowwrap oftenrow"><button class="row" data-object="${this.esc(key)}">${this.tile(item?.object_type || "entity", "warn")}<span class="row-text"><strong>${this.esc(item?.name || key)}</strong><small>${this.esc(sub)}</small></span></button><button type="button" class="btn small" data-often-take="${this.esc(key)}">${this.t("oftenTake")}</button><button type="button" class="iconbtn" data-often-skip="${this.esc(key)}" title="${this.esc(this.t("oftenSkip"))}" aria-label="${this.esc(`${this.t("oftenSkip")}: ${item?.name || key}`)}"><ha-icon icon="mdi:close"></ha-icon></button></div>`;
+      const group = key.startsWith("group:"), link = group ? `device:${key.slice(6)}` : key, item = this.findObject(link), w = this.oftenWindow(often.info);
+      const members = group ? this.oftenMembers(key) : [];
+      const names = members.slice(0, 3).map(e => this.findObject(`entity:${e}`)?.name || e).join(", ") + (members.length > 3 ? " …" : "");
+      // The other entities of the device that say something about it: they stay watched.
+      const rest = group ? (this.data?.objects || []).filter(o => o.object_type === "entity" && o.device_id === item?.object_id && ["active", "unavailable", "unknown"].includes(o.status) && !members.includes(o.object_id)).length : 0;
+      const restText = rest ? (rest === 1 ? this.t("oftenRest1") : this.t("oftenRest", { n: this.formatNumber(rest) })) : "";
+      const sub = [names, w ? this.t("oftenChipAt", w) : this.t("oftenChip"), this.oftenFindings(hides), restText].filter(Boolean).join(" · ");
+      const title = group ? this.t("oftenGroup", { device: item?.name || link, n: this.formatNumber(members.length) }) : item?.name || key;
+      return `<div class="rowwrap oftenrow"><button class="row" data-object="${this.esc(link)}">${this.tile(item?.object_type || "entity", "warn")}<span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button><button type="button" class="btn small" data-often-take="${this.esc(key)}">${this.t("oftenTake")}</button><button type="button" class="iconbtn" data-often-skip="${this.esc(key)}" title="${this.esc(this.t("oftenSkip"))}" aria-label="${this.esc(`${this.t("oftenSkip")}: ${title}`)}"><ha-icon icon="mdi:close"></ha-icon></button></div>`;
     }).join("");
     const findings = this.oftenFindings(items.reduce((n, s) => n + s.hides, 0));
     const sum = items.length === 1 ? this.t("oftenSum1", { findings }) : this.t("oftenSum", { n: this.formatNumber(items.length), findings });
@@ -123,10 +140,14 @@ class OftenMixin {
     for (const key of keys) {
       const s = items.get(key);
       if (!s) continue;
-      const [object_type, ...rest] = key.split(":"), w = this.oftenWindow(s.often.info);
-      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: "expected_offline", reason: this.t("oftenReason"), days: OFTEN_MARK_DAYS };
-      if (w) msg.window = { mode: "time", from: w.from, to: w.to };
-      try { await this._hass.callWS(msg); } catch (err) { failed += 1; last = err; }
+      const w = this.oftenWindow(s.often.info);
+      // A group is marked entity by entity: the entities of the device that keep working stay watched.
+      for (const target of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) {
+        const [object_type, ...rest] = target.split(":");
+        const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: "expected_offline", reason: this.t("oftenReason"), days: OFTEN_MARK_DAYS };
+        if (w) msg.window = { mode: "time", from: w.from, to: w.to };
+        try { await this._hass.callWS(msg); } catch (err) { failed += 1; last = err; }
+      }
     }
     if (failed) this.failed(last);
     try { await this.refreshData(); } catch (err) { this.failed(err); }
@@ -154,8 +175,9 @@ class OftenMixin {
     this.render();
   }
 
+  // "Do not ask again" holds for the entities of a group, not for the device: another entity that fails later is asked about.
   skipOften(key) {
-    (this._oftenSkip ||= {})[key] = Date.now();
+    for (const k of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) (this._oftenSkip ||= {})[k] = Date.now();
     const kept = this.oftenDismissed();
     try { globalThis.localStorage?.setItem("ha_housekeeper.often", JSON.stringify(kept)); } catch (_) { /* no storage */ }
     this.render();
@@ -167,7 +189,8 @@ class OftenMixin {
     root.querySelectorAll("[data-often-take]").forEach(el => el.onclick = () => this.takeOften([el.dataset.oftenTake]));
     root.querySelectorAll("[data-often-all]").forEach(el => el.onclick = () => {
       const items = this.oftenSuggestions(), hides = items.reduce((n, s) => n + s.hides, 0);
-      this.confirmAsk(this.t("oftenAllText", { n: this.formatNumber(items.length), hides: this.formatNumber(hides) }), () => this.takeOften(items.map(s => s.key)), { title: this.t("oftenAllTitle"), yes: this.t("oftenTakeAll"), danger: false });
+      const marks = items.reduce((n, s) => n + (s.key.startsWith("group:") ? this.oftenMembers(s.key).length : 1), 0);
+      this.confirmAsk(this.t("oftenAllText", { n: this.formatNumber(marks), hides: this.formatNumber(hides) }), () => this.takeOften(items.map(s => s.key)), { title: this.t("oftenAllTitle"), yes: this.t("oftenTakeAll"), danger: false });
     });
   }
 }

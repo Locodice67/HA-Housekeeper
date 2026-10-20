@@ -3583,13 +3583,15 @@ test("Done lists what a plan fixed and what ended by itself; objects removed or 
   assert.ok(html.includes("Object removed (not fixed)"));
 });
 
-test("the selection bar can mark the device once instead of each of its entities", async () => {
+test("the selection bar can mark a device that is down once instead of each of its entities", async () => {
   const { el } = panel("en");
   const calls = [];
   const f = id => ({ rule_id: "entity.state_unknown", object_id: id, classification: "unknown", confidence: 0.9, key: `u|${id}`, ignored: false, evidence: [] });
   const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unknown", device_id: "tv" });
   el.data = { ...DATA, objects: [ent("sensor.a"), ent("sensor.b"), { object_type: "device", object_id: "tv", name: "TV", status: "active" }], findings: [f("sensor.a"), f("sensor.b")], causes: [] };
   el.findSel = new Set(["u|sensor.a", "u|sensor.b"]);
+  assert.equal(el.markDeviceCount(), 0, "a device that still works is never marked as a whole");
+  el.data.findings.push({ rule_id: "device.down", object_id: "tv", classification: "problem", key: "d|tv", ignored: false, evidence: [] });
   assert.equal(el.markDeviceCount(), 1);
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   el.bulk = { kind: "mark", reason: "", days: 0, markKind: "", error: "", onDevice: true };
@@ -5800,25 +5802,27 @@ test("an entity that fails regularly gets a hint with a mark prepared for the ti
   assert.equal(el.oftenRows(object).length, 0);
 });
 
-test("the suggestions gather the entities of a device into one mark that is set with its window", async () => {
+test("the suggestions gather the entities of a device that fail together; the mark goes on each of them, the rest stays watched", async () => {
   const { el } = panel("en");
   const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unknown", device_id: "tv" });
   const f = id => ({ rule_id: "entity.state_unknown", classification: "unknown", key: `u|${id}`, object_id: id, confidence: 0.75, impact: "low", ignored: false });
   const ids = ["sensor.a", "sensor.b", "sensor.c"];
-  el.data = { ...DATA, objects: [...ids.map(ent), { object_type: "device", object_id: "tv", name: "TV", status: "active" }], edges: [], findings: ids.map(f) };
+  el.data = { ...DATA, objects: [...ids.map(ent), { ...ent("sensor.d"), status: "active" }, { object_type: "device", object_id: "tv", name: "TV", status: "active" }], edges: [], findings: ids.map(f) };
   const info = { level: "unstable", episodes: 7, per_day: 1, total_seconds: 9000, mean_seconds: 1200, pattern_hour: 23 };
   el.reliability = { available: true, window_days: 7, unstable: { entities: Object.fromEntries(ids.map(id => [id, info])) } };
   const items = el.oftenSuggestions();
-  assert.equal(items.map(s => `${s.key}:${s.hides}`).join(), "device:tv:3");
+  assert.equal(items.map(s => `${s.key}:${s.hides}`).join(), "group:tv:3");
   el.folds = { ...(el.folds || {}), often: true };
-  assert.ok(el.oftenCard().includes('data-often-take="device:tv"') && !el.oftenCard().includes("data-often-all"), "one suggestion: no accept all");
-  assert.ok(el.oftenCard().includes("1 object · 3 findings") && el.oftenCard().includes('class="iconbtn" data-often-skip="device:tv"') && el.oftenFindings(1) === "1 finding", "a bar with the sum, a quiet cross, singular and plural");
+  assert.ok(el.oftenCard().includes('data-often-take="group:tv"') && !el.oftenCard().includes("data-often-all"), "one suggestion: no accept all");
+  assert.ok(el.oftenCard().includes("TV: 3 entities") && el.oftenCard().includes("the other entity stays watched"), el.oftenCard());
+  assert.ok(el.oftenCard().includes("1 object · 3 findings") && el.oftenCard().includes('class="iconbtn" data-often-skip="group:tv"') && el.oftenFindings(1) === "1 finding", "a bar with the sum, a quiet cross, singular and plural");
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   el.render = () => {};
-  await el.takeOften(["device:tv"]);
-  const set = calls.find(c => c.type === "ha_housekeeper/mark_set");
-  assert.equal(`${set.object_type}:${set.object_id}:${set.kind}:${set.days}:${set.window.from}`, "device:tv:expected_offline:90:23:00");
+  await el.takeOften(["group:tv"]);
+  const sets = calls.filter(c => c.type === "ha_housekeeper/mark_set");
+  assert.equal(sets.map(c => `${c.object_type}:${c.object_id}`).join(), "entity:sensor.a,entity:sensor.b,entity:sensor.c");
+  assert.equal(`${sets[0].kind}:${sets[0].days}:${sets[0].window.from}`, "expected_offline:90:23:00");
 });
 
 test("a newer scan found in the background reloads the panel; the same scan or a running one does not", async () => {
