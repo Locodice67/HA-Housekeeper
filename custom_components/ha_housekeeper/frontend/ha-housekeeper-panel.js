@@ -55,7 +55,7 @@ const TEXT = {
     certain: "Bestätigt", probable: "Wahrscheinlich", confidence: "Sicherheit", origin: "Herkunft",
     usage: "Verwendung", pathTitle: "Abhängigkeitspfad", pathSubtitle: "Herkunft und Verwendung eines Objekts prüfen.",
     searchObject: "Objekt suchen …", noRelations: "Keine Beziehungen gefunden.", firstSeenNote: "seit erster Beobachtung",
-    findingsSubtitle: "Was Housekeeper gefunden hat, nach Objekt geordnet.", inventorySubtitle: "Alle erfassten Objekte der Installation.",
+    findingsSubtitle: "Was Housekeeper gefunden hat.", inventorySubtitle: "Alle erfassten Objekte der Installation.",
     scanDone: "Scan aktuell", of_total: "von", shown: "angezeigt", integration: "Integration",
     PROVIDES: "stellt bereit", CONNECTED: "Verbindung (vermutet)", OWNS: "besitzt", CONTAINS: "enthält", VIA_DEVICE: "über Gerät",
     TRIGGERS_ON: "löst aus durch", USES_AS_CONDITION: "prüft als Bedingung", TARGETS: "steuert", REFERENCES: "verweist auf",
@@ -240,7 +240,7 @@ const TEXT = {
     certain: "Confirmed", probable: "Probable", confidence: "Confidence", origin: "Origin",
     usage: "Usage", pathTitle: "Dependency path", pathSubtitle: "Inspect the origin and usage of an object.",
     searchObject: "Search object …", noRelations: "No relationships found.", firstSeenNote: "since first observation",
-    findingsSubtitle: "What Housekeeper found, ordered by object.", inventorySubtitle: "All recorded objects of the installation.",
+    findingsSubtitle: "What Housekeeper found.", inventorySubtitle: "All recorded objects of the installation.",
     scanDone: "Scan up to date", of_total: "of", shown: "shown", integration: "Integration",
     PROVIDES: "provides", CONNECTED: "connection (assumed)", OWNS: "owns", CONTAINS: "contains", VIA_DEVICE: "via device",
     TRIGGERS_ON: "triggers on", USES_AS_CONDITION: "checks as condition", TARGETS: "targets", REFERENCES: "references",
@@ -3032,11 +3032,12 @@ class FindingsMixin {
     const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
     this._nodeFoldIds = this.nodeFoldIds(nodes);
     const items = grouped ? nodes : sorted;
-    const objects = this.countObjects(nodes);
+    // The same count in both views: findings and the objects they belong to.
+    const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
     const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
-    const count = grouped ? this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of }) : this.t(of ? "viewCountOf" : "viewCount", { n: this.formatNumber(sorted.length), ...of });
+    const count = this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
     const pg = this.paginate("findings", items);
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, count)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, this._autoOpen));
@@ -3118,7 +3119,8 @@ class FindingsMixin {
 
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
-    if (sub.startsWith("missing_")) return `${this.t(sub)}: ${f.affected_object}`;
+    // A reference that leads nowhere: "Refers to entity sensor.x".
+    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: this.lang === "en" ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
     const text = this.t(f.rule_id);
     return text === f.rule_id ? this.t(sub) : text;
@@ -3187,9 +3189,11 @@ class FindingsMixin {
   }
 }
 Object.assign(TEXT.de, {
+  refersTo: "Verweist auf {kind} {target}",
   statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen",
 });
 Object.assign(TEXT.en, {
+  refersTo: "Refers to {kind} {target}",
   statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones",
 });
 
@@ -17044,13 +17048,13 @@ Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
   ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
   ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt",
-  ogNew: "neu: {age}", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
+  ogNew: "jüngster: {age}", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
   ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
   ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object",
-  ogNew: "new: {age}", ogOf: "Device {name}", fselPart: "{n} of {m}",
+  ogNew: "latest: {age}", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
 
 const OG_NO_VALUE = ["unavailable", "unknown"];

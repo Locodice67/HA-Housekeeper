@@ -3371,7 +3371,7 @@ test("the selection row of the findings list names the size of the view at its r
   el.findSel = new Set(["a"]);
   assert.ok(/1 selected.*viewcount" role="status">3 findings on 3 objects/s.test(el.findingsView()));
   el.showFollowers = true;
-  assert.ok(/viewcount" role="status">3 in this view/.test(el.findingsView()), "the flat list counts findings only");
+  assert.ok(/viewcount" role="status">3 findings on 3 objects/.test(el.findingsView()), "the flat list counts the same way");
 });
 
 test("a reason tile counts every finding of its reason and names the follow-ups below it", () => {
@@ -6153,7 +6153,7 @@ test("every finding stands below its object: a device gathers all kinds of its e
     findings: [f("sensor.a"), f("sensor.b", { impact: "high", first_detected_at: "2026-10-10T00:00:00+00:00" }), f("select.old", { rule_id: "entity.not_provided", classification: "orphaned", confidence: 0.98, impact: "info" }), f("lock.car", { rule_id: "entity.not_provided", classification: "orphaned", confidence: 0.98, impact: "info" })] };
   el.lvState("findings", "impact", "desc");
   const html = el.findingsView();
-  assert.ok(html.includes("2 of 3 entities without a value · Orphaned (1)") && html.includes("75–98 %") && html.includes("new: "), "summary, span of certainty, the newest beside the oldest");
+  assert.ok(html.includes("2 of 3 entities without a value · Orphaned (1)") && html.includes("75–98 %") && html.includes("latest: "), "summary, span of certainty, the newest beside the oldest");
   assert.ok(html.includes("Audi</strong><small>Lock: "), "a single finding is named in the head");
   assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
   el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
@@ -6466,3 +6466,7 @@ test("another status than open puts a note above the list: the tiles count the o
   assert.ok(html.includes("statusnote") && html.includes("“Hidden”") && html.includes('data-fstatus="open"'));
 });
 
+test("a missing reference reads as what the finding refers to", () => {
+  const { el } = panel("en");
+  assert.equal(el.findingTitle({ rule_id: "automation.missing_entity", affected_object: "sensor.gone" }), "Refers to entity sensor.gone");
+});

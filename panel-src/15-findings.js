@@ -302,11 +302,12 @@ class FindingsMixin {
     const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
     this._nodeFoldIds = this.nodeFoldIds(nodes);
     const items = grouped ? nodes : sorted;
-    const objects = this.countObjects(nodes);
+    // The same count in both views: findings and the objects they belong to.
+    const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
     const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
-    const count = grouped ? this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of }) : this.t(of ? "viewCountOf" : "viewCount", { n: this.formatNumber(sorted.length), ...of });
+    const count = this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
     const pg = this.paginate("findings", items);
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, count)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, this._autoOpen));
@@ -388,7 +389,8 @@ class FindingsMixin {
 
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
-    if (sub.startsWith("missing_")) return `${this.t(sub)}: ${f.affected_object}`;
+    // A reference that leads nowhere: "Refers to entity sensor.x".
+    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: this.lang === "en" ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
     const text = this.t(f.rule_id);
     return text === f.rule_id ? this.t(sub) : text;
@@ -457,8 +459,10 @@ class FindingsMixin {
   }
 }
 Object.assign(TEXT.de, {
+  refersTo: "Verweist auf {kind} {target}",
   statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen",
 });
 Object.assign(TEXT.en, {
+  refersTo: "Refers to {kind} {target}",
   statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones",
 });
