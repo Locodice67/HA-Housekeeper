@@ -5519,7 +5519,8 @@ class UnusedMixin {
     });
     const lowest = all.filter(r => !r.volt && r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
     const chips = this.sumTiles([
-      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
+      // "All" clears the filter; it is not marked itself, only a filter that is on is (as on the findings page).
+      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: false },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: need }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
       gone.length ? { label: this.t("batteryUnavailable"), value: this.formatNumber(gone.length), sub: this.t("batteryUnavailableSub"), tone: "warn", attr: ["data-battery-filter", "unavailable"], active: this.batteryFilter === "unavailable" } : null,
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc([this.batteryName(lowest.item).title, this.areaName(lowest.item)].filter(Boolean).join(" · ")), tone: lowest.low ? "warn" : "mute", attr: ["data-object", this.objectKey(lowest.item)] } : null,
