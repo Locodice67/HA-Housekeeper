@@ -778,7 +778,8 @@ class CleanupMixin {
       { key: "name", label: "sortName", dir: "asc", sortKeys: ["id"],
         headSuffix: () => `<button type="button" class="thbtn th-alt" data-lsort="cleanup|id|asc">${this.t("sortId")}${this.lv.cleanup.sort === "id" ? ` <span aria-hidden="true">${this.lv.cleanup.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`,
         cell: r => `<div class="statcell">${this.tile(r.item.object_type, "")}<div>${this.nameCell(r.item.name, r.item.object_type === "device" ? [r.item.manufacturer, r.item.model].filter(Boolean).join(" ") || r.item.object_id : r.item.object_id)}</div></div>` },
-      { key: "status", label: "sortStatus", dir: "asc", cell: badge },
+      // Entities and devices show the reason of their finding, as the findings page names it; the quarantine its state.
+      { key: "status", label: open === "quarantine" ? "sortStatus" : "cleanupColReason", dir: "asc", cell: badge },
       { key: "since", label: "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.esc(this.formatDate(v)) : "–"; } },
       ...(all.some(r => r.finding) ? [{ key: "certainty", label: "sortCertainty", dir: "desc", cell: r => (r.finding?.confidence == null ? "–" : `${Math.round(r.finding.confidence * 100)} %`) }] : []),
       ...(recorderCol ? [{ key: "recorder", label: "cleanupColRecorder", sortable: false, cell: r => this.recorderOwn(r.item) || "–" }] : []),
