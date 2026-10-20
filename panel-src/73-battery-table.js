@@ -60,6 +60,7 @@ class BatteryTableMixin {
 
   batteryLevelCell(row, limit) {
     const { item, level, low, volt } = row;
+    if (row.unavailable) return `<span class="pill warn" title="${this.esc(this.t("batteryUnavailableSub"))}">${this.t("batteryUnavailableShort")}</span>`;
     if (volt && volt.percent !== undefined) {
       const tone = low ? (volt.percent <= limit / 2 ? "red" : "amber") : volt.percent <= limit * 2 ? "amber" : "green";
       return `<div class="lvl"><div class="bar"><i style="width:${Math.max(2, Math.min(100, volt.percent))}%;background:var(--hk-${tone})"></i></div><span class="lvlnum ${low ? "red" : ""}">${volt.percent} %<small>${this.esc(this.voltNum(level))}</small></span></div>`;

@@ -3,8 +3,10 @@ class UnusedMixin {
   batteryRows() {
     const rows = [];
     for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active" || this.batteryExcluded(o)) continue;
+      if (o.object_type !== "entity" || o.device_class !== "battery" || !["active", "unavailable"].includes(o.status) || this.batteryExcluded(o)) continue;
       const domain = o.object_id.split(".")[0];
+      // A battery that reports nothing is often an empty one: it stays in the list, without a level.
+      if (o.status === "unavailable") { if (["sensor", "binary_sensor"].includes(domain)) rows.push({ item: o, level: null, low: false, unavailable: true }); continue; }
       if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
       else if (domain === "sensor" && (!o.unit || o.unit === "%") && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
     }
@@ -269,7 +271,8 @@ class UnusedMixin {
       { name: "type", all: this.t("btAllTypes"), options: types.map(x => [x, x]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
     ] });
-    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
+    const gone = all.filter(r => r.unavailable);
+    const list = this.refine("batteries", this.batteryFilter === "low" ? low : this.batteryFilter === "unavailable" ? gone : all, {
       text: r => [this.batteryName(r.item).title, r.item.name, r.item.object_id, this.areaName(r.item), r.type].join(" "),
       filters: { area: (r, v) => this.areaName(r.item) === v, type: (r, v) => r.type === v, soon: (r, v) => (v === "soon" ? r.low || (r.days !== null && r.days <= 30) : !r.type) },
       sorts: this.batteryTableSorts(), tie: r => r.item.object_id,
@@ -278,6 +281,7 @@ class UnusedMixin {
     const chips = this.sumTiles([
       { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: need }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
+      gone.length ? { label: this.t("batteryUnavailable"), value: this.formatNumber(gone.length), sub: this.t("batteryUnavailableSub"), tone: "warn", attr: ["data-battery-filter", "unavailable"], active: this.batteryFilter === "unavailable" } : null,
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc([this.batteryName(lowest.item).title, this.areaName(lowest.item)].filter(Boolean).join(" · ")), tone: lowest.low ? "warn" : "mute", attr: ["data-object", this.objectKey(lowest.item)] } : null,
     ]);
     const unknown = this.batteryTrend?.unknown;
@@ -287,6 +291,6 @@ class UnusedMixin {
     this.ensureBatteryTrend();
     const bar2 = this.pageBar({ at: this.loadedAt("batteries"), loading: this.batteryTrendLoading, attr: "data-bt-refresh" });
     // One column: when which battery runs out (need and forecast together), the list, then the kinds that need a look.
-    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
+    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : this.batteryFilter === "unavailable" ? [this.t("batteryUnavailable")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
   }
 }

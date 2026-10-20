@@ -85,7 +85,7 @@ const TEXT = {
     cause_helper_broken: "Dieser Helfer baut auf {count} Entität/Entitäten auf, die nicht mehr existieren.", hint_helper_broken: "Den Helfer bearbeiten und die fehlenden Quellen ersetzen.",
     showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
-    batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryAll: "Alle",
+    batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryUnavailable: "Nicht verfügbar", batteryUnavailableShort: "nicht verfügbar", batteryUnavailableSub: "meldet nichts, oft ist die Batterie leer", batteryAll: "Alle",
     settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
     aboutIntro: "Housekeeper zeigt, was in deiner Home-Assistant-Installation nicht mehr passt: ausgefallene Geräte, defekte Verweise, Ungenutztes, leere Batterien und vieles mehr.", aboutIntroSafe: "Es ändert oder löscht nichts von selbst.", aboutIntroPlan: "Jede Änderung läuft über einen Plan mit Vorschau, Backup und deiner Bestätigung.", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
@@ -270,7 +270,7 @@ const TEXT = {
     cause_helper_broken: "This helper builds on {count} entity/entities that no longer exist.", hint_helper_broken: "Edit the helper and replace the missing sources.",
     showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
-    batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryAll: "All",
+    batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryUnavailable: "Unavailable", batteryUnavailableShort: "unavailable", batteryUnavailableSub: "reports nothing, often the battery is empty", batteryAll: "All",
     settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
     aboutIntro: "Housekeeper shows what no longer fits in your Home Assistant installation: failed devices, broken references, unused items, empty batteries and much more.", aboutIntroSafe: "It never changes or deletes anything by itself.", aboutIntroPlan: "Every change goes through a plan with a preview, a backup and your confirmation.", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
@@ -5243,8 +5243,10 @@ class UnusedMixin {
   batteryRows() {
     const rows = [];
     for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active" || this.batteryExcluded(o)) continue;
+      if (o.object_type !== "entity" || o.device_class !== "battery" || !["active", "unavailable"].includes(o.status) || this.batteryExcluded(o)) continue;
       const domain = o.object_id.split(".")[0];
+      // A battery that reports nothing is often an empty one: it stays in the list, without a level.
+      if (o.status === "unavailable") { if (["sensor", "binary_sensor"].includes(domain)) rows.push({ item: o, level: null, low: false, unavailable: true }); continue; }
       if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
       else if (domain === "sensor" && (!o.unit || o.unit === "%") && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
     }
@@ -5509,7 +5511,8 @@ class UnusedMixin {
       { name: "type", all: this.t("btAllTypes"), options: types.map(x => [x, x]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
     ] });
-    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
+    const gone = all.filter(r => r.unavailable);
+    const list = this.refine("batteries", this.batteryFilter === "low" ? low : this.batteryFilter === "unavailable" ? gone : all, {
       text: r => [this.batteryName(r.item).title, r.item.name, r.item.object_id, this.areaName(r.item), r.type].join(" "),
       filters: { area: (r, v) => this.areaName(r.item) === v, type: (r, v) => r.type === v, soon: (r, v) => (v === "soon" ? r.low || (r.days !== null && r.days <= 30) : !r.type) },
       sorts: this.batteryTableSorts(), tie: r => r.item.object_id,
@@ -5518,6 +5521,7 @@ class UnusedMixin {
     const chips = this.sumTiles([
       { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: need }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
+      gone.length ? { label: this.t("batteryUnavailable"), value: this.formatNumber(gone.length), sub: this.t("batteryUnavailableSub"), tone: "warn", attr: ["data-battery-filter", "unavailable"], active: this.batteryFilter === "unavailable" } : null,
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc([this.batteryName(lowest.item).title, this.areaName(lowest.item)].filter(Boolean).join(" · ")), tone: lowest.low ? "warn" : "mute", attr: ["data-object", this.objectKey(lowest.item)] } : null,
     ]);
     const unknown = this.batteryTrend?.unknown;
@@ -5527,7 +5531,7 @@ class UnusedMixin {
     this.ensureBatteryTrend();
     const bar2 = this.pageBar({ at: this.loadedAt("batteries"), loading: this.batteryTrendLoading, attr: "data-bt-refresh" });
     // One column: when which battery runs out (need and forecast together), the list, then the kinds that need a look.
-    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
+    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : this.batteryFilter === "unavailable" ? [this.t("batteryUnavailable")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
   }
 }
 
@@ -15053,6 +15057,7 @@ class BatteryTableMixin {
 
   batteryLevelCell(row, limit) {
     const { item, level, low, volt } = row;
+    if (row.unavailable) return `<span class="pill warn" title="${this.esc(this.t("batteryUnavailableSub"))}">${this.t("batteryUnavailableShort")}</span>`;
     if (volt && volt.percent !== undefined) {
       const tone = low ? (volt.percent <= limit / 2 ? "red" : "amber") : volt.percent <= limit * 2 ? "amber" : "green";
       return `<div class="lvl"><div class="bar"><i style="width:${Math.max(2, Math.min(100, volt.percent))}%;background:var(--hk-${tone})"></i></div><span class="lvlnum ${low ? "red" : ""}">${volt.percent} %<small>${this.esc(this.voltNum(level))}</small></span></div>`;

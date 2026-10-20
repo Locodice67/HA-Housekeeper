@@ -667,12 +667,12 @@ test("battery view lists the lowest levels first and counts low ones", () => {
     battery("sensor.gone", "3", { status: "unavailable" }), { ...battery("sensor.temp", "1"), device_class: "temperature" },
   ] };
   assert.equal(el.lowBatteries().length, 3);
-  assert.equal(JSON.stringify(Array.from(el.batteryRows().map(r => r.item.object_id))), JSON.stringify(["binary_sensor.flag", "sensor.low", "sensor.edge", "binary_sensor.fine", "sensor.full"]));
+  assert.equal(JSON.stringify(Array.from(el.batteryRows().map(r => r.item.object_id))), JSON.stringify(["binary_sensor.flag", "sensor.low", "sensor.edge", "binary_sensor.fine", "sensor.gone", "sensor.full"]), "an unavailable battery stays in the list");
   assert.equal(el.batteryFilter, "all", "the table opens with every battery");
   el.batteryFilter = "low";
   el.view = "batteries";
   el.render();
-  assert.ok(shadow.innerHTML.includes("sumvalue\">3<") && shadow.innerHTML.includes("sumvalue\">5<"));
+  assert.ok(shadow.innerHTML.includes("sumvalue\">3<") && shadow.innerHTML.includes("sumvalue\">6<"));
   assert.ok(!shadow.innerHTML.includes("sensor.full"));
   el.batteryFilter = "all";
   el.render();
@@ -6600,4 +6600,14 @@ test("the sizes of the last backups are columns from zero with date, size and ch
   const MB = 1024 ** 2, b = n => ({ date: `2026-10-1${n}T10:00:00+00:00`, size: (800 + n * 10) * MB, own: false, partial: false });
   const html = el.bhSizes({ backups: [b(3), b(2), b(1)], checks: [] });
   assert.ok(html.includes('class="bhaxis"') && html.includes("+10 MB") && /height:\d+%/.test(html));
+});
+
+test("a battery entity that is unavailable stays in the battery list, counted, with a tile of its own", () => {
+  const { el } = panel("en");
+  const b = (id, state, status = "active") => ({ object_type: "entity", object_id: id, name: id, status, device_class: "battery", state, unit: "%" });
+  el.data = { ...DATA, meta: { ...DATA.meta, low_battery_percent: 20 }, objects: [b("sensor.a", "50"), b("sensor.gone", "unavailable", "unavailable")] };
+  el.batteryVoltRows = () => [];
+  assert.equal(el.batteryRows().length, 2);
+  const html = el.batteriesView();
+  assert.ok(html.includes('data-battery-filter="unavailable"') && html.includes("reports nothing"));
 });
