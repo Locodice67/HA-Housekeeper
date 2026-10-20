@@ -6038,3 +6038,19 @@ test("the inventory filters by label and the labels block counts what carries ea
   assert.ok(html.includes("data-jump-lf=\"inventory|label|housekeeper_keep\""));
   assert.ok(html.includes("not created"), "the other two labels are not created yet");
 });
+
+test("the grouped findings list keeps the room of the fold arrow, offers the device mark in the menu and counts open findings grouped", () => {
+  const { el } = panel("en");
+  const device = { object_type: "device", object_id: "d1", name: "Echo", status: "active" };
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unavailable" });
+  const f = (id, extra = {}) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.9, evidence: [], impact: "high", key: `k:${id}`, ...extra });
+  el.data = { ...DATA, objects: [device, ent("sensor.a"), ent("sensor.b"), ent("sensor.c")], causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Echo", impact: "high", follower_count: 2 }],
+    findings: [f("sensor.a", { cause_id: "device_down:d1" }), f("sensor.b", { cause_id: "device_down:d1" }), f("sensor.c")] };
+  el.lvState("findings", "impact", "desc");
+  const html = el.findingsTable([{ cause: el.causeList()[0] }, el.data.findings[2]]);
+  assert.ok(html.includes("finding-fold-gap"), "a row without an arrow keeps its room");
+  assert.ok(html.includes('class="menuitem" data-watch-mark="device:d1"') && !html.includes('class="btn" data-watch-mark'), "the mark on the device is an item of the row menu");
+  assert.ok(!el.findingsTable([el.data.findings[2]]).includes("finding-fold-gap"), "without a fold no room is kept");
+  el.findingStatus = ""; el.statusCount = () => 1;
+  assert.ok(el.statusChips().includes(`Open (${el.findingTotal()})`) && el.findingTotal() === 2, "open counts the cause once, not its follow-ups");
+});

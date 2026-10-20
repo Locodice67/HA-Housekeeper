@@ -85,7 +85,7 @@ class FindingStatusMixin {
     const chip = (state, label, count) => `<button class="chip ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}">${label} (${this.formatNumber(count)})</button>`;
     const decided = FINDING_STATES.filter(s => this.statusCount(s)), fixed = this.doneCount();
     if (!decided.length && !fixed) return "";
-    return [chip("", this.t("stateOpen"), this.findingTotal() + this.followerCount()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
+    return [chip("", this.t("stateOpen"), this.findingTotal()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
   }
 
   doneDays() { return this.doneDaysSel || 30; }

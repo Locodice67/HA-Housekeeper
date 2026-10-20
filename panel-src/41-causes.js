@@ -135,7 +135,7 @@ class CausesMixin {
 
   // The menu at the end of a row: what can be decided about the finding, and where it applies the removal.
   // An open decision shows its form below the row.
-  rowMenu(f) {
+  rowMenu(f, extra = "") {
     if (!f || f.ignored) return "";
     const key = this.esc(f.key);
     const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
@@ -143,7 +143,17 @@ class CausesMixin {
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
     const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${item("mdi:bookmark-check-outline", "markKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item("mdi:clock-outline", "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item("mdi:eye-off-outline", "hideFinding", `data-decide-open="${key}"`)}${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${item("mdi:bookmark-check-outline", "markKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item("mdi:clock-outline", "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item("mdi:eye-off-outline", "hideFinding", `data-decide-open="${key}"`)}${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}${extra}</div></details>`;
+  }
+
+  // The menu of a cause: that of its own finding, or that of its object when it has none. A device whose entities lost
+  // their values offers a mark on the device, which covers all of them.
+  causeMenu(c, own) {
+    const link = `${c.object_type}:${c.object_id}`;
+    const canMark = ["device_down", "device_partial"].includes(c.kind) && this.findObject(link) && !this.findObject(link).mark;
+    const mark = canMark ? `<button type="button" class="menuitem" data-watch-mark="${this.esc(link)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("causeMarkDevice")}</button>` : "";
+    if (own && !own.ignored) return this.rowMenu(own, mark);
+    return canMark ? this.objectMenu(link) : "";
   }
 
   // The menu of an object that is not a finding (the watch lists such objects): the same shape as the menu of a finding row, with what applies to an object.
@@ -159,21 +169,19 @@ class CausesMixin {
     const total = this.causeTotal(c), link = `${c.object_type}:${c.object_id}`;
     const title = this.esc(this.t(`cause_${c.kind}`, { name: c.name })), own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
     const sub = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
-    if (!total) return `<div class="rowwrap">${this.causeBox(c)}<button class="row rel" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${title}</strong><small>${this.esc(sub)}</small></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(c.impact)}</button>${this.rowMenu(own1)}</div>${this.rowDecide(own1)}`;
+    if (!total) return `<div class="rowwrap">${this.causeBox(c)}<button class="row rel" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${title}</strong><small>${this.esc(sub)}</small></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(c.impact)}</button>${this.causeMenu(c, own1)}</div>${this.rowDecide(own1)}`;
     return this.fold(`cause_${c.id}`, { tone: "red", title, sub, pill: this.t("causeFollowers", { n: this.formatNumber(total) }) }, this.causeChildren(c), false);
   }
 
   causeChildren(c, includeOwn = true) {
     const link = `${c.object_type}:${c.object_id}`, own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
     const byId = id => this.causeList().find(x => x.id === id);
-    const own = !includeOwn || c.virtual ? "" : `<div class="rowwrap">${this.causeBox(c)}<button class="row" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(c.name)}</strong></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(own1 ? own1.impact : "")}</button>${this.rowMenu(own1)}</div>${this.rowDecide(own1)}`;
-    // A device whose entities lost their values: one mark on the device covers all of them.
-    const mark = ["device_down", "device_partial"].includes(c.kind) && !this.findObject(link)?.mark ? `<div class="pad"><button type="button" class="btn" data-watch-mark="${this.esc(link)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("causeMarkDevice")}</button></div>` : "";
+    const own = !includeOwn || c.virtual ? "" : `<div class="rowwrap">${this.causeBox(c)}<button class="row" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(c.name)}</strong></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(own1 ? own1.impact : "")}</button>${this.causeMenu(c, own1)}</div>${this.rowDecide(own1)}`;
     const below = (c.child_ids || []).map(byId).filter(Boolean).map(x => this.causeEntry(x)).join("");
     const followers = (this.data.findings || []).filter(f => f.cause_id === c.id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id));
     const pg = this.paginate(`cause_${c.id}`, followers.map(f => this.findingRow(f)));
     const parts = `${below}${pg.rows.join("")}${pg.footer}`;
-    return `${own}${mark}${parts ? `<div class="kids">${parts}</div>` : ""}`;
+    return `${own}${parts ? `<div class="kids">${parts}</div>` : ""}`;
   }
 
   // The entries at the top of the findings list, as the overview shows them: by impact, a chain once at its top.
@@ -217,7 +225,7 @@ Object.assign(TEXT.de, {
   causesTitle: "Ausfälle",
   cause_device_novalue: "Alle {n} Entitäten des Geräts haben seit {span} keinen Wert mehr. Meist ist das Gerät im Standby oder ausgeschaltet.", hint_device_novalue: "Ist das gewollt, hält ein Vermerk „Absichtlich offline“ am Gerät es fest; dann meldet Housekeeper weder das Gerät noch seine Entitäten.", devAllNoValue: "alle {n} ohne Wert", noValue: "Ohne Wert", sumRiskOutage: "Beim Entfernen (nicht der Ausfall)", cause_device_unavailable: "Alle {n} Entitäten des Geräts sind seit {span} nicht verfügbar. Das Gerät ist registriert, liefert aber keine Werte.", hint_device_unavailable: "Prüfen, ob das Gerät erreichbar ist (Strom, Netzwerk, Cloud-Verbindung), und die Integration neu laden.", devAllDown: "alle {n} nicht verfügbar", causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageDevices: "{n} Geräte",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
-  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen", cause_device_partial: "Gerät {name}: mehrere Entitäten ohne Wert", causeMarkDevice: "Gerät vermerken",
+  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen", cause_device_partial: "Gerät {name}: mehrere Entitäten ohne Wert", causeMarkDevice: "Vermerk am Gerät setzen",
   causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
   findingsFollowSub: "dazu {n} Folgen der Ausfälle", findingsOfFollow: "{total} insgesamt, davon {n} Folgen der Ausfälle", actOutages: "Ausfälle",
 });
@@ -225,7 +233,7 @@ Object.assign(TEXT.en, {
   causesTitle: "Outages",
   cause_device_novalue: "All {n} entities of the device have had no value for {span}. Usually the device is in standby or switched off.", hint_device_novalue: "If that is intended, a mark “Offline on purpose” on the device records it; then Housekeeper reports neither the device nor its entities.", devAllNoValue: "all {n} without a value", noValue: "No value", sumRiskOutage: "When removed (not the outage)", cause_device_unavailable: "All {n} entities of the device have been unavailable for {span}. The device is registered but delivers no values.", hint_device_unavailable: "Check that the device is reachable (power, network, cloud connection) and reload the integration.", devAllDown: "all {n} unavailable", causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageDevices: "{n} devices",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
-  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely", cause_device_partial: "Device {name}: several entities without a value", causeMarkDevice: "Mark the device",
+  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely", cause_device_partial: "Device {name}: several entities without a value", causeMarkDevice: "Set a mark on the device",
   causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
   findingsFollowSub: "plus {n} follow-ups of the outages", findingsOfFollow: "{total} in total, of which {n} follow-ups of the outages", actOutages: "Outages",
 });
