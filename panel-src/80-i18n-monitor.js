@@ -1,6 +1,6 @@
 // Texts for the home functions page (Hausfunktionen); merged into TEXT before the panel is registered.
 Object.assign(TEXT.de, {
-  monitor: "Hausfunktionen", monitorSubtitle: "Wichtige Funktionen und ihr zuletzt geprüfter Zustand.",
+  monitor: "Hausfunktionen", monitorListTitle: "Deine Funktionen", monitorSubtitle: "Wichtige Funktionen und ihr zuletzt geprüfter Zustand.",
   monitorAdd: "Funktion hinzufügen", monitorEdit: "Bearbeiten", monitorEditTitle: "Funktion bearbeiten", monitorDelete: "Löschen",
   monitorEmpty: "Noch keine Funktion. Lege zum Beispiel einen Wasseralarm oder eine Türklingel an.",
   monitorProblem: "Beeinträchtigt", monitorUnverified: "Unbekannt", monitorOk: "Unauffällig", monitorDisabled: "Deaktiviert",
@@ -41,7 +41,7 @@ Object.assign(TEXT.de, {
   monitorReason_unknown: "Zustand unbekannt", monitorReason_status_unknown: "Zustand nicht lesbar",
 });
 Object.assign(TEXT.en, {
-  monitor: "Home functions", monitorSubtitle: "Important functions and their last checked state.",
+  monitor: "Home functions", monitorListTitle: "Your functions", monitorSubtitle: "Important functions and their last checked state.",
   monitorAdd: "Add function", monitorEdit: "Edit", monitorEditTitle: "Edit function", monitorDelete: "Delete",
   monitorEmpty: "No function yet. Add a water alarm or a doorbell, for example.",
   monitorProblem: "Impaired", monitorUnverified: "Unknown", monitorOk: "No known fault", monitorDisabled: "Disabled",

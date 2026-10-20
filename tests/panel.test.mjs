@@ -6656,3 +6656,11 @@ test("a storage category is named in words with the system's name below, and its
   const html = el.sysCategories([{ id: "addons_data", label: "apps_data", bytes: 25 }, { id: "media", label: "media", bytes: 75 }], 100);
   assert.ok(html.includes("App data") && html.includes("apps_data") && html.includes("25 %") && html.includes("75 %"));
 });
+
+test("the home functions have tiles per state, a plain description and no second title", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, monitor: [{ id: "a", name: "Door", description: "Opens the door", state: "problem", members: [], incident_open: true }, { id: "b", name: "Water", description: "", state: "ok", members: [], incident_open: false }] };
+  const html = el.monitorView();
+  assert.ok(html.includes('data-lf-set="monitor|state|problem"') && html.includes('<small class="muted u-block">Opens the door</small>'));
+  assert.ok(!html.includes(el.t("monitorSubtitle")), "the explanation stands in the page head only");
+});

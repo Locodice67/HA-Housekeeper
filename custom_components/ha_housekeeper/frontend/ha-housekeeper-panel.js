@@ -16713,7 +16713,7 @@ class EntityStateMixin {
 
 // Texts for the home functions page (Hausfunktionen); merged into TEXT before the panel is registered.
 Object.assign(TEXT.de, {
-  monitor: "Hausfunktionen", monitorSubtitle: "Wichtige Funktionen und ihr zuletzt geprüfter Zustand.",
+  monitor: "Hausfunktionen", monitorListTitle: "Deine Funktionen", monitorSubtitle: "Wichtige Funktionen und ihr zuletzt geprüfter Zustand.",
   monitorAdd: "Funktion hinzufügen", monitorEdit: "Bearbeiten", monitorEditTitle: "Funktion bearbeiten", monitorDelete: "Löschen",
   monitorEmpty: "Noch keine Funktion. Lege zum Beispiel einen Wasseralarm oder eine Türklingel an.",
   monitorProblem: "Beeinträchtigt", monitorUnverified: "Unbekannt", monitorOk: "Unauffällig", monitorDisabled: "Deaktiviert",
@@ -16754,7 +16754,7 @@ Object.assign(TEXT.de, {
   monitorReason_unknown: "Zustand unbekannt", monitorReason_status_unknown: "Zustand nicht lesbar",
 });
 Object.assign(TEXT.en, {
-  monitor: "Home functions", monitorSubtitle: "Important functions and their last checked state.",
+  monitor: "Home functions", monitorListTitle: "Your functions", monitorSubtitle: "Important functions and their last checked state.",
   monitorAdd: "Add function", monitorEdit: "Edit", monitorEditTitle: "Edit function", monitorDelete: "Delete",
   monitorEmpty: "No function yet. Add a water alarm or a doorbell, for example.",
   monitorProblem: "Impaired", monitorUnverified: "Unknown", monitorOk: "No known fault", monitorDisabled: "Disabled",
@@ -16936,14 +16936,24 @@ class MonitorMixin {
       filterFns: { state: (item, v) => (v === "disabled" ? item.enabled === false || item.state === "disabled" : item.state === v || (v === "problem" && item.incident_open)) },
       rowAttrs: item => `data-monitor-open="${this.esc(item.id)}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"`,
       columns: [
-        { key: "name", label: "sortName", dir: "asc", cell: item => this.nameCell(item.name, item.description || "") },
+        // The description is text a person wrote, not an ID: a plain line below the name.
+        { key: "name", label: "sortName", dir: "asc", cell: item => `${this.nameCell(item.name, "")}${item.description ? `<small class="muted u-block">${this.esc(item.description)}</small>` : ""}` },
         { key: "state", label: "sysColState", dir: "asc", cell: item => `<span class="pill ${toneOf(item)}">${this.monitorState(item)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: item => this.esc(reasonOf(item) || "—") },
         { key: "problem", label: "monitorColLastProblem", dir: "desc", cell: item => (item.last_problem_at ? `${this.esc(this.agoText(item.last_problem_at))}<small class="agestamp">${this.esc(this.formatDate(item.last_problem_at))}</small>` : "—") },
         { key: "scan", label: "monitorColScan", dir: "desc", cell: item => (item.scanned_at ? this.esc(this.formatDate(item.scanned_at)) : "—") },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:home-heart"></ha-icon>${this.t("monitorEmpty")}</div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("monitor")}</h2><p>${this.t("monitorSubtitle")}</p></div><button class="btn primary" data-monitor-add><ha-icon icon="mdi:plus"></ha-icon>${this.t("monitorAdd")}</button></div>${list}</section>`;
+    // How many are in which state, as tiles that filter the list; the page head already names and explains the view.
+    const all = this.monitorFunctions(), n = test => all.filter(test).length;
+    const problem = n(i => i.enabled !== false && (i.state === "problem" || i.incident_open)), unverified = n(i => i.enabled !== false && i.state === "unverified" && !i.incident_open), ok = n(i => i.enabled !== false && i.state === "ok" && !i.incident_open), off = n(i => i.enabled === false || i.state === "disabled");
+    const tiles = all.length ? this.sumTiles([
+      { label: this.t("monitorProblem"), value: this.formatNumber(problem), tone: problem ? "red" : "ok", lf: ["monitor", "state", "problem"] },
+      { label: this.t("monitorUnverified"), value: this.formatNumber(unverified), tone: unverified ? "warn" : "ok", lf: ["monitor", "state", "unverified"] },
+      { label: this.t("monitorOk"), value: this.formatNumber(ok), tone: "ok", lf: ["monitor", "state", "ok"] },
+      off ? { label: this.t("monitorDisabled"), value: this.formatNumber(off), tone: "mute", lf: ["monitor", "state", "disabled"] } : null,
+    ]) : "";
+    return `<div class="stack">${tiles}<section class="panel"><div class="panelhead"><div><h2>${this.t("monitorListTitle")}</h2></div><button class="btn primary" data-monitor-add><ha-icon icon="mdi:plus"></ha-icon>${this.t("monitorAdd")}</button></div>${list}</section></div>`;
   }
 
   monitorDetail() {
