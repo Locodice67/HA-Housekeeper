@@ -263,7 +263,11 @@ class OverviewMixin {
     const sections = [];
     if (groups.red.length) sections.push(`${head("red", groups.red.length)}${groups.red.map(row).join("")}`);
     if (groups.open.length) sections.push(`${head("open", groups.open.length)}${groups.open.map(row).join("")}`);
-    if (groups.care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(groups.care.length) }, groups.care.map(row).join(""), !sections.length));
+    // Maintenance is a group of its own with a head like the others, folded while something else is open.
+    if (groups.care.length) {
+      const open = this.foldOpen("todo_care", !sections.length);
+      sections.push(`<h3 class="foldhd todogrp care"><button type="button" class="todofold" data-fold="todo_care" aria-expanded="${open}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.t("areaCare")} <span class="pill warn">${this.formatNumber(groups.care.length)}</span><small>${this.t("areaCareSub")}</small></button></h3>${open ? groups.care.map(row).join("") : ""}`);
+    }
     // The first entries of the findings list: a look at what matters most, not counted as rows of the headline.
     const top = entries.slice(0, LIMIT).map(entryRow);
     if (top.length) sections.push(`<h3 class="foldhd">${this.t("topFindings")} <small class="muted">${this.t("topFindingsSub")}</small></h3>${top.join("")}`);

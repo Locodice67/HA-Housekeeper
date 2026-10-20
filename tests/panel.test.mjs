@@ -6537,3 +6537,10 @@ test("the overview counts an outage chain once, at its top: a device below an in
   const items = el.todoItems(), groups = el.todoGroups(items);
   assert.ok(groups.red.some(i => i.key === "outages" && i.count === 1) && groups.open.some(i => i.key === "outages_open" && i.count === 1), "only high is urgent, medium is open");
 });
+
+test("maintenance on the to-do card is a group of its own with a head that folds it", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const html = el.todoCard();
+  if (el.todoGroups().care.length) assert.ok(html.includes('class="foldhd todogrp care"') && html.includes('data-fold="todo_care"'));
+});
