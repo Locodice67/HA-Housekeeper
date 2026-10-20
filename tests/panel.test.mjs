@@ -2816,7 +2816,8 @@ test("exposure findings fold: all closed at first, the head toggles and the open
 
 test("polish: the to-do list groups by urgency, the cleanup view has tabs, the quality list filters", () => {
   const { el } = panel("en");
-  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString() }, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }] };
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString() }, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }],
+    findings: [...DATA.findings, { key: "g1", rule_id: "automation.goal_missed", object_id: "automation.a", classification: "problem", confidence: 0.8, ignored: false }] };
   const card = el.todoCard();
   assert.ok(card.includes("todogrp red") && card.includes('data-fold="todo_care"') && !card.includes("todogrp open"), "groups without rows are left out, maintenance folds while something else is open");
   el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
@@ -3819,8 +3820,8 @@ test("automation diagnostics: quality dimensions, criteria, coverage, comparison
   assert.deepEqual(calls.at(-1).states, { "binary_sensor.door": "on" });
   const dry = el.dryResult(el.diag.dry.result);
   assert.ok(dry.includes("lock.unlock") && dry.includes("critical") && dry.includes("uncertain") && dry.includes("fires"));
-  el.data = { ...DATA, criteria_alerts: [{ entity_id: "automation.hall", ok: 1, missed: 4 }] };
-  assert.ok(el.todoItems().some(item => item.key === "criteria" && item.count === 1));
+  el.data = { ...DATA, criteria_alerts: [{ entity_id: "automation.hall", ok: 1, missed: 4 }], findings: [{ key: "g1", rule_id: "automation.goal_missed", object_id: "automation.hall", classification: "problem", confidence: 0.8, ignored: false }] };
+  assert.ok(el.todoItems().some(item => item.key === "criteria" && item.count === 1 && item.jump.includes('data-filter="automation.goal_missed"')), "a missed criterion is counted and shown as its finding");
 });
 
 test("the health card names the score and the count; the safety line shows backup, last change, undo and follow-ups; a cause folds its follow-ups", () => {
@@ -6285,4 +6286,14 @@ test("the rows of the overview land where they counted: low batteries, the quara
   el.bind();
   jump.onclick();
   assert.equal(`${el.view}|${el.batteryFilter}|${el.lv.batteries.q}`, "batteries|low|");
+});
+
+test("setbacks and due reminders land on their filtered lists, one setback on its plan", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, regressions: [{ plan_id: "p1", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], reminders: [{ id: "r", name: "Filter", state: "due" }] };
+  const item = key => el.todoItems().find(i => i.key === key);
+  assert.equal(item("followup").jump, 'data-plan-open="p1"');
+  el.data.regressions.push({ plan_id: "p2", at: "2026-10-09T10:00:00+00:00", new_count: 2 });
+  assert.ok(item("followup").jump.includes('data-jump-lf="journal|follow|regression"'));
+  assert.ok(item("reminders").jump.includes('data-jump-lf="reminders|state|due"'));
 });

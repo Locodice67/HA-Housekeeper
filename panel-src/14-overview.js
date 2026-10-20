@@ -129,12 +129,14 @@ class OverviewMixin {
     if (updates.length) items.push({ key: "updates", area: "care", tone: "warn", icon: "mdi:package-up", text: this.t(updates.length === 1 ? "todoUpdates_1" : "todoUpdates_n", { n: this.formatNumber(updates.length) }), hintText: updates.slice(0, 3).map(u => u.name).join(", ") + (updates.length > 3 ? ", …" : ""), jump: 'data-jump="maintenance" data-jump-tab="updates"' });
     const outages = this.causeList().filter(c => !this.quietCause(c));
     if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages' });
-    const regressions = (this.data.regressions || []).length;
-    if (regressions) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
+    // Each row lands on what it counts: one plan with a setback opens itself, several the journal filtered to them.
+    const regressions = this.data.regressions || [];
+    if (regressions.length) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions.length, jump: regressions.length === 1 ? `data-plan-open="${this.esc(regressions[0].plan_id)}"` : 'data-jump="journal" data-jump-tab="plans" data-jump-lf="journal|follow|regression"' });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
-    if (due) items.push({ key: "reminders", area: "care", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "reminders" });
-    const missed = (this.data.criteria_alerts || []).length;
-    if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, view: "runs" });
+    if (due) items.push({ key: "reminders", area: "care", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, jump: 'data-jump="reminders" data-jump-lf="reminders|state|due"' });
+    // A missed criterion is a finding of its automation: counted and shown as those findings, hidden ones left out.
+    const missed = (this.data.findings || []).filter(f => f.rule_id === "automation.goal_missed" && !f.ignored).length;
+    if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, jump: 'data-jump="findingsNav" data-filter="automation.goal_missed"' });
     const fresh = this.scanNewKeys().size;
     if (fresh) items.push({ key: "critical", area: "findings", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, jump: 'data-jump="findingsNav" data-filter="" data-jump-scan-new' });
     // A nearly full disk, from the light read of the overview; red from 90 % takes points off the ring like any urgent topic.
