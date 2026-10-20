@@ -918,6 +918,12 @@ class HAHousekeeperPanel extends HTMLElement {
       this.findingScanNew = el.dataset.jumpScanNew !== undefined;
       this.findingOutages = el.dataset.jumpOutages !== undefined;
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
+      // A list the jump counts starts without the search and filters kept from before; its own filter comes after.
+      for (const id of [el.dataset.jumpClear, el.dataset.jumpLf?.split("|")[0]].filter(Boolean)) {
+        if (this.lv?.[id]) { this.lv[id].q = ""; this.lv[id].f = {}; this.persistLv(id); } else (this._lfPending ||= {})[id] = {}; // not opened yet: the kept filters are not loaded
+      }
+      // The quarantine tab shows one kind at a time: the one that has something, entities first.
+      if (el.dataset.jumpTab === "quarantine") { this.quarantineType = this.quarantineRows("entity").length || !this.quarantineRows("device").length ? "entity" : "device"; this.cleanupKind = this.quarantineType === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }

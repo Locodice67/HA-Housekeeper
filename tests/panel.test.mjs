@@ -6250,3 +6250,19 @@ test("a jump from the overview into the findings starts from the plain open list
   jump.onclick();
   assert.equal(`${el.view}|${el.findingStatus}|${el.findingAfter}|${el.findingFilter}|${el.lv.findings.q}|${Object.keys(el.lv.findings.f).length}`, "findingsNav||false|unused||0");
 });
+
+test("the rows of the overview land where they counted: low batteries, the quarantine tab, the backup tab", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, quarantine: [{ object_id: "sensor.q", object_type: "entity", since: "2020-01-01T00:00:00+00:00" }] };
+  const card = el.cleanupCard();
+  assert.ok(card.includes('data-jump-battery="low" data-jump-clear="batteries"') && card.includes('data-jump-tab="quarantine" data-jump-clear="cleanup"') && card.includes('data-jump-tab="unused" data-jump-clear="unreferenced"'));
+  assert.ok(el.todoItems().find(i => i.key === "quarantine").jump.includes('data-jump-tab="quarantine" data-jump-lf="cleanup|readiness|ready"'), "ready for removal opens the quarantine filtered to the ready ones");
+  el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }] };
+  assert.ok(el.todoItems().find(i => i.key === "backup").jump.includes('data-jump-tab="backup"'));
+  el.lvState("batteries", "name", "asc").q = "old";
+  const jump = { dataset: { jump: "batteries", jumpBattery: "low", jumpClear: "batteries" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [jump] : []);
+  el.bind();
+  jump.onclick();
+  assert.equal(`${el.view}|${el.batteryFilter}|${el.lv.batteries.q}`, "batteries|low|");
+});
