@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.0 - 2026-10-20
 
 ### Neu
 
@@ -15,22 +15,78 @@
 - **Ausnahmen:** Regeln nach Integration gelten auch für den Befund „Integration nicht ladbar“, etwa für den Drucker-Eintrag, solange der Drucker aus ist (Diskussion 28).
 - **Entität „Aktivität“:** Zeigt, ob Housekeeper gerade scannt, einen Plan ausführt, auf den Start von Home Assistant wartet oder bereit ist; passt auf ein Dashboard neben den Knopf „Scan starten“.
 
-- **Vorschläge für Vermerke:** Eine Karte über der Befundliste sammelt Geräte und Entitäten, die regelmäßig ausfallen oder keinen Wert haben (etwa im Standby), je Gerät eine Zeile mit erkanntem Zeitfenster. „Übernehmen“ setzt den Vermerk „Absichtlich offline“, „Alle übernehmen“ alle nach einer Rückfrage. Zeit ohne Wert zählt dafür mit, nicht aber für die Verfügbarkeit.
+- **Vorschläge für Vermerke:** Eine Karte über der Befundliste sammelt Entitäten, die regelmäßig ausfallen oder keinen Wert haben (etwa im Standby), die eines Geräts, die gemeinsam ausfallen, in einer Zeile mit erkanntem Zeitfenster; der Vermerk geht an diese Entitäten, die übrigen bleiben überwacht. „Übernehmen“ setzt den Vermerk „Absichtlich offline“, „Alle übernehmen“ alle nach einer Rückfrage. Zeit ohne Wert zählt dafür mit, nicht aber für die Verfügbarkeit.
+
+- **Datenbankgröße bei MariaDB/MySQL und PostgreSQL:** Die Größe wird beim Server abgefragt (Issue #36); damit gibt es auch dort Wachstum pro Tag und Hinweise zur Aufbewahrung. MariaDB/MySQL liefert eine Schätzung. Neu ist außerdem die Liste der größten Tabellen; bei SQLite wird sie einmal am Tag gemessen.
+
+- **Backup-Schutz:** Wer außerhalb von Home Assistant sichert (etwa bei Docker), kann das angeben. Dann entfallen die Prüfungen zu Home-Assistant-Backups samt Problem in der Übersicht und Event; Platz, Restore-Test und Housekeepers eigene Sicherungen bleiben.
 
 ### Geändert
 
+- **Betrieb:**
+  - Automationsläufe: Zahl und Hinweis eines Befunds stehen getrennt; „bei einem Eintrag“ statt „bei 1 Einträgen“.
+  - Zuverlässigkeit: Zustände in Worten („Einrichtung wird wiederholt“); „Alle“ zählt alle instabilen Entitäten und die Liste sagt, dass sie die auffälligsten zeigt; „Meist um 03–05 Uhr“ statt „03–05“; die Tabelle der Integrationen passt ins Fenster.
+  - Speicher & System: Kategorien mit Namen in Worten und Anteil am belegten Platz.
+  - Hausfunktionen: Kacheln je Zustand, Beschreibung als normaler Text, Titel nur einmal.
+  - Eine Kachel „Alle“ ist nirgends mehr als Filter markiert; Zeilen, die sich nicht auswählen lassen, sagen warum.
+- **Pflegen:**
+  - Backups: „vor 3 Tagen“ statt „3 Tagen“; ein eingestelltes externes Ziel, das das neueste Backup nicht erreicht hat, wird genannt; „Zu prüfen“ nennt Probleme und Hinweise; die Größen der letzten Backups sind ein Säulendiagramm mit Tooltip.
+  - Wartung: Kacheln ohne offene Punkte sagen „nichts zu tun“; der Reiter heißt „Ziele“.
+  - Batterien: nicht verfügbare Batterien stehen in der Liste und zählen mit; schwache stehen in der Prognose in einem eigenen aufklappbaren Bereich „Jetzt niedrig“; „jetzt“ statt „unter Grenze“; „Typ fehlt“ ist überall ein Knopf.
+  - Richtlinien: leere Spalten verschwinden, „Ausgeblendete zeigen“ steht unter der Liste, nicht wählbare Zeilen sagen warum.
+- **Bereinigen:**
+  - Die Seite heißt wie im Menü „Bereinigen“; der Planknopf heißt überall „Vorschau erstellen“, Spalte und Filter der Gründe „Grund“.
+  - Der Text zu verwaisten Statistiken beschreibt, was der Reiter kann, und verweist auf Reparieren → Zähler wechseln.
+  - Auswahl-Knöpfe erscheinen mit dem ersten Haken; Datumsangaben wie auf der Befundseite; eine Statistik im Energie-Dashboard sagt, warum sie nicht wählbar ist.
+  - Am Handy sind die Zeilen kompakt und die Bedienleiste aller Listen geordnet.
+- **Übersicht:**
+  - „Wartung“ steht in der Aufgabenliste als eigene Gruppe, abgesetzt von „Dringend“.
+  - Die wichtigsten Befunde nennen, was sie sind und seit wann, mit dem Schweregrad als Pille.
+  - In „Hinweise“ sind Zeilen mit 0 zurückgenommen; „Ungenutzt“ heißt „Ungenutzte Automation“, „Nicht verwendet“ heißt „Ohne Verweis“.
+  - Der Hinweis zu den Stufen der Ausfälle bricht um, statt abgeschnitten zu werden.
+- **Ausfälle in der Übersicht:** Dringend sind nur noch Ausfälle der Stufe hoch; die übrigen stehen als „Weitere Ausfälle“ unter Offen. Eine Ausfallkette zählt einmal, ein Gerät unter einer ausgefallenen Integration nicht zusätzlich.
+- **Recorder → Datenbank:** Die größten Tabellen stehen als sortierbare Liste mit Klartextnamen und Anteil; jeder Befund der Datenbank ist ein Faltbereich mit Stufe (bei fehlenden Stunden mit Zahl), darin Text, „Was tun?“ und die betroffenen Sensoren; „Datenbank prüfen“ steht in der Kopfleiste, das Ergebnis als Kachel „Integrität“.
+- **Befundseite:**
+  - Die Kacheln zählen immer die offenen Befunde, unabhängig vom gewählten Status, und alle neun Gründe stehen immer da (ohne offene Befunde als stille 0). Ein Klick auf eine Kachel zeigt die offene Liste; ist ein anderer Status gewählt, sagt ein Hinweis über der Liste das.
+  - „Alle Befunde“ steht links über beiden Zeilen und nennt die Folgen von Ausfällen in der Kachel; Störungen und Aufräumen stehen in je einer Zeile, alle Kacheln gleich hoch. Die Gruppenköpfe sind als Filter erkennbar.
+  - In der Liste steht ein Objekt mit nur einem Befund als eine Zeile, die Spalte „Befund“ nennt den Grund im Klartext vor der Regel, und der Kopf eines Objekts wählt alle seine Befunde aus.
+  - Am Handy sind die Zeilen kompakt.
+  - Die gruppierte Liste blättert nach den angezeigten Zeilen, auch wenn Köpfe aufgeklappt sind; die Gruppen unter „Erledigt“ sind anfangs eingeklappt.
+- **Kacheln der Übersicht:**
+  - Neben dem Ring stehen „Geprüfte Objekte“, „Befunde“, „Störungen“ und „Aufräumen“, wie auf der Befundseite. „Befunde“ zählt alle offenen Befunde, „Nicht verfügbar“ entfällt.
+  - Auf der Befundseite filtern die Überschriften „Störungen“ und „Aufräumen“ die Liste auf die ganze Gruppe; die beiden Kacheln der Übersicht führen dorthin.
+  - Die Verlaufslinien zeigen höchstens die letzten 7 Tage, und Zahl und Linie zählen jeweils dasselbe.
+  - Titel, Zahl und Linie stehen in allen Kacheln einer Reihe auf gleicher Höhe, auch wenn eine Kachel mehr Text hat.
+- **Zustand des Hauses:**
+  - Der Ring zeigt einen Zustand in Punkten von 100 statt eines Anteils in Prozent. Jedes Objekt mit Befund zieht einmal ab, mit seiner schlimmsten Stufe: hoch 2, mittel 1, gering 0,5, Info nichts. Auch die Folgen eines Ausfalls zählen als eigene Objekte.
+  - Die Farbe kommt nicht mehr aus der Zahl, sondern aus dem, was offen ist: rot bei dringenden Themen, gelb bei anderen offenen Themen oder Objekten mit hoher oder mittlerer Auswirkung, sonst grün. Ein Etikett neben dem Ring sagt es in Worten.
+  - Die Kachel „Geprüfte Objekte“ zeigt dieselbe Grundzahl wie die Rechnung, und „X von Y mit Befund“ passt zur Summe ihrer Zeilen.
+  - Die Verlaufslinie springt bei der Umstellung einmal nach unten, weil ältere Tage noch mit den alten Gewichten gerechnet sind.
+
 - **Ausfälle im Standby:**
-  - Ein Gerät, dessen Entitäten alle keinen Wert mehr haben (etwa im Standby), gilt als „Gerät ganz ausgefallen“, nicht mehr nur bei „nicht verfügbar“. Seine Entitäten stehen als Folgen darunter, ein Vermerk am Gerät blendet alle aus. Entitäten, die nie einen Wert hatten, und deaktivierte zählen nicht mit.
-  - Hat ein Gerät nur einige Entitäten ohne Wert (ab zwei), stehen sie in der Ansicht „Gruppiert“ als eine Zeile unter dem Gerät. Dort und beim ganz ausgefallenen Gerät setzt „Gerät vermerken“ einen Vermerk für alle.
-  - Die Sammelaktion „Vermerk setzen“ kann den Vermerk am Gerät statt an jeder einzelnen Entität setzen.
+  - Ein Gerät, dessen Entitäten alle keinen Wert mehr haben (etwa im Standby), gilt als „Gerät ganz ausgefallen“, nicht mehr nur bei „nicht verfügbar“, auch bei nur einer Entität. Seine Entitäten stehen als Folgen darunter, ein Vermerk am Gerät blendet alle aus. Deaktivierte, verwaiste und Entitäten, die nie einen Wert hatten, zählen nicht mit.
+  - Den Vermerk am ganzen Gerät gibt es nur, wenn es ganz ausgefallen ist, auch in der Sammelaktion „Vermerk setzen“. Fallen nur einige Entitäten aus, gehört der Vermerk an diese (Forum).
+  - Ein Gerät, das wegen seiner Integration ausgefallen ist, zählt als Folge, nicht als zweites Problem. Ein Vermerk an einer Integration oder App blendet, solange sie ausgefallen ist, auch die Ausfälle ihrer Geräte und Entitäten aus.
+- **Befundliste nach Objekten:**
+  - In der Ansicht „Gruppiert“ steht jeder Befund unter seinem Objekt: Entitäten mit Gerät unter dem Gerät, alles andere unter sich selbst, schon ab einem Befund, mit allen Arten von Befunden darunter. Ursachen stehen darüber (App › Integration › Gerät, fehlendes Ziel › Automation).
+  - Der Kopf zeigt Zusammenfassung, höchste Schwere, Sicherheit und Alter als Spanne sowie einen Vermerk; die Gruppen bleiben bei Filter und Suche stehen. „Einzeln“ zeigt jeden Befund als eigene Zeile.
+  - Die Leiste trennt Status, Darstellung und „Alle auf-/zuklappen“; „Nur Ursachen“ ist ein Typ-Filter, die Zeile über der Tabelle nennt „N Befunde an M Objekten“.
 - **Oberfläche:**
   - In der Ursachendiagnose öffnen Integration, Gerät und funktionierende Entität per Klick ihre Seite.
   - In der Kopfzeile der Detailseite sind Integration, Gerät und Bereich verlinkt.
   - Das Zeilenmenü eines Duplikat-Befunds öffnet die funktionierende Entität.
   - Im Reiter „Aktionen“ steht der Schritt, der einen Befund löst, als erster Knopf in dessen Zeile (zum Beispiel „Entfernen planen“ oder „Durch funktionierende Entität ersetzen“).
-  - Der Zustand zählt auch die Folgen eines Ausfalls als eigene Objekte mit ihrer eigenen Stufe, damit der Anteil ehrlich ist; vorher stand eine Ursache für alle ihre Folgen.
+  - Befundliste: Zeilen mit und ohne Aufklapp-Pfeil stehen bündig; „Vermerk am Gerät setzen“ steht im Menü ⋮ der Ursache statt als eigener Knopf; „Offen“ und die Verlaufslinie der Übersicht zählen gruppiert wie die Kacheln; im Zeilenmenü heißt es „Logbuch-Eintrag hinzufügen“, abgesetzt von den Entscheidungen.
+  - Vorschläge für Vermerke: eine Kopfleiste mit Summe und „Alle vermerken“, je Zeile ein kleiner Knopf „Vermerken“ und ein ✕ für „Nicht mehr fragen“, kürzerer Text.
+  - Die Zeile unter der Navigation zeigt den KI-Zugriff als eigenen Punkt statt eines eigenen Streifens, fasst letzten Plan und Rückgängig in einem Punkt zusammen, stellt Rotes und Gelbes nach vorn und benennt Schutzmodus („Standard“) und Scan („Scan vollständig“) klarer.
   - Die Kacheln der Befundliste zeigen als große Zahl die gruppierte Anzahl (Folgen eines Ausfalls hängen an dessen Ursache), darunter die Gesamtzahl samt Folgen; die Verlaufslinie rechnet ebenso.
   - Der erwartete Endzustand eines Plans sagt, wann der Recorder verbliebene Zustände löscht und dass Langzeitstatistik bleibt (oder dass alles bleibt, wenn die automatische Bereinigung aus ist); „1 Entität“ statt „1 Entitäten (0 Geräte)“.
+
+- **Home-Assistant-Qualitätsskala:**
+  - Jede Option im Optionsdialog erklärt, was sie bewirkt.
+  - Die Sensoren der Hausfunktionen und die Event-Entität haben übersetzte Namen, die Ereignistypen übersetzte Zustände.
+  - Das Benutzerhandbuch beschreibt das Entfernen von Housekeeper und die Fehlersuche und hat Beispiel-Automationen.
+  - Das Benutzerhandbuch nennt beim Scanintervall in den Optionen die richtige Vorgabe von 6 Stunden.
 
 ### Behoben
 
@@ -42,11 +98,33 @@
 - **Knopf „Scan starten“:** Er gilt während eines Scans nicht mehr als „nicht verfügbar“, darum meldet Housekeeper ihn nicht mehr selbst als flatternd (Issue 35).
 - **Oberfläche:**
   - Das Menü am Zeilenende (⋮) wird nicht mehr am Rand der Karte abgeschnitten (Issue 32).
+  - Übersicht: Die Kachel „System“ verlinkte mit „Details im Recorder“, führt aber zu Speicher & System; beide Kacheln heißen jetzt nur „Details“.
+  - Übersicht: Die Berechnung des Zustands öffnet „Info“ unter dem Ring statt „Wie kommt das zustande?“ in der Textzeile.
+  - Sprung aus „Ausfälle“ oder „Weitere Ausfälle“ der Übersicht: Der Filter heißt wie die Zeile, und über der Liste steht „19 Ausfälle mit 496 Befunden“, gezählt wie in der Übersicht, statt aller Objekte darunter.
+  - Einzahl bei Ausfällen: „1 Folge“, „erklärt 1 weiteren Befund“, „1 Entität betroffen“.
+  - Gruppierte Befundliste: Alle Köpfe starten eingeklappt, auch wenn ein Filter nur wenige Befunde übrig lässt.
+  - Gruppierte Befundliste: Die Seiten zählen die obersten Köpfe; ein aufgeklappter Kopf zeigt alles darunter auf derselben Seite. Alle Listen bieten zusätzlich 250 pro Seite.
+  - Vorschläge für Vermerke: eine Liste wie die übrigen, mit Spalten, Sortierung, Kästchen und Auswahlleiste („Vermerken“, „Nicht mehr fragen“); einzeln über das Menü ⋮ statt Knopf und ✕ je Zeile.
+  - Vorfälle nach Updates: eine Liste mit Ereignis, Zeitpunkt, Befunden und Beobachtung; eine Zeile klappt ihre Details auf. Die Befunde eines Vorfalls stehen nicht mehr doppelt in der Karte, ein Knopf filtert die Befundliste darauf. Die Beobachtung zeigt ihre Objekte als kleine Tabellen.
+  - Kacheln von Wartung und Bereinigen: je eine Statuspille unter dem Titel, mit Einheit („2 Updates“, „5 Entitäten“) oder grün „Nichts zu tun“; keine Zusatzzeile mehr unter dem Hinweis.
+  - Nach dem Setzen eines Status (bekannt, zurückgestellt, ausgeblendet, wieder einblenden) lädt die Befundliste neu; ein als bekannt markierter Ausfall verschwindet sofort aus der Liste.
+  - Das Menü ⋮ eines Befunds ist für offene und entschiedene Befunde gleich; nur oben steht je nach Stand „Status setzen …“ oder „Wieder einblenden“ und „Status ändern …“ (bzw. der Weg zu Vermerk, Regel oder Label). Ein geöffnetes Menü schließt andere offene.
+  - Status für einen Ausfall: Das Formular sagt, dass die Entitäten dahinter dann einzeln zählen, und bietet stattdessen einen Vermerk an.
+  - Vermerke: Ein Objekt, das seit 30 Tagen ohne Ausfall läuft, fragt in der Liste der Vermerke „noch nötig?“ (mit Filter).
+  - Status, deren Befund gerade nicht da ist (etwa weil das Gerät wieder läuft), stehen als „ruhend“ in der Liste der Status, mit „zuletzt am …“, „noch nötig?“ nach 30 Tagen und „Objekt gibt es nicht mehr“; die Liste ist eine Tabelle mit Auswahl und „Entscheidung entfernen“.
+  - Erinnerungen: „Erledigt“ bleibt in der Zeile, „Ändern“ und „Löschen“ stehen im Menü ⋮; mehrere lassen sich über Kästchen auf einmal als erledigt markieren.
+  - Batterien, vermutlich keine Wechselbatterie: Vorschläge werden über Kästchen ausgewählt und mit „Übernehmen (n)“ bestätigt statt „Alle bestätigen“ mit Rückfrageleiste; „Doch Batterie“ steht im Menü ⋮.
+  - Detailseite, Verlauf: Die Pläne stehen als kleine Tabelle wie im Journal (Datum, Status, Ergebnis, Nachkontrolle); ein Klick auf die Zeile öffnet den Plan.
+  - Hausmonitor, Formular: Die Typauswahl der Suchtreffer sind Chips wie die Status-Chips der Befunde statt Knöpfen.
+  - Einstellungen → Labels: Kopier-Symbol direkt am Namen, Zählung in Worten („an 1 Gerät, 5 Entitäten“), Anleitung zum Anlegen nur einmal, Wirkungen in ruhigerer Schrift mit eingerückten Umbrüchen.
+  - Sprung aus „Neue kritische Befunde“: Der Filter heißt wie die Zeile, und über der Liste steht „n Befunde an m Objekten“ statt „n von allen offenen Befunden“; ebenso beim Filter „Nach Updates“. „Anmeldung nötig“ nennt in der Übersicht keine Folgen mehr, die der Sprung nicht zeigt.
   - „In HA öffnen“ führt bei Szenen ohne Editor zur Geräteseite; „Entität öffnen“ gibt es auch für Szenen.
   - Bei einem ausgefallenen Gerät zeigt die Ursachendiagnose, dass alle Entitäten nicht verfügbar sind, statt „aktiv und stellt Entitäten bereit“; die Risiko-Zeile sagt, dass sie das Entfernen meint.
+  - Recorder → Datenbank: Die Seite lädt auch beim direkten Aufruf oder Neuladen; der Export ist sofort da; das Wachstum steht mit Vorzeichen und seinem Anteil an der Größe; Sensoren in den Befunden öffnen ihre Seite; „Was tun?“ ist eingeklappt; der Prüfstatus nennt gefundene Schäden; die Kacheln oben werden am Handy nicht mehr abgeschnitten.
 - **Backup-Schutz:**
   - Backups anderer Werkzeuge (zum Beispiel Google Drive Backup) stehen in der Tabelle als „Anderes Werkzeug“ statt „Manuell“, denn Home Assistant weiß nicht, ob sie geplant waren.
   - Die Ziele eines Backups stehen mit lesbaren Namen („Lokal“, „Netzwerkspeicher: …“, „Google Drive“) als Pillen statt als Kennungen; das Konto fällt weg.
+  - Die Sicherung, die Housekeeper vor einem Eingriff anlegt, zählt nicht mehr als „Letztes Backup“ und nicht für Ziele, Größe oder Aufbewahrung, auch wenn sie die Datenbank enthält.
 
 ### English
 
@@ -63,22 +141,78 @@
 - **Exceptions:** Rules by integration also cover the "integration cannot be loaded" finding, such as a printer's entry while the printer is off (discussion 28).
 - **Entity “Activity”:** Shows whether Housekeeper is scanning, running a plan, waiting for Home Assistant to start or idle; fits on a dashboard next to the “Start scan” button.
 
-- **Suggested marks:** A card above the findings list gathers devices and entities that fail or lose their value regularly (in standby, say), one row per device with the detected time window. “Accept” sets the mark “Offline on purpose”, “Accept all” sets them all after a question. Time without a value counts for this, but not for the availability.
+- **Suggested marks:** A card above the findings list gathers entities that fail or lose their value regularly (in standby, say), those of one device that fail together in one row with the detected time window; the mark goes on these entities, the others stay watched. “Accept” sets the mark “Offline on purpose”, “Accept all” sets them all after a question. Time without a value counts for this, but not for the availability.
+
+- **Database size on MariaDB/MySQL and PostgreSQL:** The size is asked from the server (issue #36), so growth per day and the retention hints work there too. MariaDB/MySQL reports an estimate. A new list shows the largest tables; on SQLite it is measured once a day.
+
+- **Backup protection:** If you back up outside Home Assistant (for example with Docker), you can say so. The checks of Home Assistant backups, the problem in the overview and the event are then left out; space, the restore test and Housekeeper's own backups stay.
 
 #### Changed
 
+- **Operation:**
+  - Automation runs: figure and hint of a finding stand apart; “for one entry” instead of “for 1 entries”.
+  - Reliability: states in words (“Retrying setup”); “All” counts every unstable entity and the list says it shows the most noticeable; “Mostly at 03–05 h” instead of “03–05”; the integrations table fits the window.
+  - Storage & system: categories named in words with their share of the space in use.
+  - Home functions: tiles per state, the description as plain text, the title only once.
+  - An “All” tile is no longer marked as a filter anywhere; rows that cannot be picked say why.
+- **Maintain:**
+  - Backups: “3 days ago” instead of “3 days”; a remote target that the newest backup did not reach is named; “To check” names problems and hints; the sizes of the last backups are a column chart with tooltips.
+  - Maintenance: tiles with nothing open say “nothing to do”; the tab is called “Goals”.
+  - Batteries: unavailable batteries are listed and counted; low ones have a fold of their own, “Low now”, in the forecast; “now” instead of “below limit”; “Type missing” is a button everywhere.
+  - Policies: empty columns go away, “Show hidden” sits below the list, rows that cannot be ticked say why.
+- **Clean up:**
+  - The page is called “Clean up” like its menu entry; the plan button reads “Create preview” everywhere, column and filter of the reasons “Reason”.
+  - The text on orphaned statistics says what the tab does and points to Repair → Replace a meter.
+  - Selection buttons appear with the first tick; dates as on the findings page; a statistic in the Energy dashboard says why it cannot be picked.
+  - On a phone the rows are compact and the bar of every list is ordered.
+- **Overview:**
+  - “Maintenance” is a group of its own on the to-do card, set apart from “Urgent”.
+  - The most important findings say what they are and since when, with the level as a chip.
+  - In “Hints”, rows with 0 are quiet; “Unused” reads “Unused automation”, “Not used” reads “Not referenced”.
+  - The hint on outage levels wraps instead of being cut off.
+- **Outages on the overview:** Only outages at the level high are urgent; the others stand as “Further outages” among the open rows. An outage chain counts once, a device below an integration that is down not on top.
+- **Recorder → Database:** The largest tables are a sortable list with names in words and their share; every database finding is a fold with its level (with a count for missing hours), holding the text, “What to do?” and the affected sensors; “Check database” sits in the page bar, its result as an “Integrity” tile.
+- **Findings page:**
+  - The tiles always count the open findings, whatever status is chosen, and all nine reasons always stand there (a quiet 0 without open findings). A click on a tile shows the open list; with another status chosen, a note above the list says so.
+  - “All findings” stands on the left over both rows and names the follow-ups of outages inside the tile; faults and tidying up have a row each, all tiles of the same height. The group heads read as filters.
+  - In the list, an object with a single finding is one row, the “Finding” column names the reason in words before the rule, and the head of an object selects all its findings.
+  - On a phone the rows are compact.
+  - The grouped list pages by the rows it shows, also with heads open; the groups under “Done” start folded.
+- **Overview tiles:**
+  - Next to the ring stand “Checked objects”, “Findings”, “Faults” and “Tidying up”, as on the findings page. “Findings” counts every open finding; “Unavailable” is gone.
+  - On the findings page, the heads “Faults” and “Tidying up” filter the list to the whole group; the two overview tiles lead there.
+  - The curves show at most the last 7 days, and number and curve always count the same.
+  - Title, number and curve sit on the same lines in every tile of a row, also when one tile has more text.
+- **State of the house:**
+  - The ring shows a state in points out of 100 instead of a share in percent. Every object with a finding takes off once, by its worst level: high 2, medium 1, low 0.5, info nothing. The follow-ups of an outage count as objects of their own too.
+  - The colour no longer comes from the number but from what is open: red for urgent topics, yellow for other open topics or objects with high or medium impact, green otherwise. A label next to the ring says it in words.
+  - The “Checked objects” tile shows the same base as the calculation, and “X of Y with a finding” matches the sum of its rows.
+  - The history line drops once at the switch, because older days are still calculated with the old weights.
+
 - **Outages in standby:**
-  - A device whose entities all lost their value (in standby, say) counts as "Device is down completely", no longer only when they are unavailable. Its entities are listed as follow-ups below it, and one mark on the device hides them all. Entities that never had a value and disabled ones do not count.
-  - When only some entities of a device have no value (two or more), the “Grouped” view shows them as one row below the device. There, and for a device that is down completely, “Mark the device” sets one mark for all of them.
-  - The bulk action “Set a mark” can set the mark on the device instead of on each entity.
+  - A device whose entities all lost their value (in standby, say) counts as "Device is down completely", no longer only when they are unavailable, with a single entity too. Its entities are listed as follow-ups below it, and one mark on the device hides them all. Disabled and orphaned entities and those that never had a value do not count.
+  - A mark on the whole device is offered only when it is down completely, in the bulk action “Set a mark” too. When only some entities fail, the mark belongs on those (forum).
+  - A device that is down because its integration is counts as a follow-up, not as a second problem. A mark on an integration or app also hides the outages of its devices and entities while it is down.
+- **Findings list by object:**
+  - In the “Grouped” view every finding stands below its object: entities with a device below the device, everything else below itself, from one finding on, with all kinds of findings below it. Causes stand above (app › integration › device, missing target › automation).
+  - The head shows a summary, the highest severity, certainty and age as a span, and a mark; the groups stay with filters and search. “One by one” shows every finding as a row of its own.
+  - The bar keeps status, view and “Open/close all” apart; “Causes only” is a type filter, and the line above the table says “N findings on M objects”.
 - **Interface:**
   - In the cause diagnosis, the integration, device and working entity open their page on click.
   - In the header of the detail page, integration, device and area are links.
   - The row menu of a duplicate finding opens the working entity.
   - In the "Actions" tab, the step that resolves a finding is the first button in that finding's row (for example "Plan to remove" or "Replace by the working entity").
-  - The state counts the follow-ups of an outage as objects of their own with their own level, so the share is honest; before, a cause stood for all its follow-ups.
+  - Findings list: rows with and without a fold arrow line up; “Set a mark on the device” is in the ⋮ menu of the cause instead of a button of its own; “Open” and the history line of the overview count grouped like the tiles; the row menu says “Add a logbook entry”, set apart from the decisions.
+  - Suggested marks: a bar with the sum and “Mark all”, per row a small “Mark” button and a ✕ for “Do not ask again”, shorter text.
+  - The line under the navigation shows AI access as an item of its own instead of a separate strip, puts the last plan and undo into one item, moves red and yellow to the front and names the protection mode ("standard") and the scan ("Scan complete") more clearly.
   - The tiles of the findings list show the grouped count as the big number (follow-ups of an outage hang on their cause) and the total with the follow-ups below it; the history line counts the same way.
   - The expected end state of a plan says when the recorder deletes the states left behind and that long-term statistics stay (or that everything stays when the automatic purge is off); "1 entity" instead of "1 entities (0 devices)".
+
+- **Home Assistant quality scale:**
+  - Every option in the options dialog explains what it does.
+  - The home function sensors and the event entity have translated names, the event types translated states.
+  - The user guide describes how to remove Housekeeper and how to troubleshoot and has example automations.
+  - The user guide gives the correct default of 6 hours for the scan interval in the options.
 
 #### Fixed
 
@@ -90,10 +224,32 @@
 - **“Start scan” button:** It is no longer “unavailable” during a scan, so Housekeeper no longer reports it as flapping itself (issue 35).
 - **Interface:**
   - The row menu (⋮) is no longer cut off at the edge of the card (issue 32).
+  - Overview: the “System” tile linked with “Details in Recorder” but leads to Storage & system; both tiles now just say “Details”.
+  - Overview: the calculation of the state opens from “Info” below the ring instead of “How does this come about?” in the text line.
+  - Jump from “Outages” or “Further outages” of the overview: the filter is named after the row, and the list head says “19 outages with 496 findings”, counted as in the overview, instead of every object below.
+  - Singular for outages: “1 follow-up”, “explains 1 more finding”, “1 entity affected”.
+  - Grouped findings list: every head starts folded, also when a filter leaves only a few findings.
+  - Grouped findings list: pages count the top-level heads; an open head shows everything below it on the same page. Every list also offers 250 per page.
+  - Suggested marks: a list like the others, with columns, sorting, boxes and a selection bar (“Mark”, “Do not ask again”); one row alone through the ⋮ menu instead of a button and ✕ per row.
+  - Incidents after updates: a list with event, time, findings and watch; a row unfolds its details. The findings of an incident no longer stand twice in the card, a button narrows the findings list to them. The watch shows its objects as small tables.
+  - Tiles of Maintenance and Clean up: one status pill under the title each, with its noun (“2 updates”, “5 entities”) or a green “Nothing to do”; no extra line below the hint.
+  - After setting a status (known, snoozed, hidden, show again) the findings list loads again; an outage marked as known leaves the list at once.
+  - The ⋮ menu of a finding is the same for open and decided findings; only its top reads “Set status …” or “Show again” and “Change status …” (or the way to the mark, rule or label). Opening a menu closes any other open one.
+  - Status for an outage: the form says that the entities behind it then count one by one and offers a mark instead.
+  - Marks: an object that has run for 30 days without an outage asks “still needed?” in the list of marks (with a filter).
+  - Statuses whose finding is away right now (for example because the device runs again) show as “resting” in the list of statuses, with “last seen …”, “still needed?” after 30 days and “object is gone”; the list is a table with a selection and “Remove decision”.
+  - Reminders: “Done” stays in the row, “Edit” and “Delete” sit in the ⋮ menu; several can be marked as done at once through boxes.
+  - Batteries, probably not replaceable: proposals are picked with boxes and confirmed with “Confirm (n)” instead of “Confirm all” with a question bar; “It is a battery” sits in the ⋮ menu.
+  - Detail page, History: the plans are a small table like the Journal (date, state, result, follow-up); a click on a row opens the plan.
+  - Home monitor, form: the type of the search results is a row of chips like the status chips of the findings instead of buttons.
+  - Settings → Labels: copy icon right at the name, counts in words (“on 1 device, 5 entities”), the how-to once, effects in calmer type with indented wraps.
+  - Jump from “New critical findings”: the filter is named after the row, and the list head says “n findings on m objects” instead of “n of all open findings”; the same for the filter “After updates”. “Login needed” no longer names follow-ups on the overview that its jump does not show.
   - "Open in HA" leads to the device page for scenes without an editor; "Open entity" is offered for scenes too.
   - For a device that is down, the diagnosis shows that all its entities are unavailable instead of “active and provides entities”; the risk row says it is about removing.
+  - Recorder → Database: the page loads when opened directly or reloaded too; the export is there at once; growth shows its sign and its share of the size; series in the findings open their page; “What to do?” is folded; the check status names damage it found; the tiles at the top are no longer cut off on a phone.
 - **Backup protection:**
   - Backups made by other tools (for example Google Drive Backup) show as “Other tool” instead of “Manual” in the table, because Home Assistant cannot tell whether they were scheduled.
+  - The backup Housekeeper makes before a change no longer counts as the “Latest backup” or for targets, size or retention, even when it holds the database.
   - The targets of a backup show readable names (“Local”, “Network storage: …”, “Google Drive”) as pills instead of IDs; the account part is left out.
 
 ## 1.10.2 - 2026-10-19
