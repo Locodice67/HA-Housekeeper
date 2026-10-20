@@ -5944,7 +5944,8 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   el.dbHealth = { ...DBH, computed_at: Date.now() / 1000 - 600, age_seconds: 600 };
   assert.equal((el.dbCard().match(/As of/g) || []).length, 1, "an older result has one time only, in the bar");
   el.dbHealth = { ...DBH, integrity: { state: "damaged", at: "2026-10-01T10:00:00+00:00" } };
-  assert.ok(el.dbCard().includes("found damage (finding above)"));
+  html = el.dbCard();
+  assert.ok(html.includes("Integrity") && html.includes("Damaged") && html.includes("data-db-check"), "the check is a tile, its button in the page bar");
   el.dbHealth = { ...DBH, growth: { known: true, per_day: -50 * 1024 ** 2 } };
   assert.ok(el.dbCard().includes("−50 MB"), "a database that shrank shows minus, not +0 B");
   el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };
@@ -6519,14 +6520,14 @@ test("a grouped findings list pages the rows it shows, keeps a group whole, and 
   assert.ok(head > 0 && second.indexOf('data-fsel="big-', head) > head, "its head stands again on top of the second page, its rows below");
 });
 
-test("the details of missing hours stand folded in the finding, above the largest tables", () => {
+test("a database finding is a fold with its level and count; the periods and sensors of missing hours are inside, closed at first", () => {
   const { el } = panel("en");
   el.data = DATA; el._dbRequested = true;
   el.dbHealth = { ...DBH, tables: [{ name: "states", bytes: 1024 }], findings: [{ kind: "missing_hours", level: "hint", series_total: 2, own_series: 2, gap_hours: 0, gaps_total: 0, series: [{ statistic_id: "sensor.c", name: "C", own: 9, missing: 9 }] }] };
   let html = el.dbCard();
-  assert.ok(html.includes('data-fold-details="db_extra_missing_hours"') && html.indexOf("Affected sensors (2)") < html.indexOf("Largest tables"), "the fold stands in the finding");
+  assert.ok(html.includes('data-fold="db_missing_hours"') && html.indexOf("Missing hours in statistics") < html.indexOf("Largest tables"), "the finding is a fold above the tables");
   assert.ok(!html.includes("sensor.c"), "closed at first");
-  el.folds = { db_extra_missing_hours: true };
+  el.folds = { db_missing_hours: true };
   assert.ok(el.dbCard().includes("sensor.c"));
 });
 

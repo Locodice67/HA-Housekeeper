@@ -101,28 +101,23 @@ class DbHealthMixin {
     return `<div class="dbextra">${gaps ? `<div class="sectionlabel">${this.t("dbGapsTitle")}</div>${gaps}` : ""}<div class="sectionlabel">${this.t("dbSeriesTitle", { n: this.formatNumber(f.series_total) })}</div>${table}${more}</div>`;
   }
 
-  // What lies behind a finding (the periods and sensors of missing hours), folded in its row like What to do?; the state
-  // is kept, so the tables inside can sort and page.
-  dbExtraFold(f) {
-    if (f.kind !== "missing_hours" || !(f.gaps?.length || f.series?.length)) return "";
-    const id = `db_extra_${f.kind}`, open = this.foldOpen(id, false);
-    return `<details class="rowdetails" data-fold-details="${this.esc(id)}"${open ? " open" : ""}><summary>${this.t("dbExtraSummary", { n: this.formatNumber(f.series_total ?? f.series?.length ?? 0) })}</summary>${open ? this.dbFindingExtra(f) : ""}</details>`;
-  }
-
-  // What to do stays folded: the finding reads first, the advice is one click away.
+  // A finding as a fold like the others of the integration: kind, short text and level in the head; the text with its
+  // links, what to do and the periods and sensors of missing hours inside. A problem starts open, a hint closed.
   dbFindingRow(f) {
-    const tone = f.level === "problem" ? "red" : "warn", text = this.dbFindingText(f, true), advice = this.dbKindText("dbAdvice_", f.kind);
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.dbKindText("dbKind_", f.kind) ?? this.esc(f.kind)}</strong>${text ? `<small>${text}</small>` : ""}${advice ? `<details class="rowdetails"><summary>${this.t("dbWhatToDo")}</summary><small>${advice}</small></details>` : ""}${this.dbExtraFold(f)}</span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>`;
+    const tone = f.level === "problem" ? "red" : "warn", advice = this.dbKindText("dbAdvice_", f.kind);
+    const plain = this.plainText(this.dbFindingText(f)), linked = this.dbFindingText(f, true);
+    const body = [linked && linked !== this.dbFindingText(f) ? `<p>${linked}</p>` : "", advice ? `<div class="sectionlabel">${this.t("dbWhatToDo")}</div><p class="factnote">${advice}</p>` : "", this.dbFindingExtra(f)].filter(Boolean).join("");
+    const head = { tone, title: this.dbKindText("dbKind_", f.kind) ?? this.esc(f.kind), sub: plain, pill: this.t(f.level === "problem" ? "dbProblem" : "dbHint"), count: f.kind === "missing_hours" && f.series_total ? this.formatNumber(f.series_total) : "" };
+    return body ? this.fold(`db_${f.kind}`, head, `<div class="dbfold">${body}</div>`, f.level === "problem")
+      : `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${plain ? `<small>${this.esc(plain)}</small>` : ""}</span><span class="pill ${tone}">${head.pill}</span></div>`;
   }
 
-  // The full integrity check on demand: a button, and the result of the last run.
-  dbCheckRow(r) {
+  // The full integrity check as a tile beside the figures: its result and when; the button sits in the page bar.
+  dbCheckTile(r) {
     const c = r.integrity || {};
-    const note = c.running ? this.t("dbChecking")
-      : c.state === "ok" ? this.t("dbCheckOk", { at: this.formatDate(c.at) })
-      : c.state === "failed" ? this.t("dbCheckFailed", { at: this.formatDate(c.at) })
-      : c.state === "damaged" ? this.t("dbCheckDamaged", { at: this.formatDate(c.at) }) : this.t("dbCheckNever");
-    return `<div class="row dbcheck"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
+    if (c.running) return { label: this.t("dbTileCheck"), value: this.t("dbCheckRunning"), sub: this.t("dbCheckRunningSub"), tone: "mute" };
+    const state = ["ok", "damaged", "failed"].includes(c.state) ? c.state : "never";
+    return { label: this.t("dbTileCheck"), value: this.t(`dbCheckState_${state}`), sub: c.at && state !== "never" ? this.formatDate(c.at) : "", tone: { ok: "ok", damaged: "red", failed: "warn", never: "mute" }[state] };
   }
 
   // The figures as tiles, and short notes for what could not be measured and for the normal restart gaps;
@@ -135,8 +130,9 @@ class DbHealthMixin {
       growthKnown ? { label: this.t("dbTileGrowth"), value: this.dbGrowthSize(r.growth.per_day, true), sub: sizeKnown && r.db_bytes > 0 ? this.t("dbTileGrowthShare", { pct: this.formatNumber(Math.round(Math.abs(r.growth.per_day) / r.db_bytes * 1000) / 10) }) : "", tone: "mute" } : null,
       r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
       r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
+      this.dbCheckTile(r),
     ].filter(Boolean);
-    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
+    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : "", r.integrity?.running ? this.t("dbChecking") : ""].filter(Boolean);
     return { tiles, notes };
   }
 
@@ -157,7 +153,8 @@ class DbHealthMixin {
     const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
     const ready = Boolean(r?.available && !r.busy);
     if (ready && !this.dbError) this.dbExporter(r);
-    const head = this.pageBar({ left: took ? `<span>${this.esc(took)}</span>` : "", at: this.isoOf(r?.computed_at), loading: this.dbLoading, attr: "data-db-refresh", exportId: ready && !this.dbError ? "recdb" : "" });
+    const check = ready && !this.dbError ? `<button class="btn" data-db-check title="${this.esc(this.t("dbCheckHint"))}"${r.integrity?.running ? " disabled" : ""}><ha-icon icon="mdi:database-check-outline"></ha-icon>${this.t("dbCheck")}</button>` : "";
+    const head = this.pageBar({ left: took ? `<span>${this.esc(took)}</span>` : "", at: this.isoOf(r?.computed_at), loading: this.dbLoading, attr: "data-db-refresh", exportId: ready && !this.dbError ? "recdb" : "", actions: check });
     if (this.dbError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.dbError)}</div></div>`;
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("dbLoading")}</div></div>`;
     if (!r.available) return `<div class="stack">${head}<div class="panel"><p class="factnote">${this.t("relNoRecorder")}</p></div></div>`;
@@ -165,7 +162,7 @@ class DbHealthMixin {
     const th = r.thresholds || {};
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
     const figures = this.dbFigures(r), tiles = this.sumTiles(figures.tiles), notes = figures.notes;
-    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>${this.dbTablesCard(r)}</div>`;
+    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30, check: this.t("dbCheckHint") })}</div>${this.dbTablesCard(r)}</div>`;
   }
 
   // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog. A list like the
