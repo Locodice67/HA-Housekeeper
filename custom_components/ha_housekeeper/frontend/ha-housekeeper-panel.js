@@ -12502,7 +12502,7 @@ Object.assign(TEXT.de, {
   vacAuto: "Vorschlag, weil es diese Entität gibt. Sie gilt erst, wenn du speicherst; ändere oder leere das Feld, wenn du sie nicht willst.", vacKeyword: "Stichwort im Termin", vacKeywordExample: "Urlaub", vacKeywordHint: "Nur Termine, deren Titel dieses Wort enthält, schalten den Urlaubsmodus ein, so lässt sich dein normaler Kalender nutzen. Leer: jeder laufende Termin zählt, für einen eigenen Urlaubskalender.",
   vacGrace: "Nachfrist nach dem Urlaub", vacGraceUnit: "Stunden", vacGraceHint: "Standard 24 Stunden. Wie lange Befunde nach dem Ende zurückgehalten werden, wenn für das Objekt keine eigene Frist gilt.",
   vacSave: "Speichern", vacUnsaved: "Nicht gespeichert", vacEntityInvalid: "Eine Entität hat die Form bereich.name, zum Beispiel input_boolean.urlaub.", vacGraceInvalid: "Die Nachfrist muss eine ganze Zahl von 0 bis {max} Stunden sein.", vacStateOn: "Aktuell: an", vacStateNone: "Nicht eingerichtet", vacStateOff: "Aktuell: aus", vacStateMissing: "Aktuell: nicht verfügbar", vacEnded: "Zuletzt beendet am {date}.", vacFailed: "Nicht gespeichert: {reason}",
-  vacBarOn: "Urlaubsmodus aktiv", vacBarHeld: "{n} Befunde zurückgehalten", vacBarHeld1: "1 Befund zurückgehalten",
+  vacBarOn: "Urlaubsmodus aktiv", vacBarHeld: "{n} Befunde zurückgehalten", vacBarNothing: "hält gerade nichts zurück", vacBarNoRule: "keine Regel dafür", vacBarNewRule: "Regel anlegen", vacBarHeld1: "1 Befund zurückgehalten",
   vacBarAfter: "Urlaub beendet", vacBarAfterLine: "Frist bis {date} · {n} Befunde noch zurückgehalten", vacBarAfterLine1: "Frist bis {date} · 1 Befund noch zurückgehalten",
   vacBarMissing: "Urlaubsmodus-Entität nicht verfügbar", vacBarMissingLine: "{entity} meldet keinen Zustand. Der Modus gilt als aus.", vacBarShow: "Zurückgehaltene anzeigen", vacBarRules: "Regeln", vacBarSettings: "Einstellung",
   vacRuleAfter: "Urlaub beendet, zurückgehalten bis {date}", vacRuleActive: "Urlaubsmodus aktiv",
@@ -12544,7 +12544,7 @@ Object.assign(TEXT.en, {
   vacAuto: "Suggestion, because this entity exists. It counts only once you save; change or clear the field if you do not want it.", vacKeyword: "Keyword in the event", vacKeywordExample: "Vacation", vacKeywordHint: "Only events whose title contains this word switch vacation mode on, so your normal calendar works. Empty: every running event counts, for a calendar of its own.",
   vacGrace: "Grace period after the vacation", vacGraceUnit: "hours", vacGraceHint: "Default 24 hours. How long findings are held back after the end when the object has no delay of its own.",
   vacSave: "Save", vacUnsaved: "Not saved", vacEntityInvalid: "An entity looks like domain.name, for example input_boolean.vacation.", vacGraceInvalid: "The grace period must be a whole number from 0 to {max} hours.", vacStateOn: "Now: on", vacStateNone: "Not set up", vacStateOff: "Now: off", vacStateMissing: "Now: unavailable", vacEnded: "Last ended on {date}.", vacFailed: "Not saved: {reason}",
-  vacBarOn: "Vacation mode on", vacBarHeld: "{n} findings held back", vacBarHeld1: "1 finding held back",
+  vacBarOn: "Vacation mode on", vacBarHeld: "{n} findings held back", vacBarNothing: "holds nothing back right now", vacBarNoRule: "no rule for it", vacBarNewRule: "Add a rule", vacBarHeld1: "1 finding held back",
   vacBarAfter: "Vacation over", vacBarAfterLine: "Delay until {date} · {n} findings still held back", vacBarAfterLine1: "Delay until {date} · 1 finding still held back",
   vacBarMissing: "Vacation mode entity unavailable", vacBarMissingLine: "{entity} reports no state. The mode counts as off.", vacBarShow: "Show held back", vacBarRules: "Rules", vacBarSettings: "Settings",
   vacRuleAfter: "Vacation over, held back until {date}", vacRuleActive: "Vacation mode on",
@@ -12696,6 +12696,11 @@ class ExceptionsMixin {
     const date = value => this.formatDate(value), n = v.held;
     const go = `<a href="#" data-vac-go="hidden">${this.t("vacBarShow")}</a><a href="#" data-vac-go="rules">${this.t("vacBarRules")}</a>`;
     if (v.missing) return `<div class="vacbar warn" role="status"><b>${this.t("vacBarMissing")}</b><span>${this.esc(this.t("vacBarMissingLine", { entity: v.entity }))}</span><span class="sp"></span><a href="#" data-vac-go="rules">${this.t("vacBarSettings")}</a></div>`;
+    // With nothing held back there is nothing to show: the bar says why, and offers the rules or a first one.
+    if (v.active && !n) {
+      const none = v.rules === 0, link = none ? `<a href="#" data-vac-go="new">${this.t("vacBarNewRule")}</a>` : `<a href="#" data-vac-go="rules">${this.t("vacBarRules")}</a>`;
+      return `<div class="vacbar" role="status"><b>${this.t("vacBarOn")}</b><span>${this.t(none ? "vacBarNoRule" : "vacBarNothing")} · ${this.esc(v.entity)}</span><span class="sp"></span>${link}</div>`;
+    }
     if (v.active) return `<div class="vacbar" role="status"><b>${this.t("vacBarOn")}</b><span>${n === 1 ? this.t("vacBarHeld1") : this.t("vacBarHeld", { n })} · ${this.esc(v.entity)}</span><span class="sp"></span>${go}</div>`;
     if (v.after_until && n) return `<div class="vacbar after" role="status"><b>${this.t("vacBarAfter")}</b><span>${n === 1 ? this.t("vacBarAfterLine1", { date: date(v.after_until) }) : this.t("vacBarAfterLine", { date: date(v.after_until), n })}</span><span class="sp"></span>${go}</div>`;
     return "";
@@ -12875,11 +12880,12 @@ class ExceptionsMixin {
       if (keyword) keyword.oninput = ev => { v.keyword = ev.target.value; sync(); };
       form.querySelector("[data-vac-grace]").oninput = ev => { v.grace = ev.target.value; sync(); };
     });
-    root.querySelectorAll("[data-vac-go]").forEach(el => el.onclick = ev => {
+    root.querySelectorAll("[data-vac-go]").forEach(el => el.onclick = async ev => {
       ev.preventDefault();
       this.selected = null; this.pages = {};
       // The findings held back are on the findings page, hidden for an exception; the rules in the settings.
-      if (el.dataset.vacGo === "hidden") { this.view = "findingsNav"; this.findingStatus = "hidden"; this.lvState("findings", "impact", "desc").f.by = "rule"; } else { this.view = "settings"; this.settingsTab = "exceptions"; }
+      if (el.dataset.vacGo === "hidden") { this.view = "findingsNav"; this.findingStatus = "hidden"; this.lvState("findings", "impact", "desc").f.by = "rule"; } else { this.view = "settings"; this.settingsTab = "exceptions"; this.excScope = "vacation"; }
+      if (el.dataset.vacGo === "new") { this.render(); if (!this.exc) await this.loadExceptions(); this.openException("", "vacation"); return; }
       this.render();
     });
     root.querySelectorAll("[data-exc-scope]").forEach(el => el.onclick = () => { this.excScope = el.dataset.excScope; this.render(); });

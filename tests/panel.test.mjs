@@ -6170,3 +6170,31 @@ test("the findings page: outages are one reason, stale is a fault, a tile starts
   el.journal = [{ plan_id: "p", status: "dry_run", created_at: new Date(Date.now() - 2 * 864e5).toISOString(), objects: ["d1"] }];
   assert.ok(!el.inWork(el.data.findings[0]), "a preview older than a day does not count");
 });
+
+test("the jump to new critical findings is a filter: outage heads without a matching finding stay away", () => {
+  const { el } = panel("en");
+  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key.split("|")[1], classification, confidence: 0.9, ignored: false, impact: "high", ...extra });
+  const down = f("device.down|d1|", "device.down", "problem", { cause_id: "device_down:d1" });
+  const follower = f("entity.state_unavailable|s1|", "entity.state_unavailable", "unavailable", { cause_id: "device_down:d1" });
+  const fresh = f("entity.missing_entity|a1|", "entity.missing_entity", "broken_reference");
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Echo Office" }, { object_type: "entity", object_id: "s1", name: "Alarm", device_id: "d1" }], edges: [],
+    causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Echo Office", impact: "high", follower_count: 1, total_followers: 1, finding_key: down.key, child_ids: [], consumers: {} }], findings: [down, follower, fresh] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  el.trend = { new_findings: { items: [{ ...fresh }] } };
+  el.findingScanNew = true;
+  const html = el.findingsView();
+  assert.ok(!html.includes("Echo Office is down completely") && !html.includes("match the filter"), "no head of an outage that has nothing new");
+  assert.ok(html.includes("1 of 3 findings"));
+});
+
+test("the vacation bar says why nothing is held back and offers no empty list", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, vacation: { entity: "input_boolean.away", active: true, held: 0, rules: 2 } } };
+  let bar = el.vacationBar();
+  assert.ok(bar.includes("holds nothing back right now") && !bar.includes('data-vac-go="hidden"') && bar.includes('data-vac-go="rules"'));
+  el.data.meta.vacation.rules = 0;
+  bar = el.vacationBar();
+  assert.ok(bar.includes("no rule for it") && bar.includes('data-vac-go="new"'));
+  el.data.meta.vacation = { entity: "input_boolean.away", active: true, held: 3, rules: 1 };
+  assert.ok(el.vacationBar().includes("3 findings held back") && el.vacationBar().includes('data-vac-go="hidden"'));
+});

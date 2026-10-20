@@ -1870,6 +1870,10 @@ class InventoryScanner:
             "ended_at": store.ended_at.isoformat() if store.ended_at else None,
             "grace_hours": store.grace_hours,
             "held": len(held),
+            # Whether anything can be held back at all: the rules that apply only in the vacation mode.
+            "rules": sum(
+                1 for r in store.rules if r.get("scope") == "vacation" and r.get("enabled", True)
+            ),
             "after_until": max((f["ignore_rule"]["until"] for f in after), default=None),
         }
 
