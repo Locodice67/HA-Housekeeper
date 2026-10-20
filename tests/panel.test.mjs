@@ -6127,7 +6127,7 @@ test("the inventory filters by label and the labels block counts what carries ea
   el.labelFilter = "housekeeper_keep";
   assert.equal(JSON.stringify(Array.from(el.filtered().map(o => o.object_id))), JSON.stringify(["sensor.a", "d1"]));
   const html = el.labelsCard();
-  assert.ok(html.includes("housekeeper_keep") && html.includes("Device: 1") && html.includes("Entity: 1"));
+  assert.ok(html.includes("housekeeper_keep") && html.includes("on 1 device, 1 entity") && html.includes("How to create a missing label"), "counted in words; the how-to once while a label is missing");
   assert.ok(html.includes("data-jump-lf=\"inventory|label|housekeeper_keep\""));
   assert.ok(html.includes("not created"), "the other two labels are not created yet");
 });

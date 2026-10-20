@@ -6,7 +6,8 @@ Object.assign(TEXT.de, {
   lblFx_keep_1: "Sperrt alle Bereinigungsschritte (deaktivieren, entfernen); das Gerät fehlt in „Bereinigen → Geräte deaktivieren“", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet",
   lblFx_ignore_1: "Blendet die Befunde der Entität, Automation oder des Geräts (samt seiner Entitäten) aus", lblFx_ignore_2: "Nimmt das Objekt aus Richtlinien, Zuverlässigkeit, Ausfallstürmen und Exposition und sperrt Bereinigungsschritte", lblFx_ignore_0: "Auch Ausfälle werden nicht mehr gemeldet",
   lblFx_critical_1: "Das Objekt zählt als wichtig; Ausfälle werden höher eingestuft", lblFx_critical_2: "Bereinigungsschritte müssen einzeln bestätigt werden; wirkt an Entität, Gerät oder Bereich", lblFx_critical_0: "Schlösser, Alarme, Rauch- und Wassermelder sind auch ohne Label kritisch",
-  lblHow: "So legst du es an: In Home Assistant unter Einstellungen → Bereiche, Labels & Zonen → Labels ein Label mit genau diesem Namen erstellen, dann Geräte oder Entitäten (auch mehrere auf einmal) auswählen und das Label zuweisen. Danach neu scannen.",
+  lblN_entity: "{n} Entitäten", lblN_entity1: "1 Entität", lblN_device: "{n} Geräten", lblN_device1: "1 Gerät", lblN_automation: "{n} Automationen", lblN_automation1: "1 Automation", lblN_script: "{n} Skripten", lblN_script1: "1 Skript", lblN_scene: "{n} Szenen", lblN_scene1: "1 Szene", lblN_area: "{n} Bereichen", lblN_area1: "1 Bereich",
+  lblHow: "So legst du ein fehlendes Label an: In Home Assistant unter Einstellungen → Bereiche, Labels & Zonen → Labels ein Label mit genau diesem Namen erstellen, dann Geräte oder Entitäten (auch mehrere auf einmal) auswählen und das Label zuweisen. Danach neu scannen.",
   lblFoot: "Soll nur nichts aufgeräumt werden, nimm housekeeper_keep. Soll Housekeeper ein Objekt ganz in Ruhe lassen, nimm housekeeper_ignore oder einen Vermerk. Für Geräte, die oft aus sind, passen der Vermerk „Absichtlich offline“ und Ausnahmeregeln mit Frist besser. Die Zahlen stammen aus dem letzten Scan.",
   excTitle: "Ausnahmeregeln", excHint: "Housekeeper meldet Objekte nicht, auf die eine Regel passt: nach Bereich, Label, Integration, Typ (Domain), Gerät oder Entität. Die Regeln gelten nur in Housekeeper; Home Assistant bleibt unverändert. Das Label housekeeper_ignore wirkt zusätzlich fest.",
   excFormNew: "Regel anlegen", excFormEdit: "Regel bearbeiten", excAdd: "Regel hinzufügen", excEdit: "Ändern", excDelete: "Löschen", excLoading: "Regeln werden geladen …",
@@ -48,7 +49,8 @@ Object.assign(TEXT.en, {
   lblFx_keep_1: "Blocks every cleanup step (disable, remove); the device is missing from “Cleanup → Disable devices”", lblFx_keep_0: "Hides no findings: an outage is still reported",
   lblFx_ignore_1: "Hides the findings of the entity, automation or device (and its entities)", lblFx_ignore_2: "Takes the object out of policies, reliability, outage storms and exposure and blocks cleanup steps", lblFx_ignore_0: "Outages are no longer reported either",
   lblFx_critical_1: "The object counts as important; outages are rated higher", lblFx_critical_2: "Cleanup steps must be confirmed one by one; works on an entity, device or area", lblFx_critical_0: "Locks, alarms, smoke and water sensors are critical without the label too",
-  lblHow: "How to create it: in Home Assistant under Settings → Areas, labels & zones → Labels, create a label with exactly this name, then select devices or entities (several at once) and assign the label. Then scan again.",
+  lblN_entity: "{n} entities", lblN_entity1: "1 entity", lblN_device: "{n} devices", lblN_device1: "1 device", lblN_automation: "{n} automations", lblN_automation1: "1 automation", lblN_script: "{n} scripts", lblN_script1: "1 script", lblN_scene: "{n} scenes", lblN_scene1: "1 scene", lblN_area: "{n} areas", lblN_area1: "1 area",
+  lblHow: "How to create a missing label: in Home Assistant under Settings → Areas, labels & zones → Labels, create a label with exactly this name, then select devices or entities (several at once) and assign the label. Then scan again.",
   lblFoot: "If you only want nothing cleaned up, use housekeeper_keep. If Housekeeper should leave an object completely alone, use housekeeper_ignore or a mark. For devices that are often off, the mark “Offline on purpose” and exception rules with a delay fit better. The numbers come from the last scan.",
   excTitle: "Exception rules", excHint: "Housekeeper does not report objects that a rule matches: by area, label, integration, type (domain), device or entity. The rules apply only in Housekeeper; Home Assistant stays unchanged. The label housekeeper_ignore keeps working on top.",
   excFormNew: "Add rule", excFormEdit: "Edit rule", excAdd: "Add rule", excEdit: "Change", excDelete: "Delete", excLoading: "Loading rules …",
@@ -168,15 +170,18 @@ class ExceptionsMixin {
       const id = `housekeeper_${kind}`, counts = new Map();
       for (const o of this.invObjects()) if ((o.labels || []).includes(id)) counts.set(o.object_type, (counts.get(o.object_type) || 0) + 1);
       const total = [...counts.values()].reduce((a, b) => a + b, 0), made = !!this.findObject(`label:${id}`);
-      const parts = [...counts].map(([type, n]) => `${this.esc(this.t(type))}: ${n}`).join(" · ");
+      // "on 2 devices, 5 entities"; a type without its own words keeps "Type: n".
+      const parts = [...counts].map(([type, n]) => { const key = `lblN_${type}`; return this.t(key) === key ? `${this.esc(this.t(type))}: ${n}` : this.esc(this.tCount(key, n)); }).join(", ");
       const fx = (kind === "keep" ? [1, 0] : [1, 2, 0]).map(n => `<li${n ? "" : ' class="no"'}>${this.esc(this.t(`lblFx_${kind}_${n}`))}</li>`).join("");
       const show = total ? `<button class="btn" data-jump="inventory" data-jump-lf="inventory|label|${id}">${this.t("lblShow")}</button>` : "";
-      return `<div class="labrow"><div><div class="statcell"><code>${id}</code> <span class="pill ${made ? "ok" : "warn"}">${this.t(made ? "lblCreated" : "lblMissing")}</span></div><p class="factnote">${this.esc(this.t(`lblKind_${kind}`))} · ${total ? `${this.t("lblUse")} ${parts}` : this.t("lblNoUse")}</p></div>
+      const copy = `<button type="button" class="iconbtn" data-copy="${id}" title="${this.esc(this.t("lblCopy"))}" aria-label="${this.esc(this.t("lblCopy"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button>`;
+      return `<div class="labrow"><div><div class="statcell"><code>${id}</code>${copy}<span class="pill ${made ? "ok" : "warn"}">${this.t(made ? "lblCreated" : "lblMissing")}</span></div><p class="factnote">${this.esc(this.t(`lblKind_${kind}`))} · ${total ? `${this.t("lblUse")} ${parts}` : this.t("lblNoUse")}</p></div>
         <ul class="labfx">${fx}</ul>
-        <div class="actions"><button class="btn quiet" data-copy="${id}">${this.t("lblCopy")}</button>${show}</div>
-        ${made ? "" : `<p class="factnote labhow">${this.esc(this.t("lblHow"))}</p>`}</div>`;
+        <div class="actions">${show}</div></div>`;
     }).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("lblTitle")}</h2><p>${this.t("lblHint")}</p></div><button class="btn" data-ha-path="/config/labels"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("lblOpenHa")}</button></div>${rows}<div class="pad"><p class="factnote">${this.t("lblFoot")}</p></div></section>`;
+    // How to create a label is said once, below the rows, while one of them is missing.
+    const missing = ["keep", "ignore", "critical"].some(kind => !this.findObject(`label:housekeeper_${kind}`));
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("lblTitle")}</h2><p>${this.t("lblHint")}</p></div><button class="btn" data-ha-path="/config/labels"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("lblOpenHa")}</button></div>${rows}<div class="pad labfoot">${missing ? `<p class="factnote">${this.esc(this.t("lblHow"))}</p>` : ""}<p class="factnote">${this.t("lblFoot")}</p></div></section>`;
   }
 
   excCard() {
@@ -378,7 +383,11 @@ class ExceptionsMixin {
 
   bindExceptions(root) {
     root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async () => {
-      try { await globalThis.navigator?.clipboard?.writeText(el.dataset.copy); el.textContent = this.t("lblCopied"); } catch (_) { /* no clipboard: the name stays selectable */ }
+      try {
+        await globalThis.navigator?.clipboard?.writeText(el.dataset.copy);
+        const icon = el.querySelector("ha-icon");
+        if (icon) { icon.setAttribute("icon", "mdi:check"); el.title = this.t("lblCopied"); el.setAttribute("aria-label", this.t("lblCopied")); } else el.textContent = this.t("lblCopied");
+      } catch (_) { /* no clipboard: the name stays selectable */ }
     });
     const rules = () => this.excRules();
     // "Open rule" from a hidden finding: the rule in its form in the settings.
