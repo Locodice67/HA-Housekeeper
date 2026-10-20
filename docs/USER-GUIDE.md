@@ -18,6 +18,7 @@ The detailed documentation of HA Housekeeper. For a short overview and the quick
   - [Using the interface and settings](#using-the-interface-and-settings)
 - [Safety model](#safety-model)
 - [Usage](#usage)
+- [Troubleshooting](#troubleshooting)
 - [Current limitations](#current-limitations)
 
 ## What Housekeeper does
@@ -424,6 +425,16 @@ Open **Housekeeper** from the Home Assistant sidebar. The overview starts with a
 - **Back**: detail pages, the graph and jumps through links have a “Back to …”. The graph goes back node by node and finally to the page it was opened from; detail pages reopen the tab you left, lists jump back to the old spot. The browser's back button takes the same way back one step.
 
 The first scan establishes the initial observation timestamps. Later scans preserve the start of an unchanged classification and reset it when the classification changes.
+
+## Troubleshooting
+
+- **No Housekeeper entry in the sidebar:** the integration has to be added under **Settings → Devices & services** (downloading in HACS is not enough), and the panel is shown to administrators only.
+- **The panel looks old after an update:** restart Home Assistant after the update and reload the page in the browser.
+- **Numbers look wrong right after a restart:** during the start and a few minutes after it, scans are preliminary; the sensors stay “unknown” and the activity sensor says “Waiting for startup”. A final scan follows on its own.
+- **Scans fail or are old:** the sensor **Scan health** says `failed` or `stale`, its attributes name the phase and the kind of error, and a repair hint appears. **Settings → Info** in the panel shows the same.
+- **The options cannot be saved:** while a plan, an undo or a purge runs, the options flow refuses to open; try again when it is done.
+- **Debug log:** under **Settings → Devices & services → HA Housekeeper** choose **Enable debug logging**, repeat what went wrong and then **Disable debug logging**; Home Assistant offers the log as a download. Without the UI, set `custom_components.ha_housekeeper: debug` under `logger:`.
+- **Reporting a problem:** attach the diagnostics file (three dots on the integration → **Download diagnostics**, or **Settings → Info** in the panel). It holds numbers and versions only, no names or ids. Open an issue at [github.com/bertel2020/HA-Housekeeper/issues](https://github.com/bertel2020/HA-Housekeeper/issues).
 
 ## Current limitations
 

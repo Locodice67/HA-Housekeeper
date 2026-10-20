@@ -1,0 +1,38 @@
+{
+  "entity": {
+    "sensor": {
+      "findings": {
+        "default": "mdi:alert-outline"
+      },
+      "orphaned_entities": {
+        "default": "mdi:ghost-outline"
+      },
+      "unavailable_entities": {
+        "default": "mdi:lan-disconnect"
+      },
+      "broken_references": {
+        "default": "mdi:link-off"
+      },
+      "possible_duplicates": {
+        "default": "mdi:content-duplicate"
+      },
+      "unused_automations": {
+        "default": "mdi:robot-off-outline"
+      },
+      "low_batteries": {
+        "default": "mdi:battery-alert-variant-outline"
+      },
+      "scan_health": {
+        "default": "mdi:heart-pulse"
+      },
+      "activity": {
+        "default": "mdi:progress-clock"
+      }
+    },
+    "button": {
+      "scan": {
+        "default": "mdi:magnify-scan"
+      }
+    }
+  }
+}

@@ -18,6 +18,7 @@ Die ausführliche Dokumentation von HA Housekeeper. Einen kurzen Überblick und 
   - [Bedienung und Einstellungen](#bedienung-und-einstellungen)
 - [Sicherheitsmodell](#sicherheitsmodell)
 - [Verwendung](#verwendung)
+- [Fehlersuche](#fehlersuche)
 - [Aktuelle Einschränkungen](#aktuelle-einschränkungen)
 
 ## Was Housekeeper übernimmt
@@ -425,6 +426,16 @@ Housekeeper schreibt dynamische Templates, YAML-Dashboards, Helfer oder Gruppen 
 - **Zurück**: Detailseiten, der Graph und Sprünge über Links haben ein „Zurück zu …“. Der Graph geht Knoten für Knoten zurück und zuletzt zur Seite, von der er geöffnet wurde; Detailseiten öffnen den Tab, den man verlassen hat, Listen springen an die alte Stelle. Die Zurück-Taste des Browsers geht denselben Weg einen Schritt zurück.
 
 Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende Scans behalten den Beginn einer unveränderten Klassifikation bei und setzen ihn zurück, sobald sich die Klassifikation ändert.
+
+## Fehlersuche
+
+- **Kein Housekeeper in der Seitenleiste:** Die Integration muss unter **Einstellungen → Geräte & Dienste** hinzugefügt sein (das Herunterladen in HACS reicht nicht), und das Panel sehen nur Administratoren.
+- **Das Panel wirkt nach einem Update alt:** Home Assistant nach dem Update neu starten und die Seite im Browser neu laden.
+- **Zahlen wirken direkt nach einem Neustart falsch:** Während des Starts und einige Minuten danach sind Scans vorläufig; die Sensoren bleiben „unbekannt“, der Aktivitätssensor zeigt „Wartet auf Start“. Ein abschließender Scan folgt von selbst.
+- **Scans schlagen fehl oder sind alt:** Der Sensor **Scan-Zustand** zeigt `failed` oder `stale`, seine Attribute nennen die Phase und die Art des Fehlers, und ein Reparaturhinweis erscheint. **Einstellungen → Info** im Panel zeigt dasselbe.
+- **Die Optionen lassen sich nicht speichern:** Solange ein Plan, ein Rückgängigmachen oder eine Löschung läuft, öffnet sich der Optionsdialog nicht; danach erneut versuchen.
+- **Debug-Log:** Unter **Einstellungen → Geräte & Dienste → HA Housekeeper** **Debug-Protokollierung aktivieren** wählen, den Fehler wiederholen und danach **Debug-Protokollierung deaktivieren**; Home Assistant bietet das Log zum Herunterladen an. Ohne Oberfläche unter `logger:` den Eintrag `custom_components.ha_housekeeper: debug` setzen.
+- **Ein Problem melden:** Die Diagnosedatei anhängen (drei Punkte an der Integration → **Diagnosedaten herunterladen**, oder **Einstellungen → Info** im Panel). Sie enthält nur Zahlen und Versionen, keine Namen oder IDs. Ein Issue unter [github.com/bertel2020/HA-Housekeeper/issues](https://github.com/bertel2020/HA-Housekeeper/issues) anlegen.
 
 ## Aktuelle Einschränkungen
 

@@ -118,11 +118,35 @@
           "cleanup": "Plan läuft",
           "starting": "Wartet auf Start"
         }
+      },
+      "monitor": {
+        "name": "Hausfunktion {name}",
+        "state": {
+          "ok": "OK",
+          "problem": "Problem",
+          "unverified": "Ungeprüft",
+          "disabled": "Deaktiviert"
+        }
       }
     },
     "button": {
       "scan": {
         "name": "Scan starten"
+      }
+    },
+    "event": {
+      "monitor": {
+        "name": "Hausfunktionen",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "beeintraechtigt": "Beeinträchtigt",
+              "pruefung_unvollstaendig": "Prüfung unvollständig",
+              "pruefung_wieder_moeglich": "Prüfung wieder möglich",
+              "wieder_unauffaellig": "Wieder unauffällig"
+            }
+          }
+        }
       }
     }
   },

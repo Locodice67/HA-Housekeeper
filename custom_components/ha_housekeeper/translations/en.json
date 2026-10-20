@@ -118,11 +118,35 @@
           "cleanup": "Plan running",
           "starting": "Waiting for startup"
         }
+      },
+      "monitor": {
+        "name": "Home function {name}",
+        "state": {
+          "ok": "OK",
+          "problem": "Problem",
+          "unverified": "Unverified",
+          "disabled": "Disabled"
+        }
       }
     },
     "button": {
       "scan": {
         "name": "Start scan"
+      }
+    },
+    "event": {
+      "monitor": {
+        "name": "Home functions",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "beeintraechtigt": "Impaired",
+              "pruefung_unvollstaendig": "Check incomplete",
+              "pruefung_wieder_moeglich": "Check possible again",
+              "wieder_unauffaellig": "Back to normal"
+            }
+          }
+        }
       }
     }
   },

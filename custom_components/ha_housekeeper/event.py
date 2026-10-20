@@ -34,7 +34,7 @@ class MonitorEvent(EventEntity):
     """Event data contains only a function ID, name, time and reason code."""
 
     _attr_has_entity_name = True
-    _attr_name = "Hausfunktionen"
+    _attr_translation_key = "monitor"
     _attr_event_types = EVENT_TYPES
     _attr_should_poll = False
 

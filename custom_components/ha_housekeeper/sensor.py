@@ -34,13 +34,13 @@ from .scan_coverage import gaps
 from .scan_health import STATES
 
 COUNT_KEYS = (
-    ("findings", "mdi:alert-outline"),
-    ("orphaned_entities", "mdi:ghost-outline"),
-    ("unavailable_entities", "mdi:lan-disconnect"),
-    ("broken_references", "mdi:link-off"),
-    ("possible_duplicates", "mdi:content-duplicate"),
-    ("unused_automations", "mdi:robot-off-outline"),
-    ("low_batteries", "mdi:battery-alert-variant-outline"),
+    "findings",
+    "orphaned_entities",
+    "unavailable_entities",
+    "broken_references",
+    "possible_duplicates",
+    "unused_automations",
+    "low_batteries",
 )
 
 
@@ -69,10 +69,9 @@ DESCRIPTIONS = (
         SensorEntityDescription(
             key=key,
             translation_key=key,
-            icon=icon,
             state_class=SensorStateClass.MEASUREMENT,
         )
-        for key, icon in COUNT_KEYS
+        for key in COUNT_KEYS
     ),
     SensorEntityDescription(
         key="last_scan", translation_key="last_scan", device_class=SensorDeviceClass.TIMESTAMP
@@ -83,7 +82,6 @@ DESCRIPTIONS = (
 HEALTH_DESCRIPTION = SensorEntityDescription(
     key="scan_health",
     translation_key="scan_health",
-    icon="mdi:heart-pulse",
     device_class=SensorDeviceClass.ENUM,
     options=list(STATES),
     entity_category=EntityCategory.DIAGNOSTIC,
@@ -93,7 +91,6 @@ HEALTH_DESCRIPTION = SensorEntityDescription(
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
-    icon="mdi:progress-clock",
     device_class=SensorDeviceClass.ENUM,
     options=["idle", "scanning", "cleanup", "starting"],
 )
@@ -232,6 +229,7 @@ class MonitorSensor(SensorEntity):
     _attr_should_poll = False
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = ["ok", "problem", "unverified", "disabled"]
+    _attr_translation_key = "monitor"
 
     def __init__(self, entry: HousekeeperConfigEntry, function_id: str) -> None:
         self.function_id = function_id
@@ -241,6 +239,8 @@ class MonitorSensor(SensorEntity):
             identifiers={(DOMAIN, entry.entry_id)}, name=NAME, entry_type=DeviceEntryType.SERVICE
         )
         self._attr_native_value = "unverified"
+        # The name is part of the translated entity name, so it is there before the entity is added.
+        self._attr_translation_placeholders = {"name": self._definition_name()}
         self._removed = False
 
     async def async_added_to_hass(self) -> None:
@@ -264,19 +264,21 @@ class MonitorSensor(SensorEntity):
         self._update()
         self.async_write_ha_state()
 
+    def _definition_name(self) -> str:
+        """The name the user gave the function; its id until the definition is there."""
+        definition = next(
+            (item for item in self.scanner.monitor.items if item["id"] == self.function_id), None
+        )
+        return definition["name"] if definition else self.function_id
+
     def _update(self) -> None:
         scanner = self.scanner
-        definition = (
-            next((item for item in scanner.monitor.items if item["id"] == self.function_id), None)
-            if scanner
-            else None
-        )
         result = (
             next((item for item in scanner.monitor.results if item["id"] == self.function_id), None)
             if scanner
             else None
         )
-        self._attr_name = f"Hausfunktion {definition['name']}" if definition else "Hausfunktionen"
+        self._attr_translation_placeholders = {"name": self._definition_name()}
         self._attr_native_value = result["state"] if result else "unverified"
         self._attr_extra_state_attributes = (
             {
