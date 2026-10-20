@@ -5812,6 +5812,7 @@ test("the suggestions gather the entities of a device into one mark that is set 
   assert.equal(items.map(s => `${s.key}:${s.hides}`).join(), "device:tv:3");
   el.folds = { ...(el.folds || {}), often: true };
   assert.ok(el.oftenCard().includes('data-often-take="device:tv"') && !el.oftenCard().includes("data-often-all"), "one suggestion: no accept all");
+  assert.ok(el.oftenCard().includes("1 object · 3 findings") && el.oftenCard().includes('class="iconbtn" data-often-skip="device:tv"') && el.oftenFindings(1) === "1 finding", "a bar with the sum, a quiet cross, singular and plural");
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   el.render = () => {};
