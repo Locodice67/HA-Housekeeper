@@ -1652,6 +1652,7 @@ class StylesMixin {
       .card,.sumtile,.type,.taskcard{transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease}
       .statushead{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:20px 22px;margin-bottom:16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-surface);box-shadow:var(--hk-sh2),var(--hk-hi)}
       .statushead .ring{width:84px;height:84px;flex:none;box-shadow:inset 0 0 0 1px var(--hk-border),var(--hk-sh1);background:radial-gradient(circle at center,var(--hk-surface) 66%,transparent 68%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}
+      .ringcol{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
       .statushead .ring b{font-size:calc(22px*var(--hk-fs,1));font-weight:600}.ring b small{font-size:.55em;margin-left:1px}
       .statustext{min-width:0;flex:1 1 220px}.statustext>.pill{margin-bottom:6px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
       .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}}
@@ -2498,12 +2499,11 @@ class OverviewMixin {
     return this.esc(this.t(groups.open.length ? "statusNothingUrgent" : "statusAllGood"));
   }
 
-  // Below the headline: what is open besides the urgent rows, the objects with a finding and the way to the explanation.
+  // Below the headline: what is open besides the urgent rows and the objects with a finding.
   statusSubline(health, groups = this.todoGroups()) {
     const rest = [groups.open.length ? this.t("statusPartOpen", { n: this.formatNumber(groups.open.length) }) : "", groups.care.length ? this.t("statusPartCare", { n: this.formatNumber(groups.care.length) }) : ""].filter(Boolean);
     const restText = rest.length ? (groups.red.length ? this.t("statusAlso", { what: rest.join(this.t("statusJoin")) }) : rest.join(this.t("statusJoin"))) : "";
-    return [restText, this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })].filter(Boolean).map(x => this.esc(x)).join(" · ")
-      + ` · <button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}">${this.t("healthWhy")}</button>`;
+    return [restText, this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })].filter(Boolean).map(x => this.esc(x)).join(" · ");
   }
 
   // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level,
@@ -2624,7 +2624,7 @@ class OverviewMixin {
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small class="kpilabel">${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small class="kpisub">${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
-    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button>
+    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
       <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["sumGroupUrgent", faults.length, faults.length ? "red" : "", "findingsNav", "", "group:red", "bad", faultFollows ? this.t("findingsOfFollow", { n: this.formatNumber(faultFollows) }) : "", "group:red"], ["sumGroupTidy", tidy, tidy ? "warn" : "", "findingsNav", "", "group:tidy", "bad", "", "group:tidy"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
@@ -11666,7 +11666,7 @@ Object.assign(TEXT.de, {
   whyGroup_red: "ist, was jetzt etwas kaputt macht: Ausfälle der Stufe hoch (lange oder an Kritischem), neue kritische Befunde, eine Anmeldung, die erneuert werden muss, eine gestörte überwachte Funktion, Rückfälle nach einem Plan, ein Backup- oder Datenbankproblem, eine fast volle Platte.",
   whyGroup_open: "ist Zustand, der geprüft werden sollte: ein alter Scan, eine unklare überwachte Funktion, eine Platte, die voll wird.",
   whyGroup_care: "sind Updates, Erinnerungen, Ziele, Quarantäne und entfernte HACS-Repositorys. Sie färben den Ring nie.",
-  statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} Punkte", healthWhy: "Wie kommt das zustande?",
+  statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} Punkte", healthWhy: "Wie kommt das zustande?", healthInfo: "Info",
   ratedObjects: "Geprüfte Objekte", pointsOf100: "{n} von 100", whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "je 2", whyWeight_medium: "je 1", whyWeight_low: "je 0,5", whyWeight_info: "kein Abzug", whyTotal: "Verbleibend", whyShare: "Zustand", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe, und zieht 2, 1 oder 0,5 ab; auch die Folgen einer Ursache sind Objekte und zählen mit ihrer eigenen Stufe. Der Zustand ist der Rest, umgerechnet auf 100 Punkte, mindestens 0. Die Farbe zeigt, ob etwas zu tun ist: rot bei dringenden Punkten, gelb bei offenen Punkten oder Objekten mit hoher oder mittlerer Auswirkung, sonst grün; Wartung (Ziele, Erinnerungen, Quarantäne) färbt nicht. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
  
   unit_outages_1: "Ausfall", unit_outages_n: "Ausfälle", unit_followup_1: "Plan", unit_followup_n: "Pläne", unit_reminders_1: "Erinnerung", unit_reminders_n: "Erinnerungen", unit_criteria_1: "Ziel", unit_criteria_n: "Ziele", unit_critical_1: "Befund", unit_critical_n: "Befunde", unit_backup_1: "Problem", unit_backup_n: "Probleme", unit_quarantine_1: "Objekt", unit_quarantine_n: "Objekte",
@@ -11715,7 +11715,7 @@ Object.assign(TEXT.en, {
   whyGroup_red: "is what breaks something now: outages at the level high (long, or at something critical), new critical findings, a login that needs renewing, a monitored function with a fault, setbacks after a plan, a backup or database problem, a nearly full disk.",
   whyGroup_open: "is state that should be checked: an old scan, a monitored function that is unclear, a disk that is filling up.",
   whyGroup_care: "are updates, reminders, goals, quarantine and removed HACS repositories. They never colour the ring.",
-  statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} points", healthWhy: "How does this come about?",
+  statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} points", healthWhy: "How does this come about?", healthInfo: "Info",
   ratedObjects: "Checked objects", pointsOf100: "{n} of 100", whyStart: "Starting value · checked objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "2 each", whyWeight_medium: "1 each", whyWeight_low: "0.5 each", whyWeight_info: "nothing off", whyTotal: "Remaining", whyShare: "State", whyNote: "Every object counts once, with its worst level, and takes off 2, 1 or 0.5; the follow-ups of a cause are objects too and count with their own level. The state is what remains, scaled to 100 points, never below 0. The colour shows whether something needs doing: red for urgent items, yellow for open items or objects with high or medium impact, green otherwise; maintenance (goals, reminders, quarantine) does not colour it. Hidden, known and snoozed findings do not count.",
  
   unit_outages_1: "outage", unit_outages_n: "outages", unit_followup_1: "plan", unit_followup_n: "plans", unit_reminders_1: "reminder", unit_reminders_n: "reminders", unit_criteria_1: "goal", unit_criteria_n: "goals", unit_critical_1: "finding", unit_critical_n: "findings", unit_backup_1: "problem", unit_backup_n: "problems", unit_quarantine_1: "object", unit_quarantine_n: "objects",
