@@ -6208,7 +6208,7 @@ test("the reason tiles are grouped by their colour: orphaned is tidying up, not 
   const f = (key, classification) => ({ key, rule_id: "entity.x", object_id: key, classification, confidence: 0.9, ignored: false, impact: "low" });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a", "orphaned"), f("b", "unavailable")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
-  const html = el.findingsView(), tidy = html.indexOf(">Tidying up<"), faults = html.indexOf(">Faults<"), orphaned = html.indexOf(`>${el.statusLabel("orphaned")}<`);
+  const html = el.findingsView(), tidy = html.indexOf(">Tidying up · 1<"), faults = html.indexOf(">Faults · 1<"), orphaned = html.indexOf(`>${el.statusLabel("orphaned")}<`);
   assert.ok(faults > 0 && tidy > faults && orphaned > tidy, "orphaned sits under tidying up, which follows the faults");
 });
 
@@ -6396,4 +6396,17 @@ test("a battery tile shows the batteries it counts, without a search left over",
   el.bind();
   tile.onclick();
   assert.equal(`${el.batteryFilter}|${el.lv.batteries.q}|${Object.keys(el.lv.batteries.f).length}`, "low||0");
+});
+
+test("the group heads of the findings page filter the list to all faults or all tidying up", () => {
+  const { el } = panel("en");
+  const f = (key, classification, rule_id = "entity.x") => ({ key, rule_id, object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false });
+  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "broken_reference"), f("c", "orphaned"), f("d", "unused")] };
+  el.view = "findingsNav";
+  assert.ok(el.findingsView().includes('data-finding-filter="group:red"'));
+  el.findingFilter = "group:red";
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "a,b");
+  el.findingFilter = "group:tidy";
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "c,d");
+  assert.ok(el.findingNote().includes("Tidying up"));
 });

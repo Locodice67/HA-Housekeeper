@@ -1,14 +1,14 @@
 // Texts for the findings that began together with an update or restart; merged into TEXT.
 Object.assign(TEXT.de, {
   corrAfter: "Zeitlich zusammen mit: {what} ({when})", corrTile: "Nach Update neu", corrTileSub: "begannen zusammen mit einem Update", corrTitle: "Nach Updates und Neustarts",
-  sumGroupAll: "Gesamt", sumGroupUrgent: "Störungen", sumGroupTidy: "Aufräumen", corrShow: "{n} Befunde anzeigen",
+  sumGroupAll: "Gesamt", sumGroupUrgent: "Störungen", sumGroupTidy: "Aufräumen", sumGroupCount: "{group} · {n}", corrShow: "{n} Befunde anzeigen",
   corrIncidents: "{n} Vorfälle", corrAlsoLabel: "Zusammen mit",
   corrHint: "Was nach einem Update oder Neustart begann oder nicht mehr läuft. Updates kurz nacheinander und der Neustart dabei sind ein Vorfall; ein Befund kann zu mehreren gehören. Das ist ein zeitlicher Zusammenhang, keine Ursache.",
   corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_os_version: "Betriebssystem-Update {from} → {to}", corr_supervisor_version: "Supervisor-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Plan ausgeführt", corr_purge: "Statistiken gelöscht", corrCount: "{n} Befunde", corrReason: "{n}× {what}", corrSpan: "Begannen zwischen {first} und {last}.", corrMore: "{n} weitere sind hier nicht aufgeführt.",
 });
 Object.assign(TEXT.en, {
   corrAfter: "At about the same time as: {what} ({when})", corrTile: "New after update", corrTileSub: "began together with an update", corrTitle: "After updates and restarts",
-  sumGroupAll: "Total", sumGroupUrgent: "Faults", sumGroupTidy: "Tidying up", corrShow: "Show {n} findings",
+  sumGroupAll: "Total", sumGroupUrgent: "Faults", sumGroupTidy: "Tidying up", sumGroupCount: "{group} · {n}", corrShow: "Show {n} findings",
   corrIncidents: "{n} incidents", corrAlsoLabel: "Together with",
   corrHint: "What began or stopped working after an update or restart. Updates shortly after one another and the restart beside them are one incident; a finding can belong to several. This is a link in time, not a cause.",
   corr_ha_version: "Home Assistant update {from} → {to}", corr_os_version: "Operating system update {from} → {to}", corr_supervisor_version: "Supervisor update {from} → {to}", corr_entry_version: "Update of {domain} {from} → {to}", corr_start: "Home Assistant restart", corr_plan: "Cleanup plan run", corr_purge: "Statistics deleted", corrCount: "{n} findings", corrReason: "{n}× {what}", corrSpan: "Began between {first} and {last}.", corrMore: "{n} more are not listed here.",

@@ -10,7 +10,11 @@ class FindingsMixin {
   // An outage is whatever starts a chain (integration not loaded or asking for a login, device down, app stopped);
   // what is left of "problem" then are automations and scripts that cannot work.
   findingReason(f) { return CAUSE_OWN_RULES.includes(f.rule_id) ? "outage" : f.classification; }
-  reasonLabel(r) { return r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
+  reasonLabel(r) { return r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
+  // The two groups of the tiles: red reasons are faults, the rest is tidying up.
+  findingTileGroup(f) { return this.reasonTone(this.findingReason(f)) === "red" ? "red" : "tidy"; }
+  // The tile filter: one reason (or rule), or a whole group as "group:red" / "group:tidy".
+  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
   reasonTone(r) { const tone = FAULT_REASONS.includes(r) ? "red" : this.tone(r); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; }
 
   // Impact first, then how sure the diagnosis is: the fraction keeps the certainty from outranking a level.
@@ -128,7 +132,7 @@ class FindingsMixin {
   // The findings as shown (classification chip, search, type filter, sort); the export uses the same list.
   visibleFindings() {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const classed = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter) : all;
+    const classed = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)) : all;
     const follows = this.findingFollowers ? classed.filter(f => this.isFollowUp(f)) : classed;
     const afterOnly = this.findingAfter ? follows.filter(f => this.corr?.by_key?.[f.key]) : follows;
     const scanNew = this.findingScanNew ? this.scanNewKeys() : null;
@@ -274,8 +278,13 @@ class FindingsMixin {
     const allObjects = this.countObjects(this.objectTree(all, all, true));
     const total = { label: this.t("allFindings"), value: this.formatNumber(all.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: all.length ? "warn" : "ok", filter: "", active: !this.findingFilter && !this.findingFollowers, spark: spark(this.findingStatus ? "" : "open", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
-    const group = (title, list, tone) => list.length ? `<div class="sumgroup"><div class="sumgrouphead ${tone}">${this.t(title)}</div>${this.sumTiles(list.map(tile), "compact")}</div>` : "";
-    const tiles = `<div class="findsum"><div class="sumall">${this.sumTiles([total], "compact")}${followLink}</div><div class="sumrows">${group("sumGroupUrgent", faults, "red")}${group("sumGroupTidy", tidy, "warn")}</div></div>`;
+    // The head of a group filters the list to the whole group, like a tile to one reason.
+    const group = (title, list, tone, id) => {
+      if (!list.length) return "";
+      const n = all.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
+      return `<div class="sumgroup"><button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}">${this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }))}</button>${this.sumTiles(list.map(tile), "compact")}</div>`;
+    };
+    const tiles = `<div class="findsum"><div class="sumall">${this.sumTiles([total], "compact")}${followLink}</div><div class="sumrows">${group("sumGroupUrgent", faults, "red", "red")}${group("sumGroupTidy", tidy, "warn", "tidy")}</div></div>`;
     const fixedView = this.findingStatus === "fixed";
     // A filter that leaves few findings opens their heads by itself; a head opened or closed by hand stays so.
     this._autoOpen = !open && sorted.length <= FINDING_AUTO_OPEN;
@@ -285,7 +294,7 @@ class FindingsMixin {
     const items = grouped ? nodes : sorted;
     const objects = this.countObjects(nodes);
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
+    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys().has(f.key)).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     const count = grouped ? this.t(of ? "ogViewCountOf" : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of }) : this.t(of ? "viewCountOf" : "viewCount", { n: this.formatNumber(sorted.length), ...of });
     const pg = this.paginate("findings", items);
