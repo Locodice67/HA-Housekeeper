@@ -3230,6 +3230,17 @@ test("the Recorder view holds the load, the costs and the database, and starts t
   assert.ok(el.maintenanceView && !el.maintenanceView().includes("Storage use"));
 });
 
+test("the database tab opened directly checks the database first and the load after it", async () => {
+  const queue = [];
+  const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  el.data = { ...DATA }; el.view = "recorder"; el.viewTab = { recorder: "db" };
+  el._hass = { language: "en", callWS: async msg => (msg.type.endsWith("/storms") ? STORMS : DBH) };
+  el.render();
+  assert.ok(el._dbRequested && el._stormsRequested === null, "the database query starts, the load waits");
+  await el.loadDbHealth();
+  assert.equal(el._stormsRequested, el.stormsWindow, "the load follows once the database is there");
+});
+
 test("the old load link opens the Recorder view", () => {
   const window = { location: { search: "?view=storms", pathname: "/ha-housekeeper" }, history: { replaceState() {} } };
   const { el } = panel("en", { window });

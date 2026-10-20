@@ -178,10 +178,8 @@ class StormsMixin {
   }
 
   // Operation > Recorder: what writes the most, what fills the database, and how healthy it is.
-  // The two recorder queries run one after the other: the second starts when the first is done.
+  // The two recorder queries run one after the other: the open tab's query first, the other when it is done.
   recorderView() {
-    const stormsDone = this.storms || this.stormsError;
-    if (stormsDone) this.ensureDbHealth();
     const st = this.storms?.available && !this.storms.busy ? this.storms : null;
     const db = this.dbHealth?.available && !this.dbHealth.busy ? this.dbHealth : null;
     const meta = this.data?.meta?.database;
@@ -208,6 +206,8 @@ class StormsMixin {
       { id: "db", icon: "mdi:database-outline", label: this.t("dbTitle"), hint: this.t("recTileDbHint"), count: db ? dbFindings : null, facts: dbFacts, tone: dbTone },
     ];
     const open = this.viewTabOf("recorder", tabs, "load");
+    if (open === "db") { this.ensureDbHealth(); if (this.dbHealth || this.dbError) this.ensureStorms(); }
+    else if (this.storms || this.stormsError) this.ensureDbHealth();
     const body = open === "costs" ? this.recorderCard() : open === "db" ? this.dbCard() : this.stormsView();
     return `<div class="stack">${this.navTiles("recorder", tabs, open, this.t("recorder"), true)}${body}</div>`;
   }
