@@ -203,7 +203,7 @@ class FindingsMixin {
     if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter")]);
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
-    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.causeList().filter(c => !this.quietCause(c)).length) })]);
+    if (this.findingOutages) notes.push(["outages", this.t("outagesFilter", { n: this.formatNumber(this.countedOutages().length) })]);
     if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";

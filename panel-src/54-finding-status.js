@@ -62,10 +62,15 @@ class FindingStatusMixin {
 
   // The outages the overview counts (every cause from medium on) with everything they explain: the jump of its row.
   // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
+  // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
+  // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
+  countedOutages() { return this.causeEntries().filter(c => !this.quietCause(c)); }
+
+  // The findings of the counted outages: every open finding whose chain ends at the top in one of them.
   outageKeys() {
-    const loud = c => c && !this.quietCause(c);
-    const counts = f => { for (let c = this.causeById(f.cause_id), n = 0; c && n < 20; c = this.causeById(c.parent_id), n++) if (loud(c)) return true; return false; };
-    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && counts(f)).map(f => f.key));
+    const tops = new Set(this.countedOutages().map(c => c.id));
+    const top = f => { let c = this.causeById(f.cause_id), n = 0; while (c?.parent_id && n < 20) { c = this.causeById(c.parent_id); n++; } return c; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && tops.has(top(f)?.id)).map(f => f.key));
   }
 
   // The findings below one cause, at any depth: the jump of a cause that has no page of its own.

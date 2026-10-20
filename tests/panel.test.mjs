@@ -1950,7 +1950,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
   assert.equal(JSON.stringify(keys), JSON.stringify(["outages", "critical", "stale", "backup", "quarantine"]));
   const byKey = Object.fromEntries(el.todoItems().map(i => [i.key, i]));
   assert.equal(byKey.outages.count, 1);
-  assert.equal(byKey.outages.hintText, "1 integrations", "an outage without any affected entity still counts");
+  assert.equal(byKey.outages.hintText, "1 integration", "an outage without any affected entity still counts");
   assert.equal(byKey.critical.count, 2, "hidden findings and other classes do not count");
   assert.equal(byKey.quarantine.count, 1, "only entries past the quarantine period");
   assert.equal(byKey.backup.tone, "red");
@@ -6524,4 +6524,13 @@ test("the details of missing hours stand folded below the largest tables, with a
   assert.ok(!html.includes("sensor.c"), "closed at first");
   el.folds = { db_extra_missing_hours: true };
   assert.ok(el.dbCard().includes("sensor.c"));
+});
+
+test("the overview counts an outage chain once, at its top: a device below an integration that is down is not counted again", () => {
+  const { el } = panel("en");
+  const cause = (id, kind, extra = {}) => ({ id, kind, object_type: kind === "device_down" ? "device" : "config_entry", object_id: id, name: id, follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "medium", ...extra });
+  el.data = { ...DATA, causes: [cause("int", "integration_down"), cause("dev", "device_down", { parent_id: "int" }), cause("solo", "device_down")], findings: [] };
+  const row = el.todoItems().find(i => i.key === "outages");
+  assert.equal(row.count, 2);
+  assert.equal(row.hintText, "1 integration, 1 device");
 });
