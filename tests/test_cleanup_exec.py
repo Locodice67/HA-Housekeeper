@@ -1068,3 +1068,146 @@ async def test_a_backup_that_is_missing_empty_or_without_the_database_is_not_rel
     assert await verify(manager(backup(database=False))) == "without_database"
     assert await verify(manager(backup(database=False)), database=False) is None
     assert await verify(SimpleNamespace()) is None  # a manager that cannot be read does not count
+
+
+async def test_an_error_in_a_step_never_leaves_the_plan_running(hass: HomeAssistant) -> None:
+    """An unexpected error ends the run as partial; a damaged database marks the rest as not run."""
+    import sqlite3
+
+    first, second = orphan(hass, "first"), orphan(hass, "second")
+    scanner = await make_scanner(hass)
+    perform = scanner.cleanup._perform
+    calls = {"n": 0}
+
+    async def failing(plan, action):
+        calls["n"] += 1
+        if calls["n"] == 2:
+            raise RuntimeError("boom")
+        return await perform(plan, action)
+
+    scanner.cleanup._perform = failing
+    plan = await make_plan(scanner, hass, first.entity_id, second.entity_id)
+    await run(scanner, plan)
+    assert plan["status"] == "partial" and not scanner.cleanup.running
+    assert any(e["type"] == "failed" and "boom" in e["error"] for e in plan["events"])
+
+    async def corrupt(plan, action):
+        raise sqlite3.DatabaseError("database disk image is malformed")
+
+    scanner.cleanup._perform = corrupt
+    plan = await make_plan(scanner, hass, second.entity_id)
+    await run(scanner, plan)
+    assert plan["status"] == "aborted"
+    assert plan["actions"][0]["result"]["reason"] == "database_corrupt"
+    assert scanner.events.integrity["state"] == "damaged"
+
+
+async def test_a_stop_of_home_assistant_ends_the_run_as_interrupted(hass: HomeAssistant) -> None:
+    import asyncio
+
+    entry = orphan(hass, "stopped")
+    scanner = await make_scanner(hass)
+
+    async def stopping(plan, action):
+        raise asyncio.CancelledError
+
+    scanner.cleanup._perform = stopping
+    plan = await make_plan(scanner, hass, entry.entity_id)
+    with pytest.raises(asyncio.CancelledError):
+        await run(scanner, plan)
+    assert plan["status"] == "aborted" and plan["run"]["finished_at"]
+    assert plan["actions"][0]["result"]["reason"] == "interrupted"
+    assert not scanner.cleanup.running
+
+
+async def test_a_check_after_the_run_that_cannot_scan_says_so(hass: HomeAssistant) -> None:
+    entry = orphan(hass, "checked")
+    scanner = await make_scanner(hass)
+    plan = await make_plan(scanner, hass, entry.entity_id)
+    scan = scanner.async_scan
+    calls = {"n": 0}
+
+    async def failing_later():
+        calls["n"] += 1
+        if calls["n"] > 1:  # the run scans before its steps; the check scans afterwards
+            raise RuntimeError("scan broke")
+        return await scan()
+
+    scanner.async_scan = failing_later
+    await run(scanner, plan)
+    assert plan["status"] == "executed"
+    assert plan["verification"] == {
+        "ok": False,
+        "checks": [{"check": "scan", "ok": False, "error": "scan broke"}],
+    }
+
+
+async def test_trimming_beyond_old_states_reports_what_it_could_not_confirm(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from custom_components.ha_housekeeper import cleanup_exec
+    from custom_components.ha_housekeeper.cleanup_exec import StepAbort
+
+    scanner = await make_scanner(hass)
+    action = {"object_id": "sensor.meter", "keep_days": 7, "tables": ["long_term"]}
+
+    async def deleted(*args):
+        return {"long_term": 3}, None
+
+    monkeypatch.setattr(cleanup_exec, "trim_extra", deleted)
+    for counted, reason in ((None, "trim_unverified"), ({"rows": 2}, "trim_left")):
+
+        async def count(*args, counted=counted):
+            return counted
+
+        monkeypatch.setattr(cleanup_exec, "count_trim", count)
+        with pytest.raises(StepAbort) as stop:
+            await scanner.cleanup._trim_extra(action)
+        assert stop.value.reason == reason and stop.value.result["deleted"] == {"long_term": 3}
+
+    async def nothing_left(*args):
+        return {"rows": 0}
+
+    monkeypatch.setattr(cleanup_exec, "count_trim", nothing_left)
+    result = await scanner.cleanup._trim_extra(action)
+    assert result["rows"] == 3 and result["irreversible"] is True
+
+
+async def test_the_check_before_a_step_refuses_a_gone_or_changed_target(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from homeassistant.helpers import area_registry as ar
+
+    from custom_components.ha_housekeeper import cleanup_exec
+
+    entry = orphan(hass, "target")
+    area = ar.async_get(hass).async_create("Flur")
+    scanner = await make_scanner(hass)
+    context = {"snapshot": {}, "acknowledged": set()}
+    check = scanner.cleanup._precheck
+    fingerprint = registry_fingerprint(entry)
+
+    def area_step(object_id, target=area.id, print_=fingerprint):
+        return {"kind": "set_area", "object_id": object_id, "target": target, "fingerprint": print_}
+
+    assert await check(area_step("sensor.missing"), context) == "entity_gone"
+    assert await check(area_step(entry.entity_id, print_="old"), context) == "entity_changed"
+    assert await check(area_step(entry.entity_id, target="gone"), context) == "now_blocked"
+    assert await check(area_step(entry.entity_id), context) is None
+    label = {
+        "kind": "add_label",
+        "object_id": entry.entity_id,
+        "target": "gone",
+        "fingerprint": fingerprint,
+    }
+    assert await check(label, context) == "now_blocked"
+
+    trim = {"kind": "trim_history", "object_id": entry.entity_id, "keep_days": 14}
+    monkeypatch.setattr(cleanup_exec, "recorder_ready", lambda hass: True)
+    for counted, reason in ((None, "no_recorder"), ({entry.entity_id: {"rows": 0}}, "now_blocked")):
+
+        async def count(*args, counted=counted):
+            return counted
+
+        monkeypatch.setattr(cleanup_exec, "count_older", count)
+        assert await check(trim, context) == reason
