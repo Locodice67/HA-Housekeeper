@@ -1234,7 +1234,7 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, {
   dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
-  dbNone: "Keine Auffälligkeit in der Datenbank.", dbProblem: "Problem", dbHint: "Hinweis",
+  dbNone: "Keine Auffälligkeit in der Datenbank.", dbWhatToDo: "Was tun?", dbProblem: "Problem", dbHint: "Hinweis",
   dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect})", dbSizeServer: "Datenbank {db} (Angabe des Servers, {dialect})", dbSizeEstimated: "Datenbank etwa {db} (Schätzung des Servers, {dialect})", dbTileServer: "laut Server ({dialect})", dbTileEstimated: "geschätzt ({dialect})", dbAbout: "etwa {size}", dbTablesTitle: "Größte Tabellen", dbTablesHint: "Daten und Indizes je Tabelle, laut Server.", dbTablesHintSqlite: "Daten und Indizes je Tabelle; einmal am Tag gemessen.", dbTablesAt: "Stand {at}.", dbTablesMore: "{n} weitere Tabellen", dbColTable: "Tabelle", dbColBytes: "Bytes", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileGrowthShare: "{pct} % der Größe am Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
   dbKind_wal_large: "Große WAL-Datei", dbKind_growth: "Ungewöhnliches Wachstum", dbKind_duplicates: "Doppelte Statistikzeitpunkte", dbKind_missing_hours: "Fehlende Stunden in Statistiken", dbKind_statistics_issues: "Statistik passt nicht zur Entität", dbKind_recorder_gap: "Lücken im Recorder",
   dbWal: "Die WAL-Datei ist {wal} groß, die Datenbank {db}.", dbGrowth: "In 7 Tagen {recent} gewachsen, in den Wochen davor etwa {base} pro Woche.",
@@ -1255,7 +1255,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbLoading: "Checking the database. On a large database this can take a few seconds …",
-  dbNone: "Nothing unusual in the database.", dbProblem: "Problem", dbHint: "Hint",
+  dbNone: "Nothing unusual in the database.", dbWhatToDo: "What to do?", dbProblem: "Problem", dbHint: "Hint",
   dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect})", dbSizeServer: "Database {db} (reported by the server, {dialect})", dbSizeEstimated: "Database about {db} (estimated by the server, {dialect})", dbTileServer: "reported by the server ({dialect})", dbTileEstimated: "estimated ({dialect})", dbAbout: "about {size}", dbTablesTitle: "Largest tables", dbTablesHint: "Data and indexes per table, as the server reports them.", dbTablesHintSqlite: "Data and indexes per table; measured once a day.", dbTablesAt: "As of {at}.", dbTablesMore: "{n} more tables", dbColTable: "Table", dbColBytes: "Bytes", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileGrowthShare: "{pct} % of the size a day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
   dbKind_wal_large: "Large WAL file", dbKind_growth: "Unusual growth", dbKind_duplicates: "Duplicate statistics timestamps", dbKind_missing_hours: "Missing hours in statistics", dbKind_statistics_issues: "Statistics do not fit the entity", dbKind_recorder_gap: "Gaps in the recorder",
   dbWal: "The WAL file is {wal}, the database {db}.", dbGrowth: "Grew {recent} in 7 days, about {base} a week in the weeks before.",
@@ -7314,9 +7314,10 @@ class DbHealthMixin {
     return `<div class="dbextra">${gaps ? `<div class="sectionlabel">${this.t("dbGapsTitle")}</div>${gaps}` : ""}<div class="sectionlabel">${this.t("dbSeriesTitle", { n: this.formatNumber(f.series_total) })}</div>${table}${more}</div>`;
   }
 
+  // What to do stays folded: the finding reads first, the advice is one click away.
   dbFindingRow(f) {
     const tone = f.level === "problem" ? "red" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f, true)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f, true)}</small><details class="rowdetails"><summary>${this.t("dbWhatToDo")}</summary><small>${this.t(`dbAdvice_${f.kind}`)}</small></details></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
   }
 
   // The full integrity check on demand: a button, and the result of the last run.
