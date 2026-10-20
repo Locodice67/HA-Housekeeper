@@ -298,8 +298,7 @@ class FindingsMixin {
     // One grid: the faults in the first row, the tidying up in the second, every tile of the same width and height.
     const tiles = `<div class="findsum" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${Math.max(faults.length, tidy.length)}">${totalTile}${group("sumGroupUrgent", faults, "red", "red", 1)}${group("sumGroupTidy", tidy, "warn", "tidy", 3)}</div>`;
     const fixedView = this.findingStatus === "fixed";
-    // A filter that leaves few findings opens their heads by itself; a head opened or closed by hand stays so.
-    this._autoOpen = !open && sorted.length <= FINDING_AUTO_OPEN;
+    // Every head starts folded, however few the filter leaves; a head opened or closed by hand stays so.
     // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
     const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
     this._nodeFoldIds = this.nodeFoldIds(nodes);
@@ -318,7 +317,7 @@ class FindingsMixin {
     const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);
     const pageItems = grouped ? pg.rows.map(u => u.item) : pg.rows;
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pageItems, count)}${items.length ? this.findingsTable(pageItems, grouped ? pg.rows.map(u => u.head + u.rows.join("")).join("") : null) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, this._autoOpen));
+    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
     return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>

@@ -494,7 +494,6 @@ const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "pr
 // Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
 const FAULT_REASONS = ["outage", "stale"];
 // A filter that leaves at most this many findings opens the heads of the grouped list by itself.
-const FINDING_AUTO_OPEN = 20;
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
@@ -3066,8 +3065,7 @@ class FindingsMixin {
     // One grid: the faults in the first row, the tidying up in the second, every tile of the same width and height.
     const tiles = `<div class="findsum" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${Math.max(faults.length, tidy.length)}">${totalTile}${group("sumGroupUrgent", faults, "red", "red", 1)}${group("sumGroupTidy", tidy, "warn", "tidy", 3)}</div>`;
     const fixedView = this.findingStatus === "fixed";
-    // A filter that leaves few findings opens their heads by itself; a head opened or closed by hand stays so.
-    this._autoOpen = !open && sorted.length <= FINDING_AUTO_OPEN;
+    // Every head starts folded, however few the filter leaves; a head opened or closed by hand stays so.
     // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
     const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
     this._nodeFoldIds = this.nodeFoldIds(nodes);
@@ -3086,7 +3084,7 @@ class FindingsMixin {
     const pg = grouped ? this.paginateUnits("findings", units) : this.paginate("findings", items);
     const pageItems = grouped ? pg.rows.map(u => u.item) : pg.rows;
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pageItems, count)}${items.length ? this.findingsTable(pageItems, grouped ? pg.rows.map(u => u.head + u.rows.join("")).join("") : null) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, this._autoOpen));
+    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
     return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
@@ -17299,7 +17297,7 @@ class ObjectGroupsMixin {
   nodeRows(n, depth = 0) {
     // An object with a single finding of its own is that finding's row: no head that says the same again.
     if (!n.cause && !n.kids.length && n.findings.length === 1 && this.findingKey(n.findings[0]) === n.key && !n.key.startsWith("dashboard:")) return this.findingTableRow(n.findings[0], depth);
-    const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, Boolean(this._autoOpen)), object = this.findObject(n.key);
+    const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
     const keys = f.list.map(x => x.key);
     (this._findGroups ||= {})[id] = keys;
     const title = n.cause ? this.t(`cause_${n.cause.kind}`, { name: n.cause.name }) : this.nodeName(n);
@@ -17329,7 +17327,7 @@ class ObjectGroupsMixin {
 
   // A card of a dashboard with several broken references: a head of its own, the references below it.
   cardRows(g, depth) {
-    const f = g.members[0], p = f.evidence[0].place, keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, Boolean(this._autoOpen));
+    const f = g.members[0], p = f.evidence[0].place, keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
     (this._findGroups ||= {})[id] = keys;
     const title = [...this.placeParts(p)].join(" › ") || f.object_id;
     const sub = [this.t("brokenCount", { n: keys.length }), this.isOrphan(p) ? this.t("brokenOrphanShort") : ""].filter(Boolean).join(" · ");
