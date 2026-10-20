@@ -28,15 +28,15 @@ class FindingsMixin {
     return [...top, ...single];
   }
 
-  // The state of the house: the rated objects, minus the weight of each object that has a finding (high 1, medium a half,
-  // low a fifth, info nothing). An object counts once, with its worst level; the follow-ups of a cause are objects like any
-  // other and count with their own level, so the percent is the honest share of the objects that are in order. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
-  // but keep the ring from reading green.
+  // The state of the house in points: the rated objects, minus the weight of each object that has a finding (high 2,
+  // medium 1, low a half, info nothing), scaled to 100 and never below 0. An object counts once, with its worst level;
+  // the follow-ups of a cause are objects like any other and count with their own level. The colour does not come
+  // from the number but from what is open: red while an urgent topic is, yellow while another topic or an object
+  // with high or medium impact is, green otherwise. Maintenance (goals, reminders, quarantine) never colours it.
   health() {
     const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
     const base = objects.length;
     const known = new Set(objects.map(o => this.objectKey(o)));
-    const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
     // The same number in every view: what it counts is fetched here, not only when the overview opens. The database
     // check stays out of it, because it reads the recorder and only runs once Maintenance is opened.
     this.ensureBackup?.(); this.ensureTrend?.();
@@ -56,12 +56,12 @@ class FindingsMixin {
     }).filter(l => l.n);
     const load = Math.round(lines.reduce((sum, l) => sum + l.points, 0) * 10) / 10;
     // Rounded down, so that a house with a finding never reads 100.
-    const percent = base > 0 ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
-    let tone = percent >= HEALTH_GREEN ? "ok" : percent >= HEALTH_YELLOW ? "warn" : "red";
-    // A high-impact object or an urgent state topic never reads as green, however small the sum is.
-    if (tone === "ok" && (levels.includes("high") || stateRed)) tone = "warn";
+    const percent = base > 0 ? Math.max(0, Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10) : 100;
+    const affected = levels.filter(l => l !== "info").length;
+    const pending = open.some(i => i.area !== "care") || levels.includes("high") || levels.includes("medium");
+    const tone = red ? "red" : pending ? "warn" : "ok";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
+    return { percent, tone, label, affected, base, tasks, red, later: tasks - red, load, ok: Math.max(0, Math.round((base - load) * 10) / 10), lines, stateRed, entries: levels.length };
   }
 
   findingRowContent(finding, inGroup = false) {

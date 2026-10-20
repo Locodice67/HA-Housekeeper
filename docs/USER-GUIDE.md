@@ -107,17 +107,17 @@ You set the four thresholds under **Settings → Scan and messages**. The level 
 
 ### The state and how it is calculated
 
-The number in the header of the panel ("State 98.4 %") is the **share of objects in order**. It counts objects, not findings.
+The number in the ring ("State 90.9 points") is a **state in points out of 100**. It counts objects, not findings.
 
-1. The **starting value** is the number of rated objects (entities, devices, integrations, automations, scripts, scenes).
-2. Every object with a finding takes off by its **worst** level: **high 1**, **medium 0.5**, **low 0.2**, **info 0**.
-3. An object counts **once**, even with several findings. Follow-ups of a cause do not count; the cause stands for them.
+1. The **starting value** is the number of rated objects (entities, devices, integrations, automations, scripts, scenes); the "Checked objects" tile shows the same number.
+2. Every object with a finding takes off by its **worst** level: **high 2**, **medium 1**, **low 0.5**, **info 0**.
+3. An object counts **once**, even with several findings. The follow-ups of an outage are objects too and count with their own level.
 4. Known, snoozed and hidden findings do not count.
-5. **State = (starting value − sum of the deductions) ÷ starting value**, rounded down to one decimal, so a house with a finding never reads "100 %".
+5. **State = (starting value − sum of the deductions) ÷ starting value × 100**, rounded down to one decimal, so a house with a finding never reads 100, and never below 0.
 
-Example: 2000 rated objects, 100 with low findings (0.2 each = 20), 160 with medium findings (0.5 each = 80) and 100 with high findings (1 each = 100). Deduction 200, in order 1800, state **90 %**. The card **How is this number made?** (click the ring) shows this calculation with your numbers; a click on a row opens the matching objects.
+Example: 2000 rated objects, 100 with low findings (0.5 each = 50), 160 with medium findings (1 each = 160) and 100 with high findings (2 each = 200). Deduction 410, remaining 1590, state **79.5 of 100**. The card **How is this number made?** (click the ring) shows this calculation with your numbers; a click on a row opens the matching objects.
 
-The ring is **green from 95 %**, **yellow from 85 %**, **red** below. An object with high impact or an urgent state topic (backup, disk) makes it at least yellow but takes nothing off.
+The **colour** of the ring does not come from the number but from what is open, and is shown next to it in words: **red ("Urgent")** while an urgent topic is open (outages, backup, a full disk, say); **yellow ("Open")** for other open topics or objects with high or medium impact; **green ("In order")** otherwise. Maintenance (goals, reminders, quarantine) does not colour it.
 
 ### Why numbers can look different
 

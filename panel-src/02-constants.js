@@ -112,15 +112,11 @@ const MARK_TYPES = ["entity", "device", "config_entry", "app"];
 const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script", "scene"];
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];
-// The ring of the status: points off for each urgent topic, and the most that can come off.
-// The status is a score from 100: each entry of the findings list takes points off by its impact (points each, at most),
-// each urgent topic of the state area takes 10 off (at most 30). Green from 90, yellow from 70.
 // The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
 const FINDING_URGENT = ["problem", "unavailable", "outage", "broken_reference", "run_error", "recurring"];
 const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
-const HEALTH_WEIGHTS = { high: 1, medium: 0.5, low: 0.2, info: 0 };
-const HEALTH_GREEN = 95;
-const HEALTH_YELLOW = 85;
+// The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
+const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
 
 const NAV = [

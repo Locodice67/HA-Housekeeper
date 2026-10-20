@@ -59,11 +59,12 @@ SETTING_RULES = {
 }
 
 
-# The state of the house, as the panel reads it: the number of rated objects, minus the weight of each object
-# that has a finding. An object counts once, with its worst level; a chain of outages stands for its cause and
-# its followers do not count. "info" (an outage under an hour) weighs nothing, so a restart leaves no dent.
+# The state of the house in points, as the panel reads it: the number of rated objects, minus the weight of each
+# object that has a finding (high 2, medium 1, low a half), scaled to 100. An object counts once, with its worst
+# level; the followers of a cause are objects too. "info" (an outage under an hour) weighs nothing, so a restart
+# leaves no dent.
 HEALTH_TYPES = frozenset({"entity", "automation", "script", "scene", "config_entry", "device"})
-HEALTH_WEIGHTS = {"high": 1.0, "medium": 0.5, "low": 0.2}
+HEALTH_WEIGHTS = {"high": 2.0, "medium": 1.0, "low": 0.5}
 
 
 def _health(snapshot: dict[str, Any]) -> tuple[int, float]:
@@ -90,11 +91,11 @@ def _health(snapshot: dict[str, Any]) -> tuple[int, float]:
 
 
 def health_percent(base: int | None, load: float | None) -> float | None:
-    """The share of the rated objects that is in order, with one decimal."""
+    """The state of the house in points out of 100, with one decimal; never below 0."""
     if not base or load is None:
         return None
     # Rounded down, so that a house with a finding never reads 100.
-    return math.floor(round(1000 * (1 - load / base), 6)) / 10
+    return max(0.0, math.floor(round(1000 * (1 - load / base), 6)) / 10)
 
 
 # The rules whose finding is a cause itself; any other finding with a cause_id is a follow-up.
@@ -404,6 +405,7 @@ class ScanHistory:
                     "lead": cp.get("lead"),
                     "lead_classes": cp.get("lead_classes"),
                     "health": health_percent(cp.get("health_base"), cp.get("health_load")),
+                    "rated": cp.get("health_base"),
                     "unavailable": sum(
                         1
                         for objs in cp["objects"].values()

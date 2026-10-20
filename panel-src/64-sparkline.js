@@ -35,7 +35,7 @@ class SparklineMixin {
     const days = Math.max(1, Math.round((new Date(points[n - 1].at) - new Date(points[0].at)) / 864e5));
     const w = 200, h = 36, pad = 4;
     let lo = Math.min(...values), hi = Math.max(...values);
-    const span = key === "health" ? 1 : Math.max(4, hi * 0.1); // the state of the house moves in tenths of a percent
+    const span = key === "health" ? 1 : Math.max(4, hi * 0.1); // the state of the house moves in tenths of a point
     if (hi - lo < span) { const mid = (hi + lo) / 2; lo = mid - span / 2; hi = mid + span / 2; }
     const x = i => pad + ((w - 2 * pad) * i) / (n - 1), y = v => h - pad - ((h - 2 * pad) * (v - lo)) / (hi - lo);
     const tone = !rising || !change ? "" : (change > 0) === (rising === "bad") ? "red" : "ok";

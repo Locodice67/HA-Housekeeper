@@ -202,7 +202,8 @@ class OverviewMixin {
     return `${this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t("statusHealth", { percent: this.formatNumber(health.percent) })}`;
   }
 
-  // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level.
+  // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level,
+  // scaled to 100 points.
   healthWhyCard(health) {
     const row = (label, value, cls = "") => `<div class="row ${cls}"><span>${label}</span><span>${value}</span></div>`;
     const lines = [row(this.t("whyStart"), this.formatNumber(health.base))];
@@ -211,8 +212,8 @@ class OverviewMixin {
       lines.push(row(label, l.points ? `− ${this.formatNumber(l.points)}` : "0", l.points ? "minus" : "minus mute"));
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
-    lines.push(row(this.t("whyShare"), `${this.formatNumber(health.percent)} %`));
-    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}">${lines.join("")}<small>${this.t("whyNote", { green: HEALTH_GREEN, yellow: HEALTH_YELLOW })}</small></div>`;
+    lines.push(row(this.t("whyShare"), this.t("pointsOf100", { n: this.formatNumber(health.percent) })));
+    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}">${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
   }
 
   // A number with its noun, so that the rows count what they say: "8 integrations".
@@ -317,9 +318,9 @@ class OverviewMixin {
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-filter="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.statusHeadline(health))}</button>` : this.t("statusAllGood");
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
-    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(this.t("healthWhy"))}"><b>${Math.floor(health.percent)}<small>%</small></b></button>
-      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["objects", m.object_count, "", "inventory", "", "objects"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "findings", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
+    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button>
+      <div class="statustext"><span class="pill ${health.tone}">${this.t(health.label)}</span><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "findings", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }

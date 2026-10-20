@@ -216,7 +216,7 @@ class StylesMixin {
       .statushead{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:20px 22px;margin-bottom:16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-surface);box-shadow:var(--hk-sh2),var(--hk-hi)}
       .statushead .ring{width:84px;height:84px;flex:none;box-shadow:inset 0 0 0 1px var(--hk-border),var(--hk-sh1);background:radial-gradient(circle at center,var(--hk-surface) 66%,transparent 68%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}
       .statushead .ring b{font-size:calc(22px*var(--hk-fs,1));font-weight:600}.ring b small{font-size:.55em;margin-left:1px}
-      .statustext{min-width:0;flex:1 1 220px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
+      .statustext{min-width:0;flex:1 1 220px}.statustext>.pill{margin-bottom:6px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
       .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;gap:8px}}
       .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
