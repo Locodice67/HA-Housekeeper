@@ -291,13 +291,13 @@ class OverviewMixin {
     if (!c?.available) return "";
     const date = this.formatDate(c.baseline_at);
     const rows = [
-      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+"],
-      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−"],
-      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", ""],
-      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+"],
+      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+", "newFindings"],
+      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−", "resolvedFindings"],
+      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", "", "statusChanges"],
+      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+", "newObjects"],
     ].filter(([, n]) => n);
     const body = rows.length
-      ? rows.map(([label, n, icon, tone, sign]) => `<button class="row" data-jump="changes"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
+      ? rows.map(([label, n, icon, tone, sign, section]) => `<button class="row" data-jump="changes" data-jump-changes="${section}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
       : `<div class="emptymsg">${this.esc(this.t("trendNone", { date }))}</div>`;
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }

@@ -2550,13 +2550,13 @@ class OverviewMixin {
     if (!c?.available) return "";
     const date = this.formatDate(c.baseline_at);
     const rows = [
-      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+"],
-      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−"],
-      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", ""],
-      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+"],
+      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+", "newFindings"],
+      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−", "resolvedFindings"],
+      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", "", "statusChanges"],
+      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+", "newObjects"],
     ].filter(([, n]) => n);
     const body = rows.length
-      ? rows.map(([label, n, icon, tone, sign]) => `<button class="row" data-jump="changes"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
+      ? rows.map(([label, n, icon, tone, sign, section]) => `<button class="row" data-jump="changes" data-jump-changes="${section}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
       : `<div class="emptymsg">${this.esc(this.t("trendNone", { date }))}</div>`;
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
@@ -18118,6 +18118,12 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jumpTab === "quarantine") { this.quarantineType = this.quarantineRows("entity").length || !this.quarantineRows("device").length ? "entity" : "device"; this.cleanupKind = this.quarantineType === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
+      // A row of "since the last scan" shows its own section against the last scan, whatever base was chosen there before.
+      if (el.dataset.jumpChanges) {
+        if (this.compareBaseline !== "previous") { this.compareBaseline = "previous"; this.compare = null; }
+        this.changesCat = el.dataset.jumpChanges; this.folds = { ...this.folds, [`chg_${el.dataset.jumpChanges}`]: true };
+        const st = this.lvState("changes", "", "asc"); st.q = ""; st.f = {}; this.persistLv("changes");
+      }
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
       this.render();

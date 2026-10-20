@@ -6324,3 +6324,16 @@ test("the vacation bar shows exactly the findings it holds back, not every findi
   assert.equal(el.visibleFindings().map(x => x.key).join(), "held");
   assert.ok(el.findingsView().includes("Held back for the vacation (1)"));
 });
+
+test("a row of since the last scan opens its own section against the last scan", () => {
+  const { el, shadow } = panel("en");
+  el.trend = { available: true, baseline_at: "2026-10-19T08:00:00+00:00", new_findings: { total: 2, items: [] }, resolved_findings: { total: 0 }, status_changes: { total: 0 }, new_objects: { total: 0 } };
+  assert.ok(el.trendCard().includes('data-jump="changes" data-jump-changes="newFindings"'));
+  el.compareBaseline = "2026-10-01T08:00:00+00:00"; el.compare = { available: true };
+  el._hass = { language: "en", callWS: async () => ({ available: false }) };
+  const jump = { dataset: { jump: "changes", jumpChanges: "newFindings" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [jump] : []);
+  el.bind();
+  jump.onclick();
+  assert.equal(`${el.view}|${el.compareBaseline}|${el.changesCat}|${el.folds.chg_newFindings}`, "changes|previous|newFindings|true");
+});

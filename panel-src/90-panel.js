@@ -929,6 +929,12 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jumpTab === "quarantine") { this.quarantineType = this.quarantineRows("entity").length || !this.quarantineRows("device").length ? "entity" : "device"; this.cleanupKind = this.quarantineType === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
+      // A row of "since the last scan" shows its own section against the last scan, whatever base was chosen there before.
+      if (el.dataset.jumpChanges) {
+        if (this.compareBaseline !== "previous") { this.compareBaseline = "previous"; this.compare = null; }
+        this.changesCat = el.dataset.jumpChanges; this.folds = { ...this.folds, [`chg_${el.dataset.jumpChanges}`]: true };
+        const st = this.lvState("changes", "", "asc"); st.q = ""; st.f = {}; this.persistLv("changes");
+      }
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
       this.render();
