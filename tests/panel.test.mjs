@@ -6544,3 +6544,11 @@ test("maintenance on the to-do card is a group of its own with a head that folds
   const html = el.todoCard();
   if (el.todoGroups().care.length) assert.ok(html.includes('class="foldhd todogrp care"') && html.includes('data-fold="todo_care"'));
 });
+
+test("a top finding of the overview says what it is and since when, without the place in the config", () => {
+  const { el } = panel("en");
+  const f = { key: "k", rule_id: "automation.missing_entity", object_id: "automation.a1", classification: "broken_reference", confidence: 0.95, impact: "high", ignored: false, affected_object: "sensor.gone", first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString(), evidence: [{ location: "actions[2]" }] };
+  el.data = { ...DATA, findings: [f] };
+  const row = el.overviewFinding(f);
+  assert.ok(row.includes("Refers to entity sensor.gone") && row.includes("found ") && !row.includes("actions[2]") && row.includes("High"));
+});
