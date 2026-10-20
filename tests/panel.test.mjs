@@ -1704,6 +1704,23 @@ test("the backup card puts text and a word next to every level and escapes what 
   assert.ok(html.indexOf("Backups") < html.indexOf("Updates"), "the card comes first");
 });
 
+test("backups made outside Home Assistant can be stated where none is in order, and replace its checks", async () => {
+  const { el, shadow } = panel("en");
+  const docker = { available: true, overall: "problem", counts: { ok: 0, note: 0, problem: 2, unknown: 0 }, backup_count: 0, own_count: 0, backups: [], attest: {},
+    checks: [{ id: "setup", level: "problem", values: { agents: [], recurrence: "never" } }, { id: "newest", level: "problem", values: { age_hours: null } }] };
+  const external = { ...docker, overall: "ok", counts: { ok: 2, note: 0, problem: 0, unknown: 0 }, own_count: 2,
+    checks: [{ id: "external", level: "ok", values: { at: "2026-10-18T00:00:00+00:00" } }, { id: "space", level: "ok", values: { free: 41e9, size: 1e8, need: 1.5e8 } }] };
+  el._hass = { language: "en", callWS: async msg => (msg.kind === "external" ? external : docker) };
+  el.view = "maintenance"; await el.loadBackup();
+  assert.ok(shadow.innerHTML.includes('data-bh-open="external"') && shadow.innerHTML.includes("the Docker volume or the host"));
+  el.bhForm = "external"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-bh-save="external"') && shadow.innerHTML.includes("the checks of schedule, age, location"));
+  await el.loadBackup({ type: "ha_housekeeper/backup_attest", kind: "external" });
+  const html = shadow.innerHTML;
+  for (const text of ["Outside Home Assistant", "Housekeeper does not see these backups", 'data-bh-clear="external"', "Housekeeper backups", ">External<"]) assert.ok(html.includes(text), text);
+  assert.ok(!html.includes("Targets and schedule") && !html.includes('data-bh-open="external"'));
+});
+
 test("the backup card says when the component is missing or the call fails", async () => {
   const { el, shadow } = panel("de");
   el._hass = { language: "de", callWS: async () => ({ available: false, checks: [], backups: [], overall: "unknown" }) };

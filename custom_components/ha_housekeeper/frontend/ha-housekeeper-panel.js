@@ -737,7 +737,7 @@ Object.assign(TEXT.de, {
   recorderSnippetTitle: "Vorschlag für die configuration.yaml", recorderSnippetHint: "Entitäten, die nichts verwendet, keine Statistik haben und sehr oft schreiben. Prüfe die Liste, bevor du sie übernimmst.", recorderCopy: "Kopieren", recorderCopied: "Kopiert",
   preflightTitle: "Update-Preflight", preflightLoading: "Wird geprüft …",
   pf_backup: "Backup", pf_disk: "Freier Speicher", pf_config: "Konfiguration", pfConfigHint: "Prüft alle Konfigurationsdateien. Das dauert einige Sekunden und läuft nur auf Knopfdruck.", pfConfigRun: "Prüfen", pfConfigAgain: "Erneut prüfen", pfConfigRunning: "Wird geprüft …", pfConfigOk: "Gültig, geprüft am {time}", pfConfigWarn: "Gültig mit Warnungen, geprüft am {time}: ", pfConfigBad: "Ungültig: ", pf_disk_text: "{free} frei", pf_repairs: "Offene Reparaturen", pf_failed_entries: "Ausgefallene Integrationen", pf_broken: "Fehlende Referenzen",
-  pf_backup_ok: "Letztes Backup vor {hours} h", pf_backup_old: "Letztes Backup vor {hours} h – ein neues ist ratsam", pf_backup_none: "Kein Backup eingerichtet oder vorhanden", pf_backup_unavailable: "Backup-Komponente nicht verfügbar",
+  pf_backup_ok: "Letztes Backup vor {hours} h", pf_backup_old: "Letztes Backup vor {hours} h – ein neues ist ratsam", pf_backup_none: "Kein Backup eingerichtet oder vorhanden", pf_backup_unavailable: "Backup-Komponente nicht verfügbar", pf_backup_external: "Außerhalb von Home Assistant gesichert: vor dem Update dort ein frisches Backup machen",
   pf_count_none: "keine", pf_updates: "Verfügbare Updates", pf_updates_none: "keine",
   updatesTab: "Updates", pfOpenBackup: "Backup-Schutz",
   updBlocked: "HACS kann es nicht installieren", updRunning: "läuft", updAuto: "automatisch", updWatch: "Beobachtung startet", updNotes: "Änderungen", updOpenHa: "In Home Assistant öffnen", updOpen: "Öffnen",
@@ -782,7 +782,7 @@ Object.assign(TEXT.en, {
   recorderSnippetTitle: "Suggestion for configuration.yaml", recorderSnippetHint: "Entities that nothing uses, that have no statistics and that write very often. Review the list before you adopt it.", recorderCopy: "Copy", recorderCopied: "Copied",
   preflightTitle: "Update preflight", preflightLoading: "Checking …",
   pf_backup: "Backup", pf_disk: "Free space", pf_config: "Configuration", pfConfigHint: "Checks every configuration file. It takes a few seconds and runs only when you press the button.", pfConfigRun: "Check", pfConfigAgain: "Check again", pfConfigRunning: "Checking …", pfConfigOk: "Valid, checked on {time}", pfConfigWarn: "Valid with warnings, checked on {time}: ", pfConfigBad: "Invalid: ", pf_disk_text: "{free} free", pf_repairs: "Open repairs", pf_failed_entries: "Failed integrations", pf_broken: "Missing references",
-  pf_backup_ok: "Last backup {hours} h ago", pf_backup_old: "Last backup {hours} h ago – a new one is advisable", pf_backup_none: "No backup set up or available", pf_backup_unavailable: "Backup component not available",
+  pf_backup_ok: "Last backup {hours} h ago", pf_backup_old: "Last backup {hours} h ago – a new one is advisable", pf_backup_none: "No backup set up or available", pf_backup_unavailable: "Backup component not available", pf_backup_external: "Backed up outside Home Assistant: make a fresh backup there before the update",
   pf_count_none: "none", pf_updates: "Available updates", pf_updates_none: "none",
   updatesTab: "Updates", pfOpenBackup: "Backup protection",
   updBlocked: "HACS cannot install it", updRunning: "running", updAuto: "automatic", updWatch: "Watch starts", updNotes: "Changes", updOpenHa: "Open in Home Assistant", updOpen: "Open",
@@ -862,6 +862,7 @@ Object.assign(TEXT.de, {
   bhListTitle: "Letzte Backups", bhAllProtected: "Alle (geschützt oder nicht)", bhColDate: "Datum", bhColSize: "Größe", bhColTargets: "Ziele", bhAgentLocal: "Lokal", bhAgentNetwork: "Netzwerkspeicher: {name}", bhColProtected: "Verschlüsselt", bhYes: "Ja", bhNo: "Nein",
   bhColKind: "Art", bhColContent: "Inhalt", bhAllKinds: "Alle Arten", bhKind_auto: "Automatisch", bhKind_manual: "Manuell", bhKind_other: "Anderes Werkzeug", bhKind_own: "Housekeeper", bhContent_full: "Voll", bhContent_config: "Nur Konfiguration", bhContent_apps: "Nur Apps", bhFailedPill: "Teil fehlgeschlagen", bhOpen: "Details aufklappen", bhClose: "Details zuklappen",
   bhName: "Name", bhVersion: "HA-Version", bhDatabase: "Datenbank", bhApps: "Apps", bhFolders: "Ordner", bhSizes: "Größe je Ziel", bhFailed: "Fehlgeschlagen", bhId: "Backup-ID",
+  bh_external: "Außerhalb von Home Assistant", bhExternalPill: "Extern", bhExternalText: "Am {date} angegeben. Housekeeper sieht diese Backups nicht und prüft weder Alter noch Inhalt.", bhExternalClear: "Zurücknehmen", bhExternalOpen: "Sichere extern", bhExternalAsk: "Sicherst du außerhalb von Home Assistant, etwa das Docker-Volume oder den Host? Dann kannst du das angeben.", bhExternalForm: "Housekeeper sieht diese Backups nicht und prüft sie nicht: Die Prüfungen zu Zeitplan, Alter, Ablageort, Größe, Aufbewahrung, Verschlüsselung und Emergency Kit entfallen. Die Sicherung, die Housekeeper vor einem Eingriff anlegt, bleibt; sie landet im Backup-Ordner von Home Assistant.", bhExternalSave: "Angeben", bhExternalShort: "Außerhalb von Home Assistant", bhTileBackup: "Sicherung", bhTileOwn: "Housekeeper-Backups", bhTileFree: "Freier Platz",
   bhGuideTitle: "So testest du eine Wiederherstellung", bhGuideSteps: "1. Eine Test-Instanz oder eine zweite Installation bereitstellen (nie zuerst die Hauptinstanz). 2. Dort ein aktuelles Backup einspielen: Einstellungen → System → Backups → Backup hochladen oder bei der Einrichtung wiederherstellen. 3. Prüfen, ob Integrationen, Automationen und Dashboards da sind. 4. Hier das Datum des Tests speichern. Housekeeper führt selbst nie eine Wiederherstellung aus.",
   todoBackupProblem: "Backup-Schutz: Problem",
   mtProblems_1: "1 Problem", mtProblems_n: "{n} Probleme", mtNotes_1: "1 Hinweis", mtNotes_n: "{n} Hinweise", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtUpdates_1: "1 Update", mtUpdates_n: "{n} Updates", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
@@ -894,6 +895,7 @@ Object.assign(TEXT.en, {
   bhListTitle: "Latest backups", bhAllProtected: "All (protected or not)", bhColDate: "Date", bhColSize: "Size", bhColTargets: "Targets", bhAgentLocal: "Local", bhAgentNetwork: "Network storage: {name}", bhColProtected: "Encrypted", bhYes: "Yes", bhNo: "No",
   bhColKind: "Type", bhColContent: "Contents", bhAllKinds: "All types", bhKind_auto: "Automatic", bhKind_manual: "Manual", bhKind_other: "Other tool", bhKind_own: "Housekeeper", bhContent_full: "Full", bhContent_config: "Configuration only", bhContent_apps: "Apps only", bhFailedPill: "Part failed", bhOpen: "Show details", bhClose: "Hide details",
   bhName: "Name", bhVersion: "HA version", bhDatabase: "Database", bhApps: "Apps", bhFolders: "Folders", bhSizes: "Size per target", bhFailed: "Failed", bhId: "Backup ID",
+  bh_external: "Outside Home Assistant", bhExternalPill: "External", bhExternalText: "Stated on {date}. Housekeeper does not see these backups and checks neither their age nor their content.", bhExternalClear: "Take back", bhExternalOpen: "I back up elsewhere", bhExternalAsk: "Do you back up outside Home Assistant, for example the Docker volume or the host? Then you can say so.", bhExternalForm: "Housekeeper does not see these backups and does not check them: the checks of schedule, age, location, size, retention, encryption and emergency kit are left out. The backup Housekeeper makes before a change stays; it goes to the backup folder of Home Assistant.", bhExternalSave: "Confirm", bhExternalShort: "Outside Home Assistant", bhTileBackup: "Backups", bhTileOwn: "Housekeeper backups", bhTileFree: "Free space",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
   todoBackupProblem: "Backup protection: problem",
   mtProblems_1: "1 problem", mtProblems_n: "{n} problems", mtNotes_1: "1 note", mtNotes_n: "{n} notes", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtUpdates_1: "1 update", mtUpdates_n: "{n} updates", mtRecord: "Saved state", mtNoRecord: "none",
@@ -2629,13 +2631,13 @@ class OverviewMixin {
     const b = this.backup;
     if (!b?.available) return "";
     const checks = b.checks || [], by = id => checks.find(c => c.id === id);
-    const newest = by("newest"), run = by("last_run");
+    const newest = by("newest"), run = by("last_run"), external = by("external");
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const tone = level => ({ ok: "ok", note: "warn", problem: "red" })[level] || "mute";
     const fact = (label, value, level) => `<div class="fact"><span>${this.t(label)}</span><b>${value}${level ? ` <span class="pill ${tone(level)}">${this.t(`bhLevel_${level}`)}</span>` : ""}</b></div>`;
     const age = newest?.values?.age_hours;
     const rows = [
-      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
+      external ? fact("bh_newest", this.t("bhExternalShort"), "") : fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
       fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");
@@ -6227,6 +6229,7 @@ class MaintenanceMixin {
       backup: () => {
         const b = state.backup || {};
         if (!b.available) return this.t("pf_backup_unavailable");
+        if (b.level === "external") return this.t("pf_backup_external");
         if (b.age_hours === null || b.age_hours === undefined) return this.t("pf_backup_none");
         return this.t(b.level === "ok" ? "pf_backup_ok" : "pf_backup_old", { hours: Math.round(b.age_hours) });
       },
@@ -6237,7 +6240,7 @@ class MaintenanceMixin {
       const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
       const text = detail[c.check] ? detail[c.check]() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
       const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
-      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
+      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : c.level === "info" ? "mdi:export" : "mdi:alert-outline";
       return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span>${c.check === "backup" ? `<button class="btn quiet" data-jump="maintenance" data-jump-tab="backup">${this.t("pfOpenBackup")}</button>` : ""}</div>`;
     }).join("");
   }
@@ -6354,14 +6357,15 @@ class MaintenanceMixin {
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const pf = this.preflight;
     const updates = pf?.counts?.total ?? pf?.state?.updates?.length ?? 0;
-    const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
+    const external = checks.some(c => c.id === "external");
+    const backupTone = !this.backup?.available || (external && !problems && !notes) ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : !updates ? "ok" : { stop: "red", look: "warn" }[pf.verdict] || "ok";
     const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     this.ensureGoals();
     this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : "", tone: backupTone },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : external ? this.t("bhExternalPill") : "", tone: backupTone },
       { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.t(updates === 1 ? "mtUpdates_1" : "mtUpdates_n", { n: this.formatNumber(updates) }) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
       { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
@@ -6479,6 +6483,8 @@ class BackupMixin {
       case "space":
         if (c.level === "unknown") return t("bhSpaceUnknown");
         return t({ ok: "bhSpaceOk", note: "bhSpaceNote", problem: "bhSpaceProblem" }[c.level], { free: this.formatBytes(v.free), size: this.formatBytes(v.size), need: this.formatBytes(v.need) });
+      case "external":
+        return t("bhExternalText", { date: this.bhDay(v.at) });
       case "own_backups":
         return t("bhOwnNote", { count: v.count, size: this.formatBytes(v.size) });
       case "plan_backups":
@@ -6488,14 +6494,28 @@ class BackupMixin {
     }
   }
 
+  // Backups made outside Home Assistant can be stated where the setup or the newest backup is not in order.
+  bhOffersExternal(c) {
+    if (c.id !== "setup") return false;
+    return (this.backup?.checks || []).some(x => (x.id === "setup" || x.id === "newest") && (x.level === "problem" || x.level === "note"));
+  }
+
+  bhExternalRow(c) {
+    return `<div class="row rel bh"><span class="tile mute"><ha-icon icon="mdi:export"></ha-icon></span><span class="row-text"><strong>${this.t("bh_external")}</strong><small>${this.bhText(c)}</small></span><span class="bhactions"><button class="bhopen" data-bh-clear="external">${this.t("bhExternalClear")}</button><span class="pill mute">${this.t("bhExternalPill")}</span></span></div>`;
+  }
+
   bhRow(c) {
+    if (c.id === "external") return this.bhExternalRow(c);
     const tone = { ok: "ok", note: "warn", problem: "red", unknown: "mute" }[c.level] || "mute";
     const icon = { ok: "mdi:check", note: "mdi:alert-outline", problem: "mdi:close-octagon-outline", unknown: "mdi:help-circle-outline" }[c.level] || "mdi:help-circle-outline";
     const attest = c.id === "targets" || c.id === "emergency_kit" || c.id === "restore_test" || c.id === "encryption";
     const tidy = c.id === "own_backups" ? `<button class="bhopen" data-bkc-open>${this.t("bhOwnOpen")}</button>` : "";
+    const offer = this.bhOffersExternal(c), offerOpen = offer && this.bhForm === "external";
+    const external = offer ? `<button class="bhopen" data-bh-open="external" aria-expanded="${offerOpen}">${this.t("bhExternalOpen")}</button>` : "";
     const open = attest && c.level !== "unknown" && this.bhForm === c.id;
     const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : c.id === "encryption" ? "bhAttestEnc" : "bhAttestMark")}</button>` : "";
-    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}</small></span><span class="bhactions">${opener}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    if (offerOpen) return `${row}<div class="bhattest"><span class="factnote">${this.t("bhExternalForm")}</span><button class="btn small primary" data-bh-save="external">${this.t("bhExternalSave")}</button><button class="bhcancel" data-bh-cancel>${this.t("bhAttestCancel")}</button></div>`;
     if (!open) return row;
     const today = new Date().toISOString().slice(0, 10);
     const clear = c.values?.at ? `<button class="bhtake" data-bh-clear="${c.id}">${this.t("bhAttestClear")}</button>` : "";
@@ -6577,7 +6597,7 @@ class BackupMixin {
   // The checks in the order a person thinks in: does it run, where is it kept and what is in it, can it be restored, what Housekeeper adds.
   bhGroups(checks) {
     const groups = [
-      ["running", ["setup", "newest", "last_run"]],
+      ["running", ["external", "setup", "newest", "last_run"]],
       ["storage", ["targets", "remote_age", "content", "size", "retention", "space"]],
       ["restore", ["encryption", "emergency_kit", "restore_test"]],
       ["house", ["plan_backups", "own_backups"]],
@@ -6604,10 +6624,17 @@ class BackupMixin {
     const by = Object.fromEntries(b.checks.map(c => [c.id, c.values || {}]));
     const age = by.newest?.age_hours, remote = by.targets?.remote?.length || by.targets?.at;
     const open = (b.counts?.note || 0) + (b.counts?.problem || 0);
+    const external = Boolean(by.external), free = by.space?.free;
     return this.sumTiles([
+      ...(external ? [
+        { label: this.t("bhTileBackup"), value: this.t("bhExternalPill"), tone: "mute" },
+        { label: this.t("bhTileOwn"), value: this.formatNumber(b.own_count ?? 0), tone: "mute" },
+        { label: this.t("bhTileFree"), value: free === null || free === undefined ? "–" : this.esc(this.formatBytes(free)), tone: "mute" },
+      ] : [
       { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), tone: "mute" },
       { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
       { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
+      ]),
       // The number counts problems and hints together; below it, how many of each, so it matches "2 problems" above.
       { label: this.t("bhTileOpen"), value: this.formatNumber(open), sub: open ? this.esc([b.counts?.problem ? this.t(b.counts.problem === 1 ? "bhTileProblems1" : "bhTileProblems", { n: this.formatNumber(b.counts.problem) }) : "", b.counts?.note ? this.t(b.counts.note === 1 ? "bhTileNotes1" : "bhTileNotes", { n: this.formatNumber(b.counts.note) }) : ""].filter(Boolean).join(", ")) : "", tone: b.counts?.problem ? "red" : open ? "warn" : "ok" },
     ]);
@@ -9491,14 +9518,14 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, {
   tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsTab: "Ziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
   goal_broken_references: "Defekte Referenzen", goal_unavailable: "Nicht verfügbare Entitäten", goal_backup_age: "Alter des letzten Backups", goal_restore_test_age: "Alter des Wiederherstellungstests", goal_recorder_growth: "Datenbankwachstum", goal_weak_batteries: "Schwache Batterien", goal_devices_without_area: "Geräte ohne Bereich", goal_stale_sensors: "Sensoren ohne neue Meldung", goal_recurring_devices: "Wiederkehrende Ausfälle (Geräte)", goal_automation_errors: "Automationen mit Fehlern (30 Tage)", goal_blocked_automations: "Blockierte Automationen", goal_orphaned_statistics: "Verwaiste Statistiken",
-  goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar",
+  goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar", goalExternal: "außerhalb von Home Assistant gesichert",
   goalState_met: "Erfüllt", goalState_missed: "Verfehlt", goalState_unknown: "Unbekannt", goalState_off: "Aus",
   goalUnit_mb_per_day: "{n} MB pro Tag", goalEdit: "Anpassen", goalLimitLabel: "Grenze", goalEnabled: "Ziel beachten", goalDefault: "Standard: {n}", goalFailed: "Nicht gespeichert: {reason}", goalSave: "Speichern", goalsAdjust: "Grenzen anpassen", goalsAllMet: "Alle {n} beachteten Ziele sind erreicht.",
 });
 Object.assign(TEXT.en, {
   tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsTab: "Goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
   goal_broken_references: "Broken references", goal_unavailable: "Unavailable entities", goal_backup_age: "Age of the latest backup", goal_restore_test_age: "Age of the restore test", goal_recorder_growth: "Database growth", goal_weak_batteries: "Weak batteries", goal_devices_without_area: "Devices without an area", goal_stale_sensors: "Sensors without a new report", goal_recurring_devices: "Recurring outages (devices)", goal_automation_errors: "Automations with errors (30 days)", goal_blocked_automations: "Blocked automations", goal_orphaned_statistics: "Orphaned statistics",
-  goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet",
+  goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet", goalExternal: "backed up outside Home Assistant",
   goalState_met: "Met", goalState_missed: "Missed", goalState_unknown: "Unknown", goalState_off: "Off",
   goalUnit_mb_per_day: "{n} MB per day", goalEdit: "Adjust", goalLimitLabel: "Limit", goalEnabled: "Watch this goal", goalDefault: "Default: {n}", goalFailed: "Not saved: {reason}", goalSave: "Save", goalsAdjust: "Adjust limits", goalsAllMet: "All {n} watched goals are met.",
 });
@@ -9544,6 +9571,7 @@ class GoalsMixin {
   }
 
   goalNow(g) {
+    if (g.external) return this.t("goalExternal");
     if (g.never) return this.t(g.id === "backup_age" ? "goalNoBackup" : "goalNever");
     return g.value === null ? this.t("goalUnknownHint") : this.t("goalNow", { value: this.goalAmount(g, g.value) });
   }

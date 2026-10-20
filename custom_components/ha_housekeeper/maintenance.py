@@ -267,6 +267,8 @@ def _backup_state(report: dict[str, Any] | None) -> dict[str, Any]:
     if not report or not report.get("available"):
         return {"available": False}
     checks = {c["id"]: c for c in report.get("checks") or []}
+    if "external" in checks:  # made outside Home Assistant: nothing here can tell its age
+        return {"available": True, "level": "external"}
     severity = {"ok": 0, "unknown": 1, "note": 2, "problem": 3}
     worst = max(
         (checks[i]["level"] for i in ("setup", "newest", "last_run") if i in checks),
@@ -443,13 +445,13 @@ async def collect_preflight(
 
 
 def judge_preflight(state: dict[str, Any]) -> list[dict[str, Any]]:
-    """Turn the collected state into the lines of the page: ``ok``, ``warn`` or ``red``."""
+    """Turn the collected state into the lines of the page: ``ok``, ``info``, ``warn`` or ``red``."""
     checks = []
     backup = state["backup"]
     if not backup.get("available"):
         level = "warn"
     else:
-        level = {"ok": "ok", "problem": "red"}.get(backup.get("level"), "warn")
+        level = {"ok": "ok", "problem": "red", "external": "info"}.get(backup.get("level"), "warn")
     checks.append({"check": "backup", "level": level})
     free = (state.get("disk") or {}).get("free")
     if free is not None:

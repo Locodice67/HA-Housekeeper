@@ -355,13 +355,13 @@ class OverviewMixin {
     const b = this.backup;
     if (!b?.available) return "";
     const checks = b.checks || [], by = id => checks.find(c => c.id === id);
-    const newest = by("newest"), run = by("last_run");
+    const newest = by("newest"), run = by("last_run"), external = by("external");
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const tone = level => ({ ok: "ok", note: "warn", problem: "red" })[level] || "mute";
     const fact = (label, value, level) => `<div class="fact"><span>${this.t(label)}</span><b>${value}${level ? ` <span class="pill ${tone(level)}">${this.t(`bhLevel_${level}`)}</span>` : ""}</b></div>`;
     const age = newest?.values?.age_hours;
     const rows = [
-      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
+      external ? fact("bh_newest", this.t("bhExternalShort"), "") : fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
       fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");

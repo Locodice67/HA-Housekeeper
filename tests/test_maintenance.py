@@ -122,6 +122,8 @@ def test_judging_the_preflight() -> None:
         judge_preflight(state(backup={"available": True, "level": "problem"}))[0]["level"] == "red"
     )
     assert judge_preflight(state(backup={"available": False}))[0]["level"] == "warn"
+    external = judge_preflight(state(backup={"available": True, "level": "external"}))
+    assert external[0]["level"] == "info" and preflight_verdict(external[:1]) == "ready"
     counts = {c["check"]: c for c in judge_preflight(state(repairs=[{"issue_id": "a"}]))}
     assert counts["repairs"]["level"] == "warn" and counts["repairs"]["count"] == 1
     disk = {c["check"]: c["level"] for c in judge_preflight(state(disk={"free": 2 * 1024**3}))}

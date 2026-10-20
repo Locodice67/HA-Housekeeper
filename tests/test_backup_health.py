@@ -396,6 +396,7 @@ async def test_the_attestations_survive_a_restart_and_reject_unknown_kinds(
         "emergency_kit": None,
         "restore_test": None,
         "encryption": None,
+        "external": None,
     }
     store.set("emergency_kit")
     store.set("restore_test", date(2026, 9, 1))
@@ -458,3 +459,12 @@ def test_housekeeper_backups_never_count_as_the_backup_strategy() -> None:
     assert report["backup_count"] == 0 and report["backups"][0]["own"] is True
     _, checks = judge(state([own, backup(10)]))
     assert checks["newest"]["values"]["age_hours"] == 10
+
+
+def test_backups_made_outside_home_assistant_leave_out_its_checks() -> None:
+    own = backup(1, own=True, size=1000, agents=("backup.local",))
+    docker = {**state([own], disk_free=900), "config": config(agent_ids=[], recurrence="never")}
+    report, checks = judge(docker, attest={"external": ago(days=2)})
+    assert set(checks) == {"external", "space", "restore_test"}
+    assert checks["external"]["level"] == "ok" and checks["space"]["level"] == "problem"
+    assert report["own_count"] == 1 and report["attest"]["external"] == ago(days=2)

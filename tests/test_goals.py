@@ -100,3 +100,9 @@ def test_blocked_automations_count_open_findings_only() -> None:
     }
     goal = _goals(measure(snapshot, None, None, None))["blocked_automations"]
     assert goal["value"] == 1 and goal["state"] == "missed"
+
+
+def test_backups_made_outside_home_assistant_leave_the_backup_age_unknown() -> None:
+    external = {"available": True, "checks": [_check("external", at="2026-10-01")]}
+    goal = _goals(measure(SNAPSHOT, external, None, None))["backup_age"]
+    assert goal["state"] == "unknown" and goal["external"] and goal["value"] is None

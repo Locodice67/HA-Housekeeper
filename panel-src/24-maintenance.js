@@ -105,6 +105,7 @@ class MaintenanceMixin {
       backup: () => {
         const b = state.backup || {};
         if (!b.available) return this.t("pf_backup_unavailable");
+        if (b.level === "external") return this.t("pf_backup_external");
         if (b.age_hours === null || b.age_hours === undefined) return this.t("pf_backup_none");
         return this.t(b.level === "ok" ? "pf_backup_ok" : "pf_backup_old", { hours: Math.round(b.age_hours) });
       },
@@ -115,7 +116,7 @@ class MaintenanceMixin {
       const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
       const text = detail[c.check] ? detail[c.check]() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
       const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
-      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
+      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : c.level === "info" ? "mdi:export" : "mdi:alert-outline";
       return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span>${c.check === "backup" ? `<button class="btn quiet" data-jump="maintenance" data-jump-tab="backup">${this.t("pfOpenBackup")}</button>` : ""}</div>`;
     }).join("");
   }
@@ -232,14 +233,15 @@ class MaintenanceMixin {
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const pf = this.preflight;
     const updates = pf?.counts?.total ?? pf?.state?.updates?.length ?? 0;
-    const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
+    const external = checks.some(c => c.id === "external");
+    const backupTone = !this.backup?.available || (external && !problems && !notes) ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : !updates ? "ok" : { stop: "red", look: "warn" }[pf.verdict] || "ok";
     const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     this.ensureGoals();
     this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : "", tone: backupTone },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : external ? this.t("bhExternalPill") : "", tone: backupTone },
       { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.t(updates === 1 ? "mtUpdates_1" : "mtUpdates_n", { n: this.formatNumber(updates) }) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
       { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
