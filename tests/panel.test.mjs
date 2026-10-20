@@ -685,9 +685,11 @@ test("deep links select view, filter and object once", () => {
   const { el } = panel("en", { window });
   el.isConnected = true;
   el._basePath = "/ha-housekeeper";
+  el.findingStatus = "hidden"; el.lvState("findings", "impact", "desc").f.area = "Kitchen";
   el.applyUrl();
   assert.equal(el.view, "findingsNav");
   assert.equal(el.findingFilter, "orphaned");
+  assert.equal(`${el.findingStatus}|${Object.keys(el.lv.findings.f).length}`, "|0", "a link starts from the plain open list, without kept filters");
   el.view = "overview";
   el.applyUrl();
   assert.equal(el.view, "overview", "applied only once");
