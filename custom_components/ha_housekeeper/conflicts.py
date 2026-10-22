@@ -85,15 +85,25 @@ def _kind(trigger: dict[str, Any]) -> str:
     return str(trigger.get("platform") or trigger.get("trigger") or "")
 
 
+def _range(trigger: dict[str, Any]) -> tuple[float, float] | None:
+    """The open range (above, below) of a numeric trigger; ``None`` unless it is plain numbers."""
+    if trigger.get("attribute") or trigger.get("value_template"):
+        return None
+    bounds = (trigger.get("above", float("-inf")), trigger.get("below", float("inf")))
+    if all(isinstance(b, (int, float)) and not isinstance(b, bool) for b in bounds):
+        return bounds
+    return None
+
+
 def triggers_of(item: dict[str, Any]) -> dict[str, list[Any]]:
-    """Entity id -> the ``to`` values of the state triggers on it (``None`` when unfiltered)."""
+    """Entity id -> the ``to`` values (numeric triggers: their range) of the triggers on it, ``None`` when unfiltered."""
     found: dict[str, list[Any]] = {}
     for trigger in item.get("triggers") or []:
         if not isinstance(trigger, dict) or _kind(trigger) not in TRIGGER_KINDS:
             continue
-        to = trigger.get("to") if _kind(trigger) == "state" else None
+        to = trigger.get("to") if _kind(trigger) == "state" else _range(trigger)
         for entity_id in _entity_ids(trigger):
-            found.setdefault(entity_id, []).append(to if isinstance(to, str) else None)
+            found.setdefault(entity_id, []).append(to if isinstance(to, (str, tuple)) else None)
     return found
 
 
@@ -186,9 +196,16 @@ def _stage(days: int) -> str:
 
 def _can_fire_together(first: list[Any], second: list[Any]) -> bool:
     """Whether two state triggers on one entity can fire at the same moment."""
-    if None in first or None in second:  # unfiltered, list or numeric_state: may overlap
+    if None in first or None in second:  # unfiltered, list or open numeric_state: may overlap
         return True
-    return bool(set(first) & set(second))
+    return any(_meet(one, other) for one in first for other in second)
+
+
+def _meet(one: Any, other: Any) -> bool:
+    """Whether two ``to`` values or numeric ranges can hold at once."""
+    if isinstance(one, tuple) and isinstance(other, tuple):
+        return one[1] > other[0] and other[1] > one[0]
+    return one == other or isinstance(one, tuple) != isinstance(other, tuple)
 
 
 def opposing(autos: list[dict[str, Any]], days: dict[str, dict[str, Any]], today: date):

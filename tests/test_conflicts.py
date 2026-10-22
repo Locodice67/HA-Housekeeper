@@ -71,6 +71,14 @@ def test_opposing_commands_need_a_shared_trigger_or_window_and_gain_evidence_fro
         "split_off", [state("input_boolean.s", "off")], [call("light.turn_off", "light.hall")]
     )
     assert find([split_on, split_off], [], {}, TODAY)["items"] == []
+
+    def level(name, service, **bounds):
+        trigger = {"trigger": "numeric_state", "entity_id": "sensor.power", **bounds}
+        return auto(name, [trigger], [call(service, "switch.washer")])
+
+    below = level("below", "switch.turn_off", below=5)
+    assert find([level("above", "switch.turn_on", above=5), below], [], {}, TODAY)["items"] == []
+    assert len(find([level("wide", "switch.turn_on", above=2), below], [], {}, TODAY)["items"]) == 1
     mixed = auto(
         "mixed",
         [state("input_boolean.s", "on"), state("input_boolean.s")],
