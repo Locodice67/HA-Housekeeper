@@ -42,6 +42,7 @@ from .causes import apply_causes, device_down_findings
 from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
 from .config_changes import ChangeStore, fingerprint
+from .conflicts import KEY_PREFIX as CONFLICT_KEY_PREFIX
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_OUTAGE_HIGH_HOURS,
@@ -1945,7 +1946,7 @@ class InventoryScanner:
         """Hide or show one finding in the stored state and the cached snapshot.
 
         ``kind`` and ``reason`` say what was decided and why; ``days`` how long it holds.
-        A policy violation (key ``policy.<rule>|...``) is no finding: only the ignore list changes.
+        A policy violation (key ``policy.<rule>|...``) or a conflict (``conflict.<kind>|...``) is no finding: only the ignore list changes.
         """
         now = datetime.now(UTC)
 
@@ -1957,7 +1958,7 @@ class InventoryScanner:
             return self.ignored.decide(key, kind, now, reason=reason, until=until, by=by, via=via)
 
         # A decision whose finding is away right now (it rests) can be changed or taken away as well.
-        if key.startswith(POLICY_KEY_PREFIX) or (
+        if key.startswith((POLICY_KEY_PREFIX, CONFLICT_KEY_PREFIX)) or (
             self.ignored.entry(key) is not None
             and not any(f["key"] == key for f in (self._snapshot or {}).get("findings", []))
         ):

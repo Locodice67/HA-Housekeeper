@@ -105,6 +105,7 @@ async def test_a_decision_rests_while_its_finding_is_away_and_knows_when_it_was_
     then = datetime(2026, 9, 1, tzinfo=UTC)
     store.decide("rule|a|", "keep", then, reason="off on purpose")
     store.decide("policy.x|b|", "ignore", then)
+    store.decide("conflict.loop|a|b", "ignore", then)
     store.note_seen({"rule|a|", "other|c|"}, then + timedelta(minutes=10))
     assert store.entry("rule|a|")["seen"] == then.isoformat(), "within the hour nothing is written"
     store.note_seen({"rule|a|"}, then + timedelta(days=2))

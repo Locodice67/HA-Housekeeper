@@ -131,7 +131,7 @@ class RunsRow(TypedDict, total=False):
 
 class RunsResult(TypedDict, total=False):
     items: list[RunsRow]
-    conflicts: dict[str, Any]  # checked, total, items: opposing commands and possible loops
+    conflicts: dict[str, Any]  # checked, total (open), known, items with a key
     since: str | None
     window_days: int
     total: int

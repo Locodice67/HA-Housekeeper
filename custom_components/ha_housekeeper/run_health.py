@@ -443,4 +443,11 @@ async def report(scanner: Any, snapshot: dict[str, Any] | None = None) -> RunsRe
         scanner.runs.items,
         datetime.now(UTC).date(),
     )
+    now = datetime.now(UTC)
+    for item in found["items"]:
+        if info := scanner.ignored.info(item["key"], now):
+            item["ignored"] = True
+            item["decision"] = {k: info[k] for k in ("kind", "reason", "until")}
+    found["known"] = sum(1 for item in found["items"] if item.get("ignored"))
+    found["total"] -= found["known"]
     return {**result, "conflicts": found, "thresholds": THRESHOLDS}

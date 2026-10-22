@@ -63,6 +63,7 @@ def test_opposing_commands_need_a_shared_trigger_or_window_and_gain_evidence_fro
     )
     item = find([night, comfort], [], {}, TODAY)["items"][0]
     assert (item["reason"], item["detail"]) == ("window", "22:00–23:00")
+    assert item["key"] == "conflict.opposing|climate.hall|automation.comfort|automation.night"
     split_on = auto(
         "split_on", [state("input_boolean.s", "on")], [call("light.turn_on", "light.hall")]
     )

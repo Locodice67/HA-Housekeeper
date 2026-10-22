@@ -22,6 +22,7 @@ from .policy_rules import _entity_ids
 from .runs import RUNS
 
 WINDOW_DAYS = 7
+KEY_PREFIX = "conflict."  # keys of decisions about a conflict, next to those about findings
 CONFIRM_DAYS = 3  # days of shared activity from which a finding counts as confirmed
 LOOP_MIN_RUNS = 20  # runs per day by every automation of a loop that look like a loop
 MAX_DEPTH = 6  # automations a loop may pass through
@@ -238,6 +239,12 @@ def opposing(autos: list[dict[str, Any]], days: dict[str, dict[str, Any]], today
                 }
 
 
+def key_of(item: dict[str, Any]) -> str:
+    """What a decision about a conflict is stored under: kind, entity and the automations, not the stage."""
+    autos = sorted(a["entity_id"] for a in item["automations"])
+    return f"{KEY_PREFIX}{item['kind']}|{item.get('entity_id', '')}|{'|'.join(autos)}"
+
+
 def _brief(item: dict[str, Any]) -> dict[str, str]:
     return {"entity_id": item["entity_id"], "name": item.get("name") or item["entity_id"]}
 
@@ -341,5 +348,7 @@ def find(
     days = {key: (value.get("days") or {}) for key, value in runs.items()}
     items = [*opposing(live, days, today), *loops(live, edges, days, today)]
     rank = {"confirmed": 0, "observed": 1, "static": 2}
+    for item in items:
+        item["key"] = key_of(item)
     items.sort(key=lambda i: (rank[i["stage"]], i["kind"], i["automations"][0]["name"]))
     return {"checked": len(live), "total": len(items), "items": items[:LIMIT]}

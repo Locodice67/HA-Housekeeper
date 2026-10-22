@@ -1142,6 +1142,12 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));
     root.querySelectorAll("[data-release-no]").forEach(el => el.onclick = () => { this.releaseConfirm = null; this.render(); });
+    root.querySelectorAll("[data-conflict-key]").forEach(el => el.onclick = async () => {
+      try {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: el.dataset.conflictKey, ignored: el.dataset.conflictValue === "1" });
+        await this.loadRuns();
+      } catch (err) { this.failed(err); this.render(); }
+    });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
     root.querySelector("[data-rel-compare]")?.addEventListener("click", () => { this.relCompare = !this.relCompare; this.reliability = null; this.loadReliability(); });
     root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });

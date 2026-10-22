@@ -151,7 +151,7 @@ class IgnoreStore:
         return [
             {"key": key, **entry}
             for key, entry in self._items.items()
-            if key not in present and not key.startswith("policy.")
+            if key not in present and not key.startswith(("policy.", "conflict."))
         ]
 
     def _save(self) -> None:

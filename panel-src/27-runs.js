@@ -74,7 +74,7 @@ class RunsMixin {
     if (!c.items.length) return `<p class="factnote">${this.t("cfNone")}</p>`;
     const rank = { confirmed: 0, observed: 1, static: 2 };
     const key = item => `${item.kind}|${item.entity_id || (item.entities || []).join(",")}|${item.automations.map(a => a.entity_id).join(",")}`;
-    const tone = item => (item.stage === "confirmed" ? "warn" : "mute");
+    const tone = item => (item.stage === "confirmed" && !item.ignored ? "warn" : "mute");
     const list = this.sysList("runs_conflicts", c.items, {
       sort: "stage", dir: "asc", tie: key, empty: "cfNone",
       sorts: [
@@ -87,11 +87,12 @@ class RunsMixin {
       columns: [
         { key: "stage", label: "cfColStage", dir: "asc", cell: item => `<span class="pill ${tone(item)}">${this.t(`cfStage_${item.stage}`)}</span>` },
         { key: "kind", label: "cfColKind", dir: "asc", cell: item => this.t(`cfKind_${item.kind}`) },
-        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>` },
+        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>${item.ignored ? `<small>${this.t("cfKnownNote")}</small>` : ""}` },
         { key: "autos", label: "cfColAutomations", sortable: false, cell: item => item.automations.map(a => `<button class="link" data-object="${this.esc(`automation:${a.entity_id}`)}">${this.esc(a.name)}</button>`).join(" · ") },
+        { key: "act", label: "cfColAction", sortable: false, cell: item => `<button class="btn" data-conflict-key="${this.esc(item.key)}" data-conflict-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "cfReport" : "cfKnown")}</button>` },
       ],
     });
-    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.items.length) }, list, false)}</div>`;
+    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.total) }, list, false)}</div>`;
   }
 
   runsSorts() {

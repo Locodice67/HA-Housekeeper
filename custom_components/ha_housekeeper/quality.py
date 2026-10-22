@@ -157,6 +157,8 @@ def build(
                 stale.setdefault(edge["source"], set()).add(target["object_id"])
     clashes: dict[str, list[dict[str, Any]]] = {}
     for item in conflict_items:
+        if item.get("ignored"):
+            continue
         for automation in item["automations"]:
             clashes.setdefault(automation["entity_id"], []).append(item)
     callers = _script_callers(snapshot, actions_of, script_actions_of)

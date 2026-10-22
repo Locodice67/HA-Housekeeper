@@ -982,7 +982,7 @@ Object.assign(TEXT.de, {
   rfAfterUpdate: "Fehlerquote {after} % nach dem Update ({what}) statt {before} % davor. Zeitlich zusammen, nicht als Ursache bewiesen.", rfWhatHa: "Home Assistant {to}", rfWhatEntry: "{domain} {to}",
   rfLongWait: "Enthält eine Wartezeit von {duration}; sie geht bei einem Neustart verloren.", rfWaitNoTimeout: "{n} Warteschritt(e) ohne Timeout; sie gehen bei einem Neustart verloren.",
   rfContinue: "{n} Schritt(e) mit „continue_on_error“; Fehler bleiben dort unsichtbar.",
-  cfColStage: "Stufe", cfColKind: "Art", cfColWhat: "Was", cfColAutomations: "Automationen", cfAllKinds: "Alle Arten", cfKind_opposing: "Gegenläufig", cfKind_loop: "Schleife",
+  cfColAction: "Entscheidung", cfKnown: "Als bekannt markieren", cfReport: "Wieder melden", cfKnownNote: "Als bekannt markiert: zählt nicht in der Bewertung.", cfColStage: "Stufe", cfColKind: "Art", cfColWhat: "Was", cfColAutomations: "Automationen", cfAllKinds: "Alle Arten", cfKind_opposing: "Gegenläufig", cfKind_loop: "Schleife",
   cfTitle: "Konflikte und Schleifen", cfHint: "Aus den Konfigurationen und den Tageszahlen der Läufe. Kein Beweis: Housekeeper führt nichts aus.", cfNone: "Keine möglichen Konflikte oder Schleifen gefunden.",
   cfStage_static: "möglich", cfStage_observed: "beobachtet", cfStage_confirmed: "wiederholt",
   cfOpposing: "{first} und {second} steuern {entity} gegensätzlich ({a} gegen {b}).", cfLoop: "{chain} führen im Kreis über {path} zurück zum Anfang.",
@@ -1010,7 +1010,7 @@ Object.assign(TEXT.en, {
   rfAfterUpdate: "Error rate {after} % after the update ({what}) instead of {before} % before. Close in time, not proven as the cause.", rfWhatHa: "Home Assistant {to}", rfWhatEntry: "{domain} {to}",
   rfLongWait: "Contains a wait of {duration}; it is lost on a restart.", rfWaitNoTimeout: "{n} wait step(s) without a timeout; they are lost on a restart.",
   rfContinue: "{n} step(s) with “continue_on_error”; errors stay invisible there.",
-  cfColStage: "Stage", cfColKind: "Kind", cfColWhat: "What", cfColAutomations: "Automations", cfAllKinds: "All kinds", cfKind_opposing: "Opposing", cfKind_loop: "Loop",
+  cfColAction: "Decision", cfKnown: "Mark as known", cfReport: "Report again", cfKnownNote: "Marked as known: not counted in the rating.", cfColStage: "Stage", cfColKind: "Kind", cfColWhat: "What", cfColAutomations: "Automations", cfAllKinds: "All kinds", cfKind_opposing: "Opposing", cfKind_loop: "Loop",
   cfTitle: "Conflicts and loops", cfHint: "From the configurations and the daily numbers of the runs. Not proof: Housekeeper runs nothing.", cfNone: "No possible conflicts or loops found.",
   cfStage_static: "possible", cfStage_observed: "observed", cfStage_confirmed: "repeated",
   cfOpposing: "{first} and {second} control {entity} in opposite ways ({a} against {b}).", cfLoop: "{chain} lead around in a circle via {path} back to the start.",
@@ -7013,7 +7013,7 @@ class RunsMixin {
     if (!c.items.length) return `<p class="factnote">${this.t("cfNone")}</p>`;
     const rank = { confirmed: 0, observed: 1, static: 2 };
     const key = item => `${item.kind}|${item.entity_id || (item.entities || []).join(",")}|${item.automations.map(a => a.entity_id).join(",")}`;
-    const tone = item => (item.stage === "confirmed" ? "warn" : "mute");
+    const tone = item => (item.stage === "confirmed" && !item.ignored ? "warn" : "mute");
     const list = this.sysList("runs_conflicts", c.items, {
       sort: "stage", dir: "asc", tie: key, empty: "cfNone",
       sorts: [
@@ -7026,11 +7026,12 @@ class RunsMixin {
       columns: [
         { key: "stage", label: "cfColStage", dir: "asc", cell: item => `<span class="pill ${tone(item)}">${this.t(`cfStage_${item.stage}`)}</span>` },
         { key: "kind", label: "cfColKind", dir: "asc", cell: item => this.t(`cfKind_${item.kind}`) },
-        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>` },
+        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>${item.ignored ? `<small>${this.t("cfKnownNote")}</small>` : ""}` },
         { key: "autos", label: "cfColAutomations", sortable: false, cell: item => item.automations.map(a => `<button class="link" data-object="${this.esc(`automation:${a.entity_id}`)}">${this.esc(a.name)}</button>`).join(" · ") },
+        { key: "act", label: "cfColAction", sortable: false, cell: item => `<button class="btn" data-conflict-key="${this.esc(item.key)}" data-conflict-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "cfReport" : "cfKnown")}</button>` },
       ],
     });
-    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.items.length) }, list, false)}</div>`;
+    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.total) }, list, false)}</div>`;
   }
 
   runsSorts() {
@@ -18981,6 +18982,12 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));
     root.querySelectorAll("[data-release-no]").forEach(el => el.onclick = () => { this.releaseConfirm = null; this.render(); });
+    root.querySelectorAll("[data-conflict-key]").forEach(el => el.onclick = async () => {
+      try {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: el.dataset.conflictKey, ignored: el.dataset.conflictValue === "1" });
+        await this.loadRuns();
+      } catch (err) { this.failed(err); this.render(); }
+    });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
     root.querySelector("[data-rel-compare]")?.addEventListener("click", () => { this.relCompare = !this.relCompare; this.reliability = null; this.loadReliability(); });
     root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });
