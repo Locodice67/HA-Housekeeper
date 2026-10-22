@@ -16,6 +16,7 @@ from custom_components.ha_housekeeper.runs import (
     MAXED,
     OK,
     RUNS,
+    STOPPED,
 )
 
 NOW = datetime(2026, 10, 8, 12, 0, tzinfo=UTC)
@@ -273,3 +274,13 @@ def test_the_result_counts_the_automations_it_left_out() -> None:
     result = evaluate({}, [OBJ, other], {}, {"automation.other"}, [], NOW, None)
     assert result["excluded"] == {"ignored": 1}
     assert evaluate({}, [OBJ], {}, set(), [], NOW, None)["excluded"] == {"ignored": 0}
+
+
+def test_a_run_that_stopped_at_a_condition_of_the_actions_is_not_a_failure() -> None:
+    c = counters(runs=7)
+    c[STOPPED] = 7
+    entry = {"c": c, "a": {"action/1": 7}}
+    days = {TODAY.isoformat(): entry}
+    actions = [{"action": "script.a"}, {"condition": "template", "value_template": "{{ x }}"}]
+    assert "never_ok" not in kinds(rate(days, actions=actions))
+    assert "never_ok" in kinds(rate(days, actions=[{"action": "script.a"}, {"delay": 5}]))

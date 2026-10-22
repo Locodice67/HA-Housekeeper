@@ -97,3 +97,20 @@ def test_loops_follow_groups_and_other_automations_but_not_filtered_self_trigger
     ]
     quiet = auto("q", [state("light.hall", "on")], [call("light.turn_off", "light.hall")])
     assert find([quiet], [], {}, TODAY)["total"] == 0
+
+
+def test_commands_that_cannot_make_the_trigger_fire_are_no_loop_and_unknown_ones_stay_static() -> (
+    None
+):
+    snap = auto(
+        "snap", [state("camera.drive", "recording")], [call("camera.snapshot", "camera.drive")]
+    )
+    play = auto(
+        "play",
+        [state("media_player.roon", "on")],
+        [call("media_player.media_play", "media_player.roon")],
+    )
+    assert find([snap, play], [], {}, TODAY)["total"] == 0
+    odd = auto("odd", [state("vacuum.rob", "cleaning")], [call("vacuum.clean_spot", "vacuum.rob")])
+    busy = runs("automation.odd", [30])
+    assert [i["stage"] for i in find([odd], [], busy, TODAY)["items"]] == ["static"]

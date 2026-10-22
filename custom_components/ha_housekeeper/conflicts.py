@@ -52,7 +52,28 @@ VALUE_KEY = {
     "set_percentage": "percentage",
     "set_preset_mode": "preset_mode",
 }
-RESULT = {"turn_on": "on", "turn_off": "off"}
+RESULT = {
+    "turn_on": "on",
+    "turn_off": "off",
+    "media_play": "playing",
+    "media_pause": "paused",
+    "media_stop": "idle",
+}
+# Services that leave the state of the entity as it is.
+UNCHANGING = {
+    "snapshot",
+    "press",
+    "record",
+    "volume_up",
+    "volume_down",
+    "volume_mute",
+    "volume_set",
+    "media_next_track",
+    "media_previous_track",
+    "media_seek",
+    "send_command",
+    "locate",
+}
 QUIET_DOMAINS = {"notify", "persistent_notification", "tts", "logbook", "system_log", "script"}
 TRIGGER_KINDS = {"state", "numeric_state"}
 CLOCK = re.compile(r"^(\d{1,2}):(\d{2})(?::\d{2})?$")
@@ -221,10 +242,18 @@ def _brief(item: dict[str, Any]) -> dict[str, str]:
     return {"entity_id": item["entity_id"], "name": item.get("name") or item["entity_id"]}
 
 
-def _fires(to: Any, service: str, own: bool) -> bool:
-    """Whether a command can make a state trigger with this ``to`` fire."""
+def _fires(to: Any, service: str, own: bool) -> bool | None:
+    """Whether a command can make a state trigger with this ``to`` fire; ``None`` if unknown."""
+    if service in UNCHANGING:
+        return False
+    if service in VALUE_KEY or service == "toggle":
+        return True
     result = RESULT.get(service)
-    if to in ("on", "off") and result is not None:
+    if result is None:
+        return None if service else True  # "" is a group or helper following its source
+    if service in ("turn_on", "turn_off") and to not in ("on", "off"):
+        return True
+    if isinstance(to, str):
         return result == to and not own
     return True
 
@@ -264,19 +293,21 @@ def loops(
     commands = {item["entity_id"]: commands_of(item) for item in autos}
     seen: set[frozenset[str]] = set()
     for start in autos:
-        queue: deque[tuple[str, str, list[str], list[dict[str, Any]]]] = deque(
-            (entity_id, service, [entity_id], [start])
+        queue: deque[tuple[str, str, list[str], list[dict[str, Any]], bool]] = deque(
+            (entity_id, service, [entity_id], [start], True)
             for entity_id, _, service, _ in commands[start["entity_id"]]
         )
         visited: set[tuple[str, str]] = set()
         while queue:
-            entity, service, path, chain = queue.popleft()
+            entity, service, path, chain, sure = queue.popleft()
             if (entity, service) in visited:
                 continue
             visited.add((entity, service))
             for other, to in triggered.get(entity, []):
-                if not _fires(to, service, other is chain[-1]):
+                fires = _fires(to, service, other is chain[-1])
+                if fires is False:
                     continue
+                known = sure and fires is True
                 if other is start:
                     key = frozenset(i["entity_id"] for i in chain)
                     if key not in seen:
@@ -286,17 +317,17 @@ def loops(
                         )
                         yield {
                             "kind": "loop",
-                            "stage": _stage(active),
+                            "stage": _stage(active) if known else "static",
                             "days": active,
                             "entities": path,
                             "automations": [_brief(i) for i in chain],
                         }
                 elif len(chain) < MAX_DEPTH and other not in chain:
                     for nxt, _, nservice, _ in commands[other["entity_id"]]:
-                        queue.append((nxt, nservice, [*path, nxt], [*chain, other]))
+                        queue.append((nxt, nservice, [*path, nxt], [*chain, other], known))
             for nxt in follow.get(entity, ()):
                 if nxt not in path:
-                    queue.append((nxt, "", [*path, nxt], chain))
+                    queue.append((nxt, "", [*path, nxt], chain, sure))
 
 
 def find(

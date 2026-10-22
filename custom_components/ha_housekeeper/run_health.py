@@ -27,6 +27,7 @@ from .runs import (
     MAXED,
     OK,
     RUNS,
+    STOPPED,
     run_key,
 )
 
@@ -246,6 +247,24 @@ def _after_update(
     return None
 
 
+def _guard_stops(window: list[dict[str, Any]], actions: Any) -> int:
+    """Aborted runs that stopped at a ``condition`` or ``stop`` of the actions: they ended on purpose."""
+    count = 0
+    for entry in window:
+        for step, runs in (entry.get("a") or {}).items():
+            node, found = actions, False
+            for part in step.split("/")[1:]:
+                try:
+                    node = node[int(part)] if isinstance(node, list) else node[part]
+                except (KeyError, IndexError, ValueError, TypeError):
+                    node = None
+                    break
+                found = found or (isinstance(node, dict) and "condition" in node)
+            if found or (isinstance(node, dict) and "stop" in node):
+                count += runs
+    return count
+
+
 def _iso_days(first: date, last: date) -> list[str]:
     return [(first + timedelta(days=n)).isoformat() for n in range((last - first).days + 1)]
 
@@ -279,6 +298,9 @@ def evaluate(
         window = _span(days, today, 0, WINDOW_DAYS - 1)
         baseline = _span(days, today, WINDOW_DAYS, WINDOW_DAYS + BASELINE_DAYS - 1)
         total = _sum(window)
+        guards = min(_guard_stops(window, actions.get(entity_id)), total[STOPPED])
+        total[STOPPED] -= guards
+        total[CONDITION] += guards
         steps: dict[str, int] = {}
         for entry in window:
             for step, count in (entry.get("s") or {}).items():
