@@ -2866,7 +2866,9 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
   el.view = "journal";
-  const short = (id, extra = {}) => ({ plan_id: id, created_at: new Date().toISOString(), status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
+  // One time for all: the journal sorts by date, so a clock tick between a and b would turn the page box into "b,a".
+  const at = new Date().toISOString();
+  const short = (id, extra = {}) => ({ plan_id: id, created_at: at, status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
   el.journal = [short("a"), short("b"), short("c", { executed: true, status: "verified" })];
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan: { ...short("n"), actions: [] }, merged: msg.plan_ids, conflicts: [{ object_id: "sensor.x", kinds: ["remove_entity", "replace_references"] }], dropped: 0 }; } };
