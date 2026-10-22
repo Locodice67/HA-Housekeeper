@@ -106,11 +106,11 @@ class StormsMixin {
   stormEntitiesList(entities) {
     const num = v => (v === null || v === undefined ? "–" : this.esc(this.formatNumber(v)));
     const kb = item => (item.attr_bytes === null || item.attr_bytes === undefined ? null : Math.round(item.attr_bytes / 102.4) / 10);
-    const info = item => this.excludeInfo(item);
+    const info = item => this.excludeInfo(item), flood = this.storms?.thresholds?.flood_attr_bytes ?? 4096;
     const columns = [
       { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.map(item => item.entity_id)), cell: item => this.excludeBox(item.entity_id) },
       { key: "name", label: "utName", cell: item => this.nameCell(item.name || item.entity_id, item.name ? item.entity_id : "") },
-      { key: "hint", label: "stormColHint", sortable: false, cell: item => { const i = info(item); return `<span class="extags" ${i.why ? `title="${this.esc(i.why)}"` : ""}>${i.tags}</span>`; } },
+      { key: "hint", label: "stormColHint", sortable: false, cell: item => { const i = info(item); return `<span class="extags" ${i.why ? `title="${this.esc(i.why)}"` : ""}>${i.tags}</span>${(item.attr_bytes ?? 0) >= flood ? `<button type="button" class="btn quiet" data-space-look="${this.esc(item.entity_id)}">${this.t("spaceLook")}</button>` : ""}`; } },
       { key: "rows", label: "stormColRows", dir: "desc", cell: item => num(item.rows) },
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: item => num(item.per_day) },
       { key: "noNew", label: "stormColNoNew", dir: "desc", cell: item => (item.no_new_state === null || item.no_new_state === undefined ? "–" : `${this.esc(this.formatNumber(Math.round(item.no_new_state * 100)))} %`) },

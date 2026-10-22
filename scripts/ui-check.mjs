@@ -146,7 +146,17 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         findings: [
           { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "Energie Haus", groups: 5 }] },
           { kind: "recorder_gap", level: "problem", gaps: 2, longest_seconds: 7200, latest: [{ start: 1790000000, end: 1790007200, seconds: 7200, cause: "recorder" }] },
-          { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }] };
+          { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }],
+        tables: [{ name: "states", bytes: 5.1 * GB }, { name: "state_attributes", bytes: 2.4 * GB }, { name: "statistics", bytes: 1.2 * GB }, { name: "events", bytes: 0.4 * GB }], tables_total: 4, tables_at: Date.now() / 1000 - 600 };
+      if (t.endsWith("/entity_space")) {
+        const ents = [["sensor.laut", 1.4, 0.2, 72000, 3], ["sensor.attr", 0.3, 1.1, 9000, 8800], ["sensor.beispiel_7", 0.6, 0.05, 41000, 12]].map(([entity_id, s, a, rows, variants]) => ({ entity_id, rows, states_bytes: s * GB, variants, shared: 0, attrs_bytes: a * GB, bytes: (s + a) * GB }));
+        const ranking = { entities: ents, entities_total: 412, loose_states_bytes: 0, loose_attrs_bytes: 12 * MB, loose_attrs_rows: 830, states_table: 5.1 * GB, attrs_table: 2.4 * GB, scaled: true, estimated: false };
+        if (q.get("space") === "running") return { available: true, running: true, result: null, progress: { share: 0.6, phase: "attrs", stopping: false, elapsed: 80, left: 55 }, interim: ranking };
+        return { available: true, running: false, result: { ...ranking, computed_at: Date.now() / 1000 - 300, took_ms: 94000, state: "done", read_share: 1 } };
+      }
+      if (t.endsWith("/entity_attributes")) return { available: true, busy: false, entity_id: msg.entity_id, found: true, total: 8800, read: 2000, chars: 4.1e7,
+        keys: [{ key: "forecast", chars: 3.6e7, share: 0.878, rows: 2000, changes: 1990, alone: 1500, driver: true }, { key: "source_list", chars: 3.1e6, share: 0.076, rows: 2000, changes: 0, alone: 0, driver: false }, { key: "media_title", chars: 1.2e6, share: 0.029, rows: 2000, changes: 1200, alone: 300, driver: true }, { key: "friendly_name", chars: 4e5, share: 0.01, rows: 2000, changes: 0, alone: 0, driver: false }],
+        rest: { keys: 6, chars: 3e5 } };
       if (t.endsWith("/statistics_last")) { const now = Date.now() / 1000; return { available: true, busy: false, last: { "sensor.e2m_proxon_fwt_meter_energy": now - 1038 * 86400, "sensor.fritz_box_7530_download_geschwindigkeit": now - 1033 * 86400, "sensor.fritz_box_7530_upload_geschwindigkeit_2": now - 30 * 86400, "sensor.eltako_gw1_weather_station_illuminance": null } }; }
       if (t.endsWith("/policies")) return { available: true, schema: 1, enabled: 2, violations: 3, rules: [
         { id: "entity_area", enabled: true, count: 2, ignored: 1, items: [{ object_type: "entity", object_id: "light.flur", name: "Flurlicht", key: "policy.entity_area|light.flur|", ignored: false, by: null }, { object_type: "entity", object_id: "sensor.keller", name: "Keller Temperatur", key: "policy.entity_area|sensor.keller|", ignored: false, by: null }, { object_type: "entity", object_id: "switch.alt", name: "Alter Schalter", key: "policy.entity_area|switch.alt|", ignored: true, by: "user" }] },

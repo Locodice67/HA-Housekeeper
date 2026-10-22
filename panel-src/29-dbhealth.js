@@ -178,11 +178,14 @@ class DbHealthMixin {
       sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "dbColTable", dir: "asc", get: label }],
       text: t => `${label(t)} ${t.name}`, tie: t => t.name, empty: "dbSeriesNone",
       columns: [
-        { key: "name", label: "dbColTable", dir: "asc", cell: t => this.nameCell(label(t), label(t) !== t.name ? t.name : "") },
+        { key: "name", label: "dbColTable", dir: "asc", cell: t => `${this.spaceTable(t.name) ? `<ha-icon class="spacechev" icon="mdi:chevron-${this.spaceOpen === t.name ? "down" : "right"}"></ha-icon>` : ""}${this.nameCell(label(t), label(t) !== t.name ? t.name : "")}` },
         this.sysSizeColumns(max)[0],
         { key: "share", label: "dbColPct", sortable: false, cell: t => `<span class="dbshare">${this.sysShare(t.bytes, total)}<b>${this.esc(`${this.formatNumber(share(t))} %`)}</b></span>` },
       ],
       exportName: "recorder-tables", header: [this.t("dbColTable"), "Name", "Bytes", "%"], rows: t => [label(t), t.name, t.bytes, share(t)],
+      // states and state_attributes unfold the space per entity below them.
+      rowAttrs: t => (this.spaceTable(t.name) ? `data-space-toggle="${this.esc(t.name)}" tabindex="0" role="button" aria-expanded="${this.spaceOpen === t.name}"` : 'class="static"'),
+      after: t => (this.spaceOpen === t.name ? `<tr class="static"><td colspan="3"><div class="spacebox">${this.spaceBlock()}</div></td></tr>` : ""),
     });
     const more = r.tables_total > tables.length ? `<p class="factnote">${this.t("dbTablesMore", { n: this.formatNumber(r.tables_total - tables.length) })}</p>` : "";
     const at = r.tables_at ? ` ${this.t("dbTablesAt", { at: this.esc(this.relTime(new Date(r.tables_at * 1000).toISOString())) })}` : "";

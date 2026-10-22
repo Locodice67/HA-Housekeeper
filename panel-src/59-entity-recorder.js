@@ -22,7 +22,7 @@ class EntityRecorderMixin {
     if (state?.loading) body = `<p class="factnote">${this.t("erecRunning")}</p>`;
     else if (state?.data) body = this.entityRecorderRows(state.data, id);
     else body = `${state?.message ? `<p class="factnote">${this.esc(state.message)}</p>` : ""}<div class="pad"><button class="btn" data-erec="${this.esc(id)}">${this.t("erecCount")}</button></div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("erecTitle")}</h2><p>${this.t("erecHint")}</p></div></div>${body}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("erecTitle")}</h2><p>${this.t("erecHint")}</p></div></div>${body}${this.spaceEntityPart(id)}</section>`;
   }
 
   // The write rate of the entity (from the recorder load numbers) is the last row; it needs the numbers of the whole recorder.

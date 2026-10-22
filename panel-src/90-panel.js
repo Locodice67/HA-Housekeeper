@@ -1013,6 +1013,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindPlanWizard(root);
     this.bindExclude(root);
     this.bindEntityRecorder(root);
+    this.bindSpace(root);
     this.bindEntityTrim(root);
     this.bindScanPoints(root);
     this.bindKnown(root);
