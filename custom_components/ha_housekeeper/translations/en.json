@@ -73,6 +73,14 @@
     "database_damaged": {
       "title": "The recorder database is damaged",
       "description": "A check on {at} found damage in the recorder database: {first} Housekeeper deletes nothing from the recorder until a check comes back clean. Make a backup first, rebuild the affected indexes with REINDEX or restore a backup. [Open Housekeeper]({link})."
+    },
+    "backup_problem": {
+      "title": "Backup protection reports a problem",
+      "description": "Backup protection found {count} check(s) that need attention, for example no recent backup, a failed run or too little free space. [Open backup protection]({link}). Nothing is changed automatically."
+    },
+    "orphaned_statistics": {
+      "title": "{count} statistics without an entity",
+      "description": "Housekeeper found {count} statistics whose entity no longer exists. They take space in the database. [Show in Housekeeper]({link}). Nothing is changed automatically."
     }
   },
   "entity": {
@@ -147,6 +155,29 @@
             }
           }
         }
+      }
+    },
+    "switch": {
+      "hint_orphaned_entities": {
+        "name": "Repair hint: orphaned entities"
+      },
+      "hint_unavailable_entities": {
+        "name": "Repair hint: unavailable entities"
+      },
+      "hint_broken_automations": {
+        "name": "Repair hint: broken references"
+      },
+      "hint_scan_health": {
+        "name": "Repair hint: scan problems"
+      },
+      "hint_database_damaged": {
+        "name": "Repair hint: damaged database"
+      },
+      "hint_backup_problem": {
+        "name": "Repair hint: backup problem"
+      },
+      "hint_orphaned_statistics": {
+        "name": "Repair hint: orphaned statistics"
       }
     }
   },

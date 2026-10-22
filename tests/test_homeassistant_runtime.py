@@ -317,6 +317,7 @@ async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> Non
         domain="sensor", platform="test", unique_id="issue-1", suggested_object_id="issue_test"
     )
     scanner = InventoryScanner(hass)
+    scanner.hints.set("orphaned_entities", True)  # off on a new installation
     await scanner.async_scan()
 
     issue = ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities")
@@ -535,6 +536,7 @@ async def test_findings_can_be_hidden_by_the_user_or_by_label(hass: HomeAssistan
     registry.async_update_entity(labelled.entity_id, labels={label.label_id})
 
     scanner = InventoryScanner(hass)
+    scanner.hints.set("orphaned_entities", True)  # off on a new installation
     snapshot = await scanner.async_scan()
     by_object = {f["object_id"]: f for f in snapshot["findings"]}
 
@@ -907,6 +909,7 @@ async def test_preliminary_scan_during_warmup_changes_no_stored_state(
         domain="sensor", platform="test", unique_id="w-1", suggested_object_id="late_sensor"
     )
     scanner = InventoryScanner(hass)
+    scanner.hints.set("orphaned_entities", True)  # off on a new installation
     scanner.begin_warmup(300)
     assert scanner.warming_up
 

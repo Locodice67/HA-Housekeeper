@@ -38,6 +38,7 @@ NOTES_STORAGE_KEY: Final = f"{DOMAIN}.notes"
 BATTERY_STORAGE_KEY: Final = f"{DOMAIN}.batteries"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"  # removed feature: the file is deleted on start
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
+HINTS_STORAGE_KEY: Final = f"{DOMAIN}.hints"
 MCP_STORAGE_KEY: Final = f"{DOMAIN}.mcp"
 STALE_STORAGE_KEY: Final = f"{DOMAIN}.stale"
 SCAN_HEALTH_STORAGE_KEY: Final = f"{DOMAIN}.scan_health"

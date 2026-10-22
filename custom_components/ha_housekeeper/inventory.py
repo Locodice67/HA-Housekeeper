@@ -84,6 +84,7 @@ from .exceptions import ExceptionStore, entry_traits, traits, verdict
 from .exceptions import matches as _hits
 from .goals import GoalStore
 from .hacs import hacs_by_domain, removed_issues
+from .hints import HintStore
 from .history import ScanHistory
 from .hygiene import (
     automation_hygiene_findings,
@@ -96,7 +97,13 @@ from .hygiene import (
 )
 from .ignored import IgnoreStore
 from .impact import apply_impact
-from .issues import async_sync_database_issue, async_sync_issues, async_sync_scan_issue
+from .issues import (
+    async_sync_backup_issue,
+    async_sync_database_issue,
+    async_sync_issues,
+    async_sync_scan_issue,
+    async_sync_statistics_issue,
+)
 from .load_history import LoadStore
 from .log_facts import log_facts
 from .maintenance import repair_keys
@@ -892,6 +899,7 @@ STORE_NAMES = (
     "notes",
     "batteries",
     "notify",
+    "hints",
     "mcp",
     "monitor",
     "runs",
@@ -938,6 +946,9 @@ class InventoryScanner:
         self.notes = NoteStore(hass)
         self.batteries = BatteryStore(hass)
         self.notify = NotifyStore(hass)
+        self.hints = HintStore(hass)
+        hass.data.setdefault(DOMAIN, {})["hints"] = self.hints
+        self.backup_report: dict[str, Any] | None = None  # the last one that could be read
         self.mcp = McpStore(hass)
         self.monitor = MonitorStore(hass)
         self.runs = RunStore(hass)
@@ -1111,7 +1122,7 @@ class InventoryScanner:
                 self._details = _split_details(snapshot["objects"])
                 self._snapshot = snapshot
                 if not preliminary:
-                    async_sync_issues(self.hass, snapshot["findings"])
+                    self._sync_issues(snapshot)
                     async_announce(self.hass, self.notify.new(snapshot["findings"]))
                     if record:
                         self.history.record(snapshot)
@@ -1212,6 +1223,19 @@ class InventoryScanner:
         """The scan health as the panel and the sensor read it."""
         return self.health.report(datetime.now(UTC), self.scan_interval_hours)
 
+    def _sync_issues(self, snapshot: dict[str, Any]) -> None:
+        async_sync_issues(self.hass, snapshot["findings"])
+        async_sync_statistics_issue(self.hass, len(snapshot.get("orphaned_statistics", [])))
+
+    @callback
+    def sync_hints(self) -> None:
+        """Bring every repair hint in line with the switches, without waiting for the next scan."""
+        if self._snapshot is not None and not self.warming_up:
+            self._sync_issues(self._snapshot)
+        async_sync_scan_issue(self.hass, self.health_report())
+        async_sync_database_issue(self.hass, self.events.integrity)
+        async_sync_backup_issue(self.hass, self.backup_report)
+
     def async_check_health(self) -> None:
         """Raise or clear the repair hint for a scan that keeps failing, and tell the sensor."""
         async_sync_scan_issue(self.hass, self.health_report())
@@ -1227,6 +1251,9 @@ class InventoryScanner:
                 backup = await backup_health(self.hass, self.attest, self.journal.plans)
         except Exception:  # noqa: BLE001 - without the backup report only that event is skipped
             backup = None
+        if backup is not None:
+            self.backup_report = backup
+        async_sync_backup_issue(self.hass, self.backup_report)
         try:
             found = situations(
                 snapshot,
@@ -1960,7 +1987,7 @@ class InventoryScanner:
         self._snapshot["causes"] = apply_causes(
             self._snapshot["objects"], self._snapshot["edges"], self._snapshot["findings"]
         )
-        async_sync_issues(self.hass, self._snapshot["findings"])
+        self._sync_issues(self._snapshot)
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
 
     def set_mark(
@@ -2110,7 +2137,7 @@ class InventoryScanner:
         snapshot["causes"] = apply_causes(
             snapshot["objects"], snapshot["edges"], snapshot["findings"]
         )
-        async_sync_issues(self.hass, snapshot["findings"])
+        self._sync_issues(snapshot)
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
 
     def _existing_objects(self) -> dict[str, set[str]]:

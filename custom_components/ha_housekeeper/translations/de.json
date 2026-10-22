@@ -73,6 +73,14 @@
     "database_damaged": {
       "title": "Die Recorder-Datenbank ist beschädigt",
       "description": "Eine Prüfung am {at} hat einen Schaden in der Recorder-Datenbank gefunden: {first} Housekeeper löscht nichts im Recorder, bis eine Prüfung wieder sauber ist. Lege zuerst ein Backup an, baue die betroffenen Indizes mit REINDEX neu auf oder spiele ein Backup ein. [Housekeeper öffnen]({link})."
+    },
+    "backup_problem": {
+      "title": "Der Backup-Schutz meldet ein Problem",
+      "description": "Der Backup-Schutz hat {count} Prüfung(en) gefunden, die Aufmerksamkeit brauchen, zum Beispiel kein aktuelles Backup, ein fehlgeschlagener Lauf oder zu wenig freier Platz. [Backup-Schutz öffnen]({link}). Es wird nichts automatisch geändert."
+    },
+    "orphaned_statistics": {
+      "title": "{count} Statistiken ohne Entität",
+      "description": "Housekeeper hat {count} Statistiken gefunden, deren Entität nicht mehr existiert. Sie belegen Platz in der Datenbank. [In Housekeeper anzeigen]({link}). Es wird nichts automatisch geändert."
     }
   },
   "entity": {
@@ -147,6 +155,29 @@
             }
           }
         }
+      }
+    },
+    "switch": {
+      "hint_orphaned_entities": {
+        "name": "Reparaturhinweis: verwaiste Entitäten"
+      },
+      "hint_unavailable_entities": {
+        "name": "Reparaturhinweis: nicht verfügbare Entitäten"
+      },
+      "hint_broken_automations": {
+        "name": "Reparaturhinweis: defekte Referenzen"
+      },
+      "hint_scan_health": {
+        "name": "Reparaturhinweis: Scan-Probleme"
+      },
+      "hint_database_damaged": {
+        "name": "Reparaturhinweis: beschädigte Datenbank"
+      },
+      "hint_backup_problem": {
+        "name": "Reparaturhinweis: Backup-Problem"
+      },
+      "hint_orphaned_statistics": {
+        "name": "Reparaturhinweis: verwaiste Statistiken"
       }
     }
   },

@@ -168,9 +168,19 @@ def test_every_optional_component_that_is_imported_is_an_after_dependency() -> N
         used |= set(
             re.findall(r"homeassistant\.components\.(\w+)", path.read_text(encoding="utf-8"))
         )
-    # homeassistant is the core component, sensor, button and event are entity platforms and http/websocket_api/frontend are core; Hassfest accepts them
+    # homeassistant is the core component, sensor, button, switch and event are entity platforms and http/websocket_api/frontend are core; Hassfest accepts them
     assert (
-        used - {"websocket_api", "frontend", "http", "sensor", "button", "event", "homeassistant"}
+        used
+        - {
+            "websocket_api",
+            "frontend",
+            "http",
+            "sensor",
+            "button",
+            "switch",
+            "event",
+            "homeassistant",
+        }
         <= declared
     ), used - declared
 
