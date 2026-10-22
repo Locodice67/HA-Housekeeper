@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.12.0 - 2026-10-22
+
+### Neu
+
+- **Platz pro Entität und Attribut (Issue #36):** Unter Recorder → Datenbank lassen sich die Tabellen `states` und `state_attributes` aufklappen. Auf Knopfdruck misst Housekeeper im Hintergrund, welche Entitäten dort den Platz belegen, mit Fortschritt und Abbrechen. Für jede Entität zeigt es, welche Attribute den Platz ausmachen und welche sich so oft ändern, dass ständig neue Attribut-Zeilen entstehen. Erreichbar auch von der Seite einer Entität und aus der Recorder-Last.
+
+- **Reparaturhinweise einzeln schaltbar:** Auf der Geräteseite von Housekeeper gibt es unter Konfiguration einen Schalter pro Hinweis (verwaiste Entitäten, nicht verfügbare Entitäten, defekte Referenzen, Scan-Probleme, beschädigte Datenbank, Backup-Problem, verwaiste Statistiken). Er wirkt sofort.
+  - Neue Hinweise: Backup-Problem (wenn der Backup-Schutz ein Problem meldet) und verwaiste Statistiken.
+  - Eine Zahl pro zählender Gruppe legt fest, ab wie vielen Befunden der Hinweis erscheint (Standard 0: ab einem).
+  - Standardmäßig an sind defekte Referenzen, Scan-Probleme, beschädigte Datenbank und Backup-Problem. Verwaiste und nicht verfügbare Entitäten sowie verwaiste Statistiken sind aus. Wer die ersten beiden bisher hatte, behält sie.
+
+### English
+
+- **Space per entity and attribute (issue #36):** Under Recorder → Database the tables `states` and `state_attributes` unfold. On request Housekeeper measures in the background which entities take the space there, with progress and a stop button. For each entity it shows which attributes make up the space and which change so often that new attribute rows keep being made. Also reachable from the page of an entity and from the recorder load.
+- **Repair hints can be switched one by one:** on the device page of Housekeeper there is a switch per hint under Configuration (orphaned entities, unavailable entities, broken references, scan problems, damaged database, backup problem, orphaned statistics). It takes effect at once.
+  - New hints: backup problem (when backup protection reports a problem) and orphaned statistics.
+  - A number per counting group sets from how many findings the hint appears (default 0: from one).
+  - On by default are broken references, scan problems, damaged database and backup problem. Orphaned and unavailable entities and orphaned statistics are off. An installation that had the first two keeps them.
+
 ## 1.11.0 - 2026-10-20
 
 ### Neu
