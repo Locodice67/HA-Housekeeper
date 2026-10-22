@@ -63,6 +63,19 @@ def test_opposing_commands_need_a_shared_trigger_or_window_and_gain_evidence_fro
     )
     item = find([night, comfort], [], {}, TODAY)["items"][0]
     assert (item["reason"], item["detail"]) == ("window", "22:00–23:00")
+    split_on = auto(
+        "split_on", [state("input_boolean.s", "on")], [call("light.turn_on", "light.hall")]
+    )
+    split_off = auto(
+        "split_off", [state("input_boolean.s", "off")], [call("light.turn_off", "light.hall")]
+    )
+    assert find([split_on, split_off], [], {}, TODAY)["items"] == []
+    mixed = auto(
+        "mixed",
+        [state("input_boolean.s", "on"), state("input_boolean.s")],
+        [call("light.turn_on", "light.hall")],
+    )
+    assert len(find([mixed, split_off], [], {}, TODAY)["items"]) == 1
 
 
 def test_loops_follow_groups_and_other_automations_but_not_filtered_self_triggers() -> None:

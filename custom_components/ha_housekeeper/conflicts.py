@@ -162,6 +162,13 @@ def _stage(days: int) -> str:
     return "confirmed" if days >= CONFIRM_DAYS else "observed" if days else "static"
 
 
+def _can_fire_together(first: list[Any], second: list[Any]) -> bool:
+    """Whether two state triggers on one entity can fire at the same moment."""
+    if None in first or None in second:  # unfiltered, list or numeric_state: may overlap
+        return True
+    return bool(set(first) & set(second))
+
+
 def opposing(autos: list[dict[str, Any]], days: dict[str, dict[str, Any]], today: date):
     """Pairs that command one entity in opposite ways while they can fire together."""
     by_entity: dict[str, list[tuple[dict[str, Any], tuple]]] = {}
@@ -178,7 +185,12 @@ def opposing(autos: list[dict[str, Any]], days: dict[str, dict[str, Any]], today
                 if (*pair, entity_id) in seen:
                     continue
                 reason = None
-                shared = sorted(set(triggers_of(first)) & set(triggers_of(second)))
+                first_tos, second_tos = triggers_of(first), triggers_of(second)
+                shared = sorted(
+                    entity
+                    for entity in set(first_tos) & set(second_tos)
+                    if _can_fire_together(first_tos[entity], second_tos[entity])
+                )
                 if shared:
                     reason = {"reason": "trigger", "detail": shared[0]}
                 else:
