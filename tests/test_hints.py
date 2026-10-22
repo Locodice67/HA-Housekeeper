@@ -64,3 +64,23 @@ async def test_the_switches_turn_a_group_off_at_once(
     assert states[switch].state == "on"
     await hass.services.async_call("switch", "turn_off", {"entity_id": switch}, blocking=True)
     assert hass.states.get(switch).state == "off"
+    number = "number.ha_housekeeper_repair_hint_only_above_orphaned_entities"
+    assert hass.states.get(number).state == "0.0"
+    await hass.services.async_call(
+        "number", "set_value", {"entity_id": number, "value": 3}, blocking=True
+    )
+    assert hass.states.get(number).state == "3.0"
+
+
+async def test_a_hint_appears_only_above_its_minimum(hass: HomeAssistant) -> None:
+    store = hass.data.setdefault(DOMAIN, {})["hints"] = HintStore(hass)
+    store.set("orphaned_entities", True)
+    findings = [{"classification": "orphaned"}, {"classification": "orphaned"}]
+    store.set_minimum("orphaned_entities", 2)
+    async_sync_issues(hass, findings)
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is None
+    store.set_minimum("orphaned_entities", 1)
+    async_sync_issues(hass, findings)
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is not None
+    store.set_minimum("scan_health", 5)  # only counted groups have one
+    assert store.minimum == {"orphaned_entities": 1}

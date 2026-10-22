@@ -179,6 +179,20 @@
       "hint_orphaned_statistics": {
         "name": "Repair hint: orphaned statistics"
       }
+    },
+    "number": {
+      "hint_min_orphaned_entities": {
+        "name": "Repair hint only above: orphaned entities"
+      },
+      "hint_min_unavailable_entities": {
+        "name": "Repair hint only above: unavailable entities"
+      },
+      "hint_min_broken_automations": {
+        "name": "Repair hint only above: broken references"
+      },
+      "hint_min_orphaned_statistics": {
+        "name": "Repair hint only above: orphaned statistics"
+      }
     }
   },
   "services": {

@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 
 from .const import DOMAIN, PANEL_URL
-from .hints import enabled_hints
+from .hints import enabled_hints, hint_minimum
 from .outage_levels import is_quiet
 
 ISSUE_FILTERS = {
@@ -45,7 +45,7 @@ def async_sync_issues(hass: HomeAssistant, findings: list[dict[str, Any]]) -> No
 
     enabled = enabled_hints(hass)
     for issue_id, count in counts.items():
-        if count and issue_id in enabled:
+        if count > hint_minimum(hass, issue_id) and issue_id in enabled:
             link = f"/{PANEL_URL}?view=findingsNav&filter={ISSUE_FILTERS[issue_id]}"
             ir.async_create_issue(
                 hass,
@@ -138,8 +138,10 @@ def async_sync_backup_issue(hass: HomeAssistant, report: dict[str, Any] | None) 
 
 
 def async_sync_statistics_issue(hass: HomeAssistant, count: int) -> None:
-    """One hint while statistics exist whose entity is gone."""
-    if not count or STATISTICS_ISSUE_ID not in enabled_hints(hass):
+    """One hint while more statistics than the minimum exist whose entity is gone."""
+    if count <= hint_minimum(hass, STATISTICS_ISSUE_ID) or STATISTICS_ISSUE_ID not in enabled_hints(
+        hass
+    ):
         ir.async_delete_issue(hass, DOMAIN, STATISTICS_ISSUE_ID)
         return
     link = f"/{PANEL_URL}?view=cleanup&tab=stats"

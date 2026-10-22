@@ -179,6 +179,20 @@
       "hint_orphaned_statistics": {
         "name": "Reparaturhinweis: verwaiste Statistiken"
       }
+    },
+    "number": {
+      "hint_min_orphaned_entities": {
+        "name": "Reparaturhinweis erst bei mehr als: verwaiste Entitäten"
+      },
+      "hint_min_unavailable_entities": {
+        "name": "Reparaturhinweis erst bei mehr als: nicht verfügbare Entitäten"
+      },
+      "hint_min_broken_automations": {
+        "name": "Reparaturhinweis erst bei mehr als: defekte Referenzen"
+      },
+      "hint_min_orphaned_statistics": {
+        "name": "Reparaturhinweis erst bei mehr als: verwaiste Statistiken"
+      }
     }
   },
   "services": {

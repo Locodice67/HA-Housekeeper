@@ -56,6 +56,20 @@
       "hint_orphaned_statistics": {
         "default": "mdi:wrench-outline"
       }
+    },
+    "number": {
+      "hint_min_orphaned_entities": {
+        "default": "mdi:counter"
+      },
+      "hint_min_unavailable_entities": {
+        "default": "mdi:counter"
+      },
+      "hint_min_broken_automations": {
+        "default": "mdi:counter"
+      },
+      "hint_min_orphaned_statistics": {
+        "default": "mdi:counter"
+      }
     }
   }
 }

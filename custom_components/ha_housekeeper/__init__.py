@@ -71,7 +71,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-PLATFORMS = [Platform.SENSOR, Platform.EVENT, Platform.BUTTON, Platform.SWITCH]
+PLATFORMS = [Platform.SENSOR, Platform.EVENT, Platform.BUTTON, Platform.SWITCH, Platform.NUMBER]
 
 
 async def _async_initial_scan(scanner: InventoryScanner) -> None:
