@@ -1071,6 +1071,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.click) el.click(); else el.onclick?.();
     };
     root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
+    root.querySelectorAll("div.startint[data-object]").forEach(openByKey);
     root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit], tr[data-inc-row], tr[data-bh-row]").forEach(openByKey);
     root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });

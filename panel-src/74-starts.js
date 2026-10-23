@@ -5,32 +5,40 @@ Object.assign(TEXT.de, {
   startsTileLoaded: "bis alles geladen {x}", startsTileNone: "Wird beim nächsten Start gemessen.", startsTileCap: "letzte {n} Starts · Schnitt {avg}",
   startsBuilding: "Der Verlauf entsteht mit weiteren Starts.",
   startsEmpty: "Noch kein Start gemessen. Der erste erscheint, wenn Home Assistant das nächste Mal gestartet und die Anlaufphase vorbei ist.",
-  startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Anteil",
+  startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Im Vergleich",
   startsCrash: "nach Absturz", startsCrashHint: "Der Start davor hat sich nie abgemeldet: Absturz, Stromausfall oder beendeter Prozess.", startsDown: "{x} aus", startsDownHint: "So lange war Home Assistant vor diesem Start aus (vom letzten Lebenszeichen an).", startsUnit_s: "s", startsUnit_m: "Min.", startsUnit_h: "Std.", startsUnit_d: "Tage",
   startsUpdate: "nach Update", startsUpdateHint: "Die Version von Home Assistant war eine andere als beim Start davor.",
   startsFromHk: "ab Housekeeper", startsFromHkHint: "Der Beginn des Prozesses ließ sich nicht lesen; die Zeit zählt ab dem Einrichten von Housekeeper und ist deshalb kürzer als der ganze Start.",
   startsOpen: "Integrationen dieses Starts zeigen", startsClose: "Integrationen dieses Starts verbergen",
+  startsLoadingHint: "Beim Speichern dieses Starts war die Einrichtung noch nicht fertig; die Zeit ist ein Mindestwert.",
+  startsEntries: "{n} Einträge", startsOwn: "eigene", startsOwnHint: "Eigene Integration, nicht von Home Assistant mitgeliefert.", startsOpenObject: "Öffnet die Seite dieser Integration",
+  startsVsMore: "{x} langsamer als üblich", startsVsLess: "{x} schneller als üblich", startsVsSame: "wie üblich", startsVsSlow: "wie üblich langsam",
+  startsVsAvg: "Schnitt der letzten {n} Starts: {x}", startsVsNone: "Zu wenige frühere Starts zum Vergleichen.",
   startsHaVersion: "Home Assistant {v}", startsDetailHead: "Einrichtung je Integration, langsamste zuerst",
   startsMore: "{n} weitere unter einer Sekunde", startsNoItems: "Für diesen Start liegen keine Zeiten je Integration vor.",
   startState_loaded: "geladen", startState_setup_error: "Fehler", startState_setup_retry: "Wiederholung", startState_not_loaded: "nicht geladen",
   startState_migration_error: "Fehler", startState_failed_unload: "Fehler", startState_setup_in_progress: "lädt",
-  startsNote: "Die Zeit je Integration misst Home Assistant selbst, vom Beginn bis zum Ende ihrer Einrichtung. Integrationen starten gleichzeitig; die Zeiten ergeben deshalb nicht die Dauer des Starts. „Alles geladen“ ist der Moment, in dem keine Integration mehr geladen hat. Aufgenommen wird ein Start, wenn die Anlaufphase vorbei ist.",
+  startsNote: "Der Balken vergleicht in der Tabelle mit dem längsten Start, in der Liste mit der langsamsten Integration dieses Starts. Die Zeit je Integration misst Home Assistant selbst, vom Beginn bis zum Ende ihrer Einrichtung. Integrationen starten gleichzeitig; die Zeiten ergeben deshalb nicht die Dauer des Starts. „Alles geladen“ ist der Moment, in dem keine Integration mehr geladen hat. Aufgenommen wird ein Start, wenn die Anlaufphase vorbei ist.",
 });
 Object.assign(TEXT.en, {
   sysByStarts: "Starts", sysHeadStarts: "Earlier starts", sysTileStart: "Last start", startsMin: "min",
   startsTileLoaded: "everything loaded after {x}", startsTileNone: "Measured at the next start.", startsTileCap: "last {n} starts · average {avg}",
   startsBuilding: "The line appears with more starts.",
   startsEmpty: "No start measured yet. The first one appears after Home Assistant has started the next time and the warm-up is over.",
-  startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Share",
+  startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Compared",
   startsCrash: "after crash", startsCrashHint: "The start before never signed off: a crash, a power cut or a killed process.", startsDown: "{x} down", startsDownHint: "How long Home Assistant was down before this start (from its last sign of life).", startsUnit_s: "s", startsUnit_m: "min", startsUnit_h: "h", startsUnit_d: "days",
   startsUpdate: "after update", startsUpdateHint: "The version of Home Assistant was a different one than at the start before.",
   startsFromHk: "from Housekeeper", startsFromHkHint: "The start of the process could not be read; the time counts from the set-up of Housekeeper and is therefore shorter than the whole start.",
   startsOpen: "Show the integrations of this start", startsClose: "Hide the integrations of this start",
+  startsLoadingHint: "The set-up was not finished when this start was saved; the time is a minimum.",
+  startsEntries: "{n} entries", startsOwn: "custom", startsOwnHint: "A custom integration, not shipped with Home Assistant.", startsOpenObject: "Opens the page of this integration",
+  startsVsMore: "{x} slower than usual", startsVsLess: "{x} faster than usual", startsVsSame: "as usual", startsVsSlow: "as usual, and slow",
+  startsVsAvg: "Average of the last {n} starts: {x}", startsVsNone: "Too few earlier starts to compare with.",
   startsHaVersion: "Home Assistant {v}", startsDetailHead: "Set-up per integration, slowest first",
   startsMore: "{n} more under a second", startsNoItems: "There are no times per integration for this start.",
   startState_loaded: "loaded", startState_setup_error: "Error", startState_setup_retry: "Retrying", startState_not_loaded: "not loaded",
   startState_migration_error: "Error", startState_failed_unload: "Error", startState_setup_in_progress: "loading",
-  startsNote: "Home Assistant itself measures the time per integration, from the beginning to the end of its set-up. Integrations start at the same time, so the times do not add up to the length of the start. \"All loaded\" is the moment no integration was loading any more. A start is recorded when the warm-up is over.",
+  startsNote: "The bar compares with the longest start in the table, and with the slowest integration of this start in the list. Home Assistant itself measures the time per integration, from the beginning to the end of its set-up. Integrations start at the same time, so the times do not add up to the length of the start. \"All loaded\" is the moment no integration was loading any more. A start is recorded when the warm-up is over.",
 });
 
 class StartsMixin {
@@ -95,7 +103,38 @@ class StartsMixin {
     if (!item.state) return `<span class="muted">–</span>`;
     const key = `startState_${item.state}`, text = this.t(key);
     const tone = item.state === "loaded" ? "ok" : item.state === "setup_retry" ? "warn" : item.state === "not_loaded" || item.state === "setup_in_progress" ? "mute" : "red";
-    return `<span class="pill ${tone}">${this.esc(text === key ? item.state : text)}</span>`;
+    const hint = item.state === "setup_in_progress" ? ` title="${this.esc(this.t("startsLoadingHint"))}"` : "";
+    return `<span class="pill ${tone}"${hint}>${this.esc(text === key ? item.state : text)}</span>`;
+  }
+
+  // What an integration usually needs: the average of its set-up in up to five earlier starts; null under two.
+  startUsual(start, item) {
+    const list = this.startList(), older = list.slice(list.indexOf(start) + 1, list.indexOf(start) + 6);
+    const times = older.map(o => (o.items || []).find(i => i.domain === item.domain)).filter(Boolean).map(i => i.seconds);
+    return times.length < 2 ? null : { avg: times.reduce((a, b) => a + b, 0) / times.length, n: times.length };
+  }
+
+  // The set-up of one integration against its usual time, as words.
+  startCompare(start, item) {
+    const usual = this.startUsual(start, item);
+    if (!usual) return `<span class="muted" title="${this.esc(this.t("startsVsNone"))}">–</span>`;
+    const delta = item.seconds - usual.avg, edge = Math.max(5, usual.avg * 0.25);
+    const [tone, text] = delta >= edge ? ["warn", this.t("startsVsMore", { x: this.startSeconds(delta) })]
+      : delta <= -edge ? ["ok", this.t("startsVsLess", { x: this.startSeconds(-delta) })]
+      : ["mute", this.t(usual.avg >= 30 ? "startsVsSlow" : "startsVsSame")];
+    const hint = this.t("startsVsAvg", { n: this.formatNumber(usual.n), x: this.startSeconds(usual.avg) });
+    return `<span class="pill ${tone}" title="${this.esc(hint)}">${this.esc(text)}</span>`;
+  }
+
+  // One integration of a start: name (a link to its page where the scan knows it), entries, origin, reason, state, time.
+  startRow(start, i, max, known) {
+    const group = known.get(i.domain);
+    const link = group ? ` data-object="${this.esc(`integration:${i.domain}`)}" tabindex="0" role="button" title="${this.esc(this.t("startsOpenObject"))}"` : "";
+    const sub = [i.title ? i.domain : "", i.entries > 1 ? this.t("startsEntries", { n: this.formatNumber(i.entries) }) : ""].filter(Boolean).map(x => this.esc(x)).join(" · ");
+    const own = group?.custom ? ` <span class="pill mute" title="${this.esc(this.t("startsOwnHint"))}">${this.t("startsOwn")}</span>` : "";
+    const reason = i.reason ? `<small class="muted cut" title="${this.esc(i.reason)}">${this.esc(i.reason)}</small>` : "";
+    const name = `<span class="startname"><strong class="cut">${this.esc(this.startName(i))}${own}</strong>${sub ? `<span class="id cut">${sub}</span>` : ""}${reason}</span>`;
+    return `<div class="startint${group ? " link" : ""}"${link}>${name}<span>${this.startState(i)}</span><b>${this.esc(this.startSeconds(i.seconds))}</b><span>${this.startCompare(start, i)}</span>${this.sysShare(i.seconds, max)}</div>`;
   }
 
   // The integrations of one start: those that took a second or more, and every one that did not load.
@@ -104,7 +143,8 @@ class StartsMixin {
     const items = start.items || [];
     const shown = items.filter(i => i.seconds >= 1 || (i.state && !["loaded", "not_loaded"].includes(i.state)));
     const max = Math.max(0, ...shown.map(i => i.seconds));
-    const rows = shown.map(i => `<div class="startint"><span class="startname"><strong class="cut">${this.esc(this.startName(i))}</strong>${i.title ? `<span class="id cut">${this.esc(i.domain)}</span>` : ""}</span><span>${this.startState(i)}</span><b>${this.esc(this.startSeconds(i.seconds))}</b>${this.sysShare(i.seconds, max)}</div>`).join("");
+    const known = new Map(this.compIntegrations().map(g => [g.domain, g]));
+    const rows = shown.map(i => this.startRow(start, i, max, known)).join("");
     const rest = items.length - shown.length;
     const body = shown.length ? `<div class="sectionlabel">${this.t("startsDetailHead")}</div>${rows}${rest > 0 ? `<p class="factnote">${this.t("startsMore", { n: this.formatNumber(rest) })}</p>` : ""}` : `<p class="factnote">${this.t("startsNoItems")}</p>`;
     return `<tr class="static remhist"><td colspan="5">${body}</td></tr>`;
