@@ -6790,3 +6790,13 @@ test("a reminder keeps Done in its row, changes and deletes through its menu, an
   assert.deepEqual(calls, ["r1", "r2"]);
   assert.equal(el.remSel.size, 0);
 });
+
+test("the texts say Marketplace instead of HACS only when the store is the Marketplace", () => {
+  const { el } = panel("de");
+  assert.equal(el.t("hkUpdateLatest"), "Bei HACS verfügbar");
+  el.data = { ...DATA, meta: { ...DATA.meta, hacs_store: "marketplace" } };
+  assert.equal(el.t("hkUpdateLatest"), "Im Marketplace verfügbar");
+  assert.equal(el.t("compTabHacs"), "Marketplace");
+  el._hass = { language: "en" };
+  assert.equal(el.t("hkUpdateHacsInstalled"), "Installed by the Marketplace");
+});

@@ -173,7 +173,8 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   t(key, vars) {
-    const text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    let text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 

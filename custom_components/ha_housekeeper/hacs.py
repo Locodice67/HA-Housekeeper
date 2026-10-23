@@ -143,6 +143,18 @@ def _repositories(hass: HomeAssistant) -> list[Any] | None:
     return None
 
 
+def store_kind(hass: HomeAssistant) -> str | None:
+    """Which store the repositories come from: ``hacs``, ``marketplace`` (from 2026.11) or ``None``."""
+    try:
+        if hass.data.get(HACS_KEY) is not None:
+            return HACS_KEY
+        if hass.config_entries.async_entries(MARKETPLACE_KEY):
+            return MARKETPLACE_KEY
+    except Exception:  # noqa: BLE001 - a layout this code does not know is not an error of ours
+        return None
+    return None
+
+
 def hacs_by_domain(hass: HomeAssistant) -> dict[str, dict[str, Any]] | None:
     """Installed HACS integrations by domain; ``None`` when HACS and Marketplace are missing or cannot be read."""
     repositories = _repositories(hass)

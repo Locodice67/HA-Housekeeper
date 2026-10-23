@@ -68,7 +68,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 ## Quick start
 
-1. Open HA Housekeeper in HACS with the button below, download it and restart Home Assistant.
+1. Open HA Housekeeper in HACS with the button below, download it and restart Home Assistant. From Home Assistant 2026.11 HACS is built in as the **Marketplace**; the steps are the same there.
 
    [![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 

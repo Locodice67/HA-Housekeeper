@@ -586,6 +586,23 @@ const csvCell = v => {
 const VIEW_HINT = { storage: "sysHint", dataflow: "accHint", secrets: "secHint", reliability: "relHint", exposure: "expoHint", policies: "polHint", maintenance: "maintHint", recorder: "recorderHint" };
 const INFO_SUB_VIEWS = ["exposure", "maintenance", "repair", "policies", "recorder", "reliability", "storage", "dataflow", "secrets", "components"];
 
+// From Home Assistant 2026.11 HACS is built in as "Marketplace"; the texts say HACS and are reworded for it.
+const MARKETPLACE_RULES = {
+  de: [
+    [/→ HACS/g, "→ Marketplace"], [/HACS (nicht verfügbar|zuletzt)/g, "Marketplace $1"],
+    [/\b([Vv])on HACS/g, "$1om Marketplace"], [/\bBei HACS/g, "Im Marketplace"], [/\bbei HACS/g, "im Marketplace"],
+    [/\b([Ii])n HACS/g, "$1m Marketplace"], [/\b([Aa])us HACS/g, "$1us dem Marketplace"], [/\b([Mm])it HACS/g, "$1it dem Marketplace"],
+    [/([Üü])ber HACS/g, "$1ber den Marketplace"], [/\b([Dd])urch HACS/g, "$1urch den Marketplace"],
+    [/HACS-/g, "Marketplace-"], [/^HACS$/, "Marketplace"],
+    [/(^|[.!?:] |“|„)HACS/g, "$1Der Marketplace"], [/HACS/g, "der Marketplace"],
+  ],
+  en: [
+    [/^HACS$/, "Marketplace"], [/→ HACS/g, "→ Marketplace"], [/^HACS (not available)/, "Marketplace $1"], [/HACS (repositor|items?|entries|entry)/g, "Marketplace $1"],
+    [/(^|[.!?:] |“)HACS/g, "$1The Marketplace"], [/HACS/g, "the Marketplace"],
+  ],
+};
+const forMarketplace = (text, lang) => (MARKETPLACE_RULES[lang] || MARKETPLACE_RULES.en).reduce((out, [from, to]) => out.replace(from, to), text);
+
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
   changesOfTotal: "von {n}", changesShownOf: "{n} von {total}", changesBarHint: "Suche und Filter gelten für alle Abschnitte.", changesCapped: "Es werden die ersten {shown} gezeigt, {count} weitere zählen nur mit.", changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
@@ -7813,7 +7830,7 @@ const SEARCH_WORDS = {
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
-  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs firmware check before",
+  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs marketplace firmware check before",
   blueprints: "blueprints vorlagen fehlend defekt ungenutzt missing broken unused",
   info: "info version speichert daten diagnose prüfung quellen dauer about stored diagnostics coverage timing",
   compare: "scan-vergleich verlauf vergleich scans history compare",
@@ -18023,7 +18040,8 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   t(key, vars) {
-    const text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    let text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 

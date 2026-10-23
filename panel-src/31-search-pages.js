@@ -32,7 +32,7 @@ const SEARCH_WORDS = {
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
-  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs firmware check before",
+  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs marketplace firmware check before",
   blueprints: "blueprints vorlagen fehlend defekt ungenutzt missing broken unused",
   info: "info version speichert daten diagnose prüfung quellen dauer about stored diagnostics coverage timing",
   compare: "scan-vergleich verlauf vergleich scans history compare",

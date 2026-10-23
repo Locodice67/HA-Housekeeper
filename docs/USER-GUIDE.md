@@ -40,6 +40,8 @@ The detailed documentation of HA Housekeeper. For a short overview and the quick
 
 ### Via HACS (recommended)
 
+From Home Assistant 2026.11 HACS is built in as the **Marketplace**. The steps are the same there, and Housekeeper then says Marketplace where it now says HACS.
+
 [![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 [![Add HA Housekeeper to My Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
 

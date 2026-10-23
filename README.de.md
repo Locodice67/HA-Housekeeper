@@ -69,7 +69,7 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 
 ## Schnellstart
 
-1. HA Housekeeper über den Button in HACS öffnen, herunterladen und Home Assistant neu starten.
+1. HA Housekeeper über den Button in HACS öffnen, herunterladen und Home Assistant neu starten. Ab Home Assistant 2026.11 ist HACS als **Marketplace** eingebaut; die Schritte sind dieselben.
 
    [![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 

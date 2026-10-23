@@ -84,7 +84,7 @@ from .events import EventLog
 from .exceptions import ExceptionStore, entry_traits, traits, verdict
 from .exceptions import matches as _hits
 from .goals import GoalStore
-from .hacs import hacs_by_domain, removed_issues
+from .hacs import hacs_by_domain, removed_issues, store_kind
 from .hints import HintStore
 from .history import ScanHistory
 from .hygiene import (
@@ -1780,6 +1780,7 @@ class InventoryScanner:
                 "quarantine_days": QUARANTINE_DAYS,
                 "ha_version": HA_VERSION,
                 "hacs_available": hacs is not None,
+                "hacs_store": store_kind(self.hass),
                 "hacs_housekeeper": hacs.get(DOMAIN) if hacs is not None else None,
                 "hacs_removed": [
                     {"id": key, **value}

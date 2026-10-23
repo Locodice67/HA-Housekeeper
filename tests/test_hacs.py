@@ -13,6 +13,7 @@ from custom_components.ha_housekeeper.hacs import (  # noqa: E402
     blocked_repository_ids,
     hacs_by_domain,
     hacs_repositories,
+    store_kind,
 )
 
 
@@ -127,3 +128,10 @@ def test_the_marketplace_of_ha_2026_11_is_read_like_hacs() -> None:
     entries = SimpleNamespace(async_entries=lambda domain: [SimpleNamespace(runtime_data=manager)])
     hass = SimpleNamespace(data={}, config_entries=entries)
     assert hacs_by_domain(hass)["demo"]["pending_update"] is True
+
+
+def test_the_store_is_told_apart() -> None:
+    entries = SimpleNamespace(async_entries=lambda domain: [object()])
+    assert store_kind(SimpleNamespace(data={"hacs": object()}, config_entries=entries)) == "hacs"
+    assert store_kind(SimpleNamespace(data={}, config_entries=entries)) == "marketplace"
+    assert store_kind(SimpleNamespace(data={})) is None

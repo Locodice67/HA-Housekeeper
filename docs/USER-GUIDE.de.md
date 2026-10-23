@@ -40,6 +40,8 @@ Die ausführliche Dokumentation von HA Housekeeper. Einen kurzen Überblick und 
 
 ### Über HACS (empfohlen)
 
+Ab Home Assistant 2026.11 ist HACS als **Marketplace** eingebaut. Die Schritte sind dieselben, und Housekeeper nennt dann Marketplace, wo jetzt HACS steht.
+
 [![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 [![HA Housekeeper zu My Home Assistant hinzufügen](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
 
