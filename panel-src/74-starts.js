@@ -6,6 +6,7 @@ Object.assign(TEXT.de, {
   startsBuilding: "Der Verlauf entsteht mit weiteren Starts.",
   startsEmpty: "Noch kein Start gemessen. Der erste erscheint, wenn Home Assistant das nächste Mal gestartet und die Anlaufphase vorbei ist.",
   startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Anteil",
+  startsCrash: "nach Absturz", startsCrashHint: "Der Start davor hat sich nie abgemeldet: Absturz, Stromausfall oder beendeter Prozess.", startsDown: "{x} aus", startsDownHint: "So lange war Home Assistant vor diesem Start aus (vom letzten Lebenszeichen an).", startsUnit_s: "s", startsUnit_m: "Min.", startsUnit_h: "Std.", startsUnit_d: "Tage",
   startsUpdate: "nach Update", startsUpdateHint: "Die Version von Home Assistant war eine andere als beim Start davor.",
   startsFromHk: "ab Housekeeper", startsFromHkHint: "Der Beginn des Prozesses ließ sich nicht lesen; die Zeit zählt ab dem Einrichten von Housekeeper und ist deshalb kürzer als der ganze Start.",
   startsOpen: "Integrationen dieses Starts zeigen", startsClose: "Integrationen dieses Starts verbergen",
@@ -21,6 +22,7 @@ Object.assign(TEXT.en, {
   startsBuilding: "The line appears with more starts.",
   startsEmpty: "No start measured yet. The first one appears after Home Assistant has started the next time and the warm-up is over.",
   startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Share",
+  startsCrash: "after crash", startsCrashHint: "The start before never signed off: a crash, a power cut or a killed process.", startsDown: "{x} down", startsDownHint: "How long Home Assistant was down before this start (from its last sign of life).", startsUnit_s: "s", startsUnit_m: "min", startsUnit_h: "h", startsUnit_d: "days",
   startsUpdate: "after update", startsUpdateHint: "The version of Home Assistant was a different one than at the start before.",
   startsFromHk: "from Housekeeper", startsFromHkHint: "The start of the process could not be read; the time counts from the set-up of Housekeeper and is therefore shorter than the whole start.",
   startsOpen: "Show the integrations of this start", startsClose: "Hide the integrations of this start",
@@ -46,6 +48,15 @@ class StartsMixin {
   startSeconds(seconds) {
     const n = Number(seconds) || 0;
     return `${this.formatNumber(n < 10 ? Math.round(n * 10) / 10 : Math.round(n))} s`;
+  }
+
+  // The pause before a start: seconds, minutes, hours or days, whichever fits.
+  startPause(seconds) {
+    const n = Number(seconds) || 0, u = k => this.t(`startsUnit_${k}`), f = v => this.formatNumber(Math.round(v * 10) / 10);
+    if (n < 90) return `${f(n)} ${u("s")}`;
+    if (n < 5400) return `${f(n / 60)} ${u("m")}`;
+    if (n < 172800) return `${f(n / 3600)} ${u("h")}`;
+    return `${f(n / 86400)} ${u("d")}`;
   }
 
   startName(item) { return item.title || item.domain; }
@@ -115,7 +126,7 @@ class StartsMixin {
       rowAttrs: s => `data-bh-row="${this.esc(this.startKey(s))}" tabindex="0" role="button" aria-expanded="${open(s)}"`,
       after: s => this.startDetail(s),
       columns: [
-        { key: "at", label: "startColAt", dir: "desc", cell: s => `<div class="statcell">${this.expandBtn("data-bh-more", this.startKey(s), open(s), this.t(open(s) ? "startsClose" : "startsOpen"))}<div><strong>${this.esc(this.formatDate(s.at))}</strong>${s.version ? `<small>${this.esc(this.t("startsHaVersion", { v: s.version }))}</small>` : ""}${s.update ? ` <span class="pill warn" title="${this.esc(this.t("startsUpdateHint"))}">${this.t("startsUpdate")}</span>` : ""}</div></div>` },
+        { key: "at", label: "startColAt", dir: "desc", cell: s => `<div class="statcell">${this.expandBtn("data-bh-more", this.startKey(s), open(s), this.t(open(s) ? "startsClose" : "startsOpen"))}<div><strong>${this.esc(this.formatDate(s.at))}</strong>${s.version ? `<small>${this.esc(this.t("startsHaVersion", { v: s.version }))}</small>` : ""}${Number.isFinite(s.down_s) ? `<small title="${this.esc(this.t("startsDownHint"))}">${this.esc(this.t("startsDown", { x: this.startPause(s.down_s) }))}</small>` : ""}${s.unclean ? ` <span class="pill red" title="${this.esc(this.t("startsCrashHint"))}">${this.t("startsCrash")}</span>` : ""}${s.update ? ` <span class="pill warn" title="${this.esc(this.t("startsUpdateHint"))}">${this.t("startsUpdate")}</span>` : ""}</div></div>` },
         { key: "total", label: "startColTotal", dir: "desc", cell: s => `${this.esc(this.startClock(s.boot_s))}${s.boot_from === "housekeeper" ? ` <span class="pill mute" title="${this.esc(this.t("startsFromHkHint"))}">${this.t("startsFromHk")}</span>` : ""}` },
         { key: "loaded", label: "startColLoaded", dir: "desc", cell: s => this.esc(this.startClock(s.loaded_s)) },
         { key: "slowest", label: "startColSlowest", sortable: false, cell: s => this.esc(slowest(s)) },

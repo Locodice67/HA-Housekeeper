@@ -96,6 +96,8 @@ class StartStore:
         boot_from: str,
         items: list[dict[str, Any]],
         retention_days: int,
+        down_seconds: int | None = None,
+        unclean: bool = False,
     ) -> None:
         """Add the record of this start; starts older than the retention fall out."""
         before = self.starts[-1] if self.starts else None
@@ -108,6 +110,9 @@ class StartStore:
                 "boot_from": boot_from,  # "process", or "housekeeper" when the process start is unknown
                 "update": bool(before and version and before.get("version") not in (None, version)),
                 "items": items,
+                # How long Home Assistant had been down before, and whether the stop before never announced itself.
+                **({"down_s": int(down_seconds)} if down_seconds is not None else {}),
+                **({"unclean": True} if unclean else {}),
             }
         )
         cut = (now - timedelta(days=max(1, retention_days))).isoformat()

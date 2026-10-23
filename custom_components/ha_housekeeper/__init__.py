@@ -207,6 +207,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         boot_s = max(0.0, boot["epoch"] - anchor)
         settled = scanner.settled_at
         loaded_s = None if settled is None else boot_s + max(0.0, settled - boot["mono"])
+        began = next((e for e in reversed(scanner.events.events) if e.get("kind") == "start"), {})
         try:
             scanner.starts.record(
                 datetime.now(UTC),
@@ -216,6 +217,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
                 "process" if boot["process"] else "housekeeper",
                 integration_rows(hass),
                 scanner.history.retention_days,
+                began.get("down_seconds"),
+                bool(began.get("unclean")),
             )
         except Exception:
             _LOGGER.exception("The time of this start could not be recorded")

@@ -26,7 +26,9 @@ def _store() -> StartStore:
 
 
 def _record(store: StartStore, at: datetime, version: str) -> None:
-    store.record(at, version, 228.4, 271.2, "process", [{"domain": "frigate", "seconds": 74.0}], 30)
+    store.record(
+        at, version, 228.4, 271.2, "process", [{"domain": "frigate", "seconds": 74.0}], 30, 95, True
+    )
 
 
 def test_starts_keep_the_retention_and_mark_an_update() -> None:
@@ -38,6 +40,7 @@ def test_starts_keep_the_retention_and_mark_an_update() -> None:
     assert [s["version"] for s in store.starts] == ["2026.10.1", "2026.10.1", "2026.10.2"]
     assert [s["update"] for s in store.starts] == [True, False, True]
     assert store.report()["starts"][0]["version"] == "2026.10.2"
+    assert store.starts[-1]["down_s"] == 95 and store.starts[-1]["unclean"] is True
 
 
 def test_the_process_start_is_in_the_past_or_unknown() -> None:
