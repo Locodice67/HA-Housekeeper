@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.12.1 - 2026-10-23
+
+### Neu
+
+- **Konflikte und Schleifen als bekannt markieren (Issue #38):** In der Tabelle der Läufe gibt es pro Eintrag „Als bekannt markieren“ und „Wieder melden“. Ein bekannter Eintrag bleibt in der Liste, zählt aber nicht mehr in der Bewertung. Die Entscheidung bleibt bestehen, auch wenn sich die Stufe ändert.
+
+### Geändert
+
+- **Marketplace:** Ab Home Assistant 2026.11 nennen die Texte den Marketplace statt HACS.
+- **GUI allgemein:**
+  - Recorder → Datenbank: Der Knopf „Platz je Entität messen“ sitzt im Kopf der Karte der größten Tabellen.
+  - Speicher & System: Die Teile von „Weitere“ bleiben eingeklappt und zeigen ihren Platz als Balken.
+
+### Behoben
+
+- **Konflikte (Issue #38):** Zwei Automationen, die auf denselben Sensor mit verschiedenen Zuständen (`on` gegen `off`) oder getrennten Schwellen (`above` gegen `below`) reagieren, gelten nicht mehr als Gegenläufer.
+- **Qualitätsansicht (Issue #39):**
+  - Deaktivierte Automationen und Ziele mit Vermerk, Ausnahme, Label oder bewusst abgeschaltetem Eintrag gelten nicht mehr als veraltet.
+  - Ein Lauf, der an einer Bedingung in den Aktionen endet, zählt als Bedingung statt als Fehlschlag.
+  - Befehle, die den Zustand nicht ändern (etwa `snapshot`, `press`), lösen keine Schleife mehr aus; bei unbekannten Befehlen bleibt es bei „statisch“.
+
+### English
+
+- **Conflicts and loops can be marked as known (issue #38):** In the table of the runs every entry has "Mark as known" and "Report again". A known entry stays in the list but no longer counts in the rating. The decision holds when the stage changes.
+- **Marketplace:** From Home Assistant 2026.11 the texts say Marketplace instead of HACS.
+- **General GUI:**
+  - Recorder → Database: the "Measure space per entity" button sits in the head of the card of the largest tables.
+  - Storage & system: the parts of "Others" stay folded and show their space as a bar.
+- **Conflicts (issue #38):** Two automations that react to the same sensor with different states (`on` against `off`) or separate thresholds (`above` against `below`) are no longer reported as opposing.
+- **Quality view (issue #39):**
+  - Disabled automations and targets with a mark, an exception, a label or a deliberately switched-off entry are no longer rated as stale.
+  - A run that ends at a condition inside the actions counts as a condition, not as a failure.
+  - Commands that do not change the state (such as `snapshot`, `press`) no longer start a loop; unknown commands stay at "static".
+
 ## 1.12.0 - 2026-10-22
 
 ### Neu
