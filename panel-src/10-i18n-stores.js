@@ -1,6 +1,6 @@
 // Texts for the list of Housekeeper's own files (Settings, Info); merged into TEXT.
 const STORE_GROUPS = [
-  ["history", ["observations", "history", "events", "runs", "replies", "load", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
+  ["history", ["observations", "history", "events", "runs", "replies", "load", "starts", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
   ["proof", ["journal", "attest"]],
   ["yours", ["ignored", "exceptions", "marks", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
@@ -28,6 +28,7 @@ Object.assign(TEXT.de, {
   store_events: "Ereignisse", storeText_events: "Neustarts, Versionswechsel von Home Assistant und Integrationen sowie ausgeführte Pläne, höchstens 5.000 Einträge.",
   store_runs: "Automationsläufe", storeText_runs: "Zähler je Automation und Tag aus den Läufen (ohne Variablen, Auslöserdaten und Fehlertexte), 60 Tage lang.",
   store_replies: "Zwischengespeicherte Abfragen", storeText_replies: "Antworten der aufwendigen Datenbankabfragen, damit sie nicht doppelt laufen.",
+  store_starts: "Startzeiten", storeText_starts: "Dauer der letzten Starts von Home Assistant und die Einrichtungszeit je Integration, so lange wie der Verlauf aufbewahrt wird.",
   store_load: "Systemlast", storeText_load: "Festplatte, Speicher, CPU und Swap in Prozent, alle fünf Minuten, 7 Tage lang.",
   store_entry_states: "Setup-Fehler", storeText_entry_states: "Wie oft ein Integrationseintrag in einem fehlgeschlagenen Zustand war, aus den Scans gezählt.",
   store_stale: "Veraltete Sensoren", storeText_stale: "Wann ein Sensor zuletzt einen neuen Wert gemeldet hat.",
@@ -74,6 +75,7 @@ Object.assign(TEXT.en, {
   store_events: "Events", storeText_events: "Restarts, version changes of Home Assistant and integrations, and executed plans, at most 5,000 entries.",
   store_runs: "Automation runs", storeText_runs: "Counters per automation and day from the runs (without variables, trigger data and error texts), for 60 days.",
   store_replies: "Cached queries", storeText_replies: "Answers of the expensive database queries, so they do not run twice.",
+  store_starts: "Start times", storeText_starts: "How long the last starts of Home Assistant took and the set-up time of each integration, kept as long as the history is.",
   store_load: "System load", storeText_load: "Disk, memory, CPU and swap in percent, every five minutes, for 7 days.",
   store_entry_states: "Setup failures", storeText_entry_states: "How often an integration entry was in a failed state, counted from the scans.",
   store_stale: "Stale sensors", storeText_stale: "When a sensor last reported a new value.",

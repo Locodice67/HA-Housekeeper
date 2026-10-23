@@ -1100,7 +1100,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the list of Housekeeper's own files (Settings, Info); merged into TEXT.
 const STORE_GROUPS = [
-  ["history", ["observations", "history", "events", "runs", "replies", "load", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
+  ["history", ["observations", "history", "events", "runs", "replies", "load", "starts", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
   ["proof", ["journal", "attest"]],
   ["yours", ["ignored", "exceptions", "marks", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
@@ -1128,6 +1128,7 @@ Object.assign(TEXT.de, {
   store_events: "Ereignisse", storeText_events: "Neustarts, Versionswechsel von Home Assistant und Integrationen sowie ausgeführte Pläne, höchstens 5.000 Einträge.",
   store_runs: "Automationsläufe", storeText_runs: "Zähler je Automation und Tag aus den Läufen (ohne Variablen, Auslöserdaten und Fehlertexte), 60 Tage lang.",
   store_replies: "Zwischengespeicherte Abfragen", storeText_replies: "Antworten der aufwendigen Datenbankabfragen, damit sie nicht doppelt laufen.",
+  store_starts: "Startzeiten", storeText_starts: "Dauer der letzten Starts von Home Assistant und die Einrichtungszeit je Integration, so lange wie der Verlauf aufbewahrt wird.",
   store_load: "Systemlast", storeText_load: "Festplatte, Speicher, CPU und Swap in Prozent, alle fünf Minuten, 7 Tage lang.",
   store_entry_states: "Setup-Fehler", storeText_entry_states: "Wie oft ein Integrationseintrag in einem fehlgeschlagenen Zustand war, aus den Scans gezählt.",
   store_stale: "Veraltete Sensoren", storeText_stale: "Wann ein Sensor zuletzt einen neuen Wert gemeldet hat.",
@@ -1174,6 +1175,7 @@ Object.assign(TEXT.en, {
   store_events: "Events", storeText_events: "Restarts, version changes of Home Assistant and integrations, and executed plans, at most 5,000 entries.",
   store_runs: "Automation runs", storeText_runs: "Counters per automation and day from the runs (without variables, trigger data and error texts), for 60 days.",
   store_replies: "Cached queries", storeText_replies: "Answers of the expensive database queries, so they do not run twice.",
+  store_starts: "Start times", storeText_starts: "How long the last starts of Home Assistant took and the set-up time of each integration, kept as long as the history is.",
   store_load: "System load", storeText_load: "Disk, memory, CPU and swap in percent, every five minutes, for 7 days.",
   store_entry_states: "Setup failures", storeText_entry_states: "How often an integration entry was in a failed state, counted from the scans.",
   store_stale: "Stale sensors", storeText_stale: "When a sensor last reported a new value.",
@@ -1754,6 +1756,7 @@ class StylesMixin {
       .decbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.decbar .kpi{text-align:left}.decbar .warntext{color:var(--hk-amber)}@media(max-width:640px){.decbar{grid-template-columns:repeat(2,minmax(0,1fr))}}.row.duerow{background:color-mix(in srgb,var(--hk-amber) 7%,transparent)}.rowacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.link.strong{font-weight:600;color:inherit;text-align:left}
       .findsum{display:grid;grid-template-columns:minmax(150px,200px) 1fr;gap:10px 14px;align-items:start;margin-bottom:12px}.sumall{display:grid;gap:4px;margin-top:22px}.sumrows{display:grid;gap:8px;min-width:0}.findsum .sumgroup{display:grid;gap:4px}.findsum .sumgrouphead{margin:0 0 0 2px;font-weight:600}.sumtile.zero{background:transparent;border-style:dashed;border-left-style:solid;box-shadow:none}.sumtile.zero .sumvalue{color:var(--hk-muted);font-weight:500}.findsum .sumgrouphead.zero{color:var(--hk-muted)}.dbfold{display:grid;gap:6px;padding:8px 16px 12px}.dbfold .sectionlabel{margin-top:4px}.dbshare{display:flex;align-items:center;gap:10px;min-width:140px}.foldhead .dbshare{width:260px}.dbshare .sysshare{flex:1}.dbshare b{min-width:3.2em;text-align:right;font-weight:500}.findsum{grid-template-columns:minmax(150px,190px) repeat(var(--k,5),minmax(0,1fr));grid-template-rows:auto 1fr auto 1fr;gap:6px 8px;align-items:stretch}.findsum .sumall{grid-column:1;grid-row:2/5;margin-top:0;display:grid}.findsum .sumhead{grid-column:2/-1;display:flex;align-items:end}.findsum .sumrow{display:contents}.findsum .sumrow>.sumtile{grid-row:var(--r)}.findsum .sumtile{grid-template-rows:auto auto 1fr auto}.findsum .sumtile .sumlabel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sumtotal{position:relative}.sumtotal .sumstretch{position:absolute;inset:0;border:0;border-radius:inherit;background:none;cursor:pointer;padding:0}.sumtotal:hover{background:var(--hk-soft)}.sumtotal>.sumsubs{grid-row:3;align-self:start;display:grid;gap:2px;justify-items:start;position:relative;z-index:1;pointer-events:none}.sumtotal>.sumsubs .sumfollow{pointer-events:auto;text-align:left;padding:0;margin:0}@media(max-width:760px){.findsum{display:block}.findsum .sumall{margin-bottom:8px}.findsum .sumhead{margin:8px 0 4px}.findsum .sumrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:6px}.findsum .sumrow>.sumtile{grid-row:auto}}.findsum button.sumgrouphead{justify-self:start;display:inline-flex;align-items:center;gap:4px;padding:1px 9px 1px 7px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-surface);box-shadow:var(--hk-sh1);font:inherit;font-size:calc(12px*var(--hk-fs,1));font-weight:600;cursor:pointer;margin-left:0}.findsum button.sumgrouphead:hover{background:var(--hk-soft)}.findsum button.sumgrouphead[aria-pressed=true]{border-color:var(--hk-blue);color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface))}.findsum button.sumgrouphead ha-icon{--mdc-icon-size:14px}.findsum button.sumgrouphead[aria-pressed=true] ha-icon{display:none}.findsum button.sumgrouphead[aria-pressed=true]:before{content:"\\2713";margin-right:.2em}.findsum .sumgrouphead.red{color:color-mix(in srgb,var(--hk-red) 75%,var(--hk-muted))}.findsum .sumgrouphead.warn{color:color-mix(in srgb,var(--hk-amber) 75%,var(--hk-muted))}.sumtiles.compact{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.sumtiles.compact .sumtile{padding:8px 10px;gap:0}.sumtiles.compact .sumvalue{font-size:calc(19px*var(--hk-fs,1))}.sumtiles.compact .spark{height:24px}.sumtiles.compact .spark-row{padding-top:2px}.sumtiles.compact small{font-size:calc(11.5px*var(--hk-fs,1))}/* Every tile of a row shares four lines: title, figure, the text that may run over several lines, and the curve at the bottom; the free space sits between text and curve. */.sumtiles,.sumtiles.even{grid-auto-rows:auto}.sumtile{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:2px;align-content:start}.sumtiles.compact .sumtile{row-gap:0}.sumtile>.sumlabel{grid-row:1}.sumtile>.sumvalue{grid-row:2}.sumtile>small{grid-row:3;align-self:start}.sumtile>.spark-row{grid-row:4;align-self:end;margin-top:0}.kpis{grid-auto-rows:auto}.kpis>.kpi{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:2px;align-content:start}.kpis>.kpi>.kpilabel{grid-row:1}.kpis>.kpi>strong{grid-row:2}.kpis>.kpi>.kpisub{grid-row:3;align-self:start}.kpis>.kpi>.spark-row{grid-row:4;align-self:end;margin-top:0}.navtiles.compact{grid-auto-rows:auto}.navtiles.compact .taskcard{grid-row:span 4;grid-template-rows:subgrid;align-content:start;align-items:start}.navtiles.compact .taskcard>ha-icon{align-self:center}.navtiles.compact .taskcard>strong{grid-row:1}.navtiles.compact .taskcard>.setpill{grid-row:2}.navtiles.compact .taskcard>small{grid-row:3}.navtiles.compact .taskcard>.navfacts{grid-row:4;align-self:end}.sumfollow{justify-self:start;font-size:calc(12.5px*var(--hk-fs,1))}.sumfollow.on{text-decoration:underline}@media(max-width:700px){.findsum{grid-template-columns:1fr}.sumall{margin-top:0}}.hintrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;margin-bottom:0}.hintlabel{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.04em}.hintbtn{display:inline-flex;gap:6px;align-items:center;padding:5px 12px;border-radius:99px;border:1px solid var(--hk-border);background:var(--hk-soft);font:inherit;color:inherit;cursor:pointer}.hintbtn.warn{background:color-mix(in srgb,var(--hk-amber) 14%,var(--hk-surface))}.hintbtn.on{border-color:var(--hk-blue-solid)}.hintbtn ha-icon{--mdc-icon-size:18px}.chip.sub{border-style:dashed}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
       .spacebox{padding:4px 0 10px 22px}.spacehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}.spacehead .factnote{margin:0}.spacehead .btn{flex:none}.spacekeys{padding:4px 0 10px 12px}.spaceacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.spacechev{--mdc-icon-size:18px;color:var(--hk-muted);vertical-align:middle;margin-right:4px;float:left}
+      .startint{display:grid;grid-template-columns:minmax(0,1fr) 110px 80px 90px;gap:6px 12px;align-items:center;font-size:13px;padding:5px 0;border-top:1px solid var(--hk-border)}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
       ${this.themeCss()}
     </style>`;
   }
@@ -15325,7 +15328,7 @@ Object.assign(TEXT.de, {
   sysTabMisc: "Sonstiges", sysTabMiscHint: "Karten, Blueprints, übrige Ordner", sysSecOther: "Weitere Ordner und Dateien in /config", sysNoOther: "Außer den bekannten Orten wurde unter /config nichts Messbares gefunden.", sysOtherMore: "Dazu {n} kleinere Einträge mit zusammen {size}.", sysKindFolder: "Ordner", sysKindFile: "Datei",
  
   haMenu: "Seitenleiste von Home Assistant öffnen",
-  storage: "Speicher & System", storageSubtitle: "Belegung von Datenträger, Arbeitsspeicher und CPU und die größten Speicherverbraucher. Liest nur; es wird nichts geändert und nichts gespeichert.",
+  storage: "Speicher & System", storageSubtitle: "Belegung von Datenträger, Arbeitsspeicher und CPU, die größten Speicherverbraucher und die Dauer der letzten Starts. Ändert nichts, speichert nur die Startzeiten.",
   dataflow: "Zugriffe & Datenfluss", dataflowSubtitle: "Welche Integrationen auf System, Funk, Kameras oder den Standort zugreifen, welche Daten ins Internet schicken und welche Rechte die Apps haben. Liest nur.",
   sysRefresh: "Aktualisieren", sysRefreshHint: "Liest nur die Daten dieser Seite neu. Der Inventar-Scan oben bleibt unberührt.", sysReading: "Wird gelesen …", sysAsOf: "Stand {time}", sysFree: "{n} frei", sysSwapLabel: "Swap", sysChecked: "{n} Integrationen geprüft", accTabHigh: "{n} hoch", accTabOpen: "{n} offen",
   sysOvTitle: "System", sysOvHint: "Datenträger, Speicher und Prozessor jetzt", sysFreeOf: "{free} frei von {total}",
@@ -15345,7 +15348,7 @@ Object.assign(TEXT.de, {
   sysFolder: "Ordner", sysFolderHint: "Gezählt wird der ganze Ordner der Karte.", sysExternal: "extern oder nicht gefunden", sysAppRunning: "läuft", sysAppStopped: "gestoppt",
   sysNoCategories: "Der Supervisor hat keine Aufteilung geliefert.", sysNoConsumers: "Unter /config wurde nichts Messbares gefunden.", sysNoCards: "Keine Dashboard-Ressourcen eingetragen.", sysNoBlueprints: "Keine Blueprints vorhanden.",
   sysTruncated: "Die Messung der Ordner wurde nach 20 Sekunden abgebrochen. Die Größen sind Mindestwerte, einzelne Einträge können fehlen.",
-  sysFootnote: "Datenträger, Kategorien und Apps kommen unter Home Assistant OS und Supervised vom Supervisor, sonst steht dort das Dateisystem, auf dem /config liegt. Die Größen unter /config zählt Housekeeper selbst, ohne Verknüpfungen zu folgen; die Recorder-Datenbank zählt mit ihren -wal- und -shm-Dateien. Eine Custom Card aus HACS zählt mit ihrem ganzen Ordner und wird aus „www“ herausgerechnet, damit nichts doppelt zählt. Die CPU-Last ist ein Mittel über 0,4 Sekunden. Es wird nichts geändert und nichts gespeichert.",
+  sysFootnote: "Datenträger, Kategorien und Apps kommen unter Home Assistant OS und Supervised vom Supervisor, sonst steht dort das Dateisystem, auf dem /config liegt. Die Größen unter /config zählt Housekeeper selbst, ohne Verknüpfungen zu folgen; die Recorder-Datenbank zählt mit ihren -wal- und -shm-Dateien. Eine Custom Card aus HACS zählt mit ihrem ganzen Ordner und wird aus „www“ herausgerechnet, damit nichts doppelt zählt. Die CPU-Last ist ein Mittel über 0,4 Sekunden. Es wird nichts geändert; gespeichert werden nur die Startzeiten.",
 
   accHint: "Systemzugriffe und Cloud-Datenfluss der Integrationen, Rechte der Apps", accLoading: "Die Integrationen werden eingeordnet …",
   accSumTotal: "Integrationen geprüft", accSumAccess: "Mit Systemzugriff", accSumHigh: "Hohes Risiko", accSumExternal: "Cloud-Datenfluss",
@@ -15403,7 +15406,7 @@ Object.assign(TEXT.en, {
   sysTabMisc: "Other", sysTabMiscHint: "cards, blueprints, remaining folders", sysSecOther: "Other folders and files in /config", sysNoOther: "Apart from the known places, nothing measurable was found under /config.", sysOtherMore: "Plus {n} smaller entries totalling {size}.", sysKindFolder: "Folder", sysKindFile: "File",
  
   haMenu: "Open the Home Assistant sidebar",
-  storage: "Storage & system", storageSubtitle: "Use of disk, memory and CPU and the largest consumers of space. Only reads; nothing is changed and nothing is stored.",
+  storage: "Storage & system", storageSubtitle: "Use of disk, memory and CPU, the largest consumers of space and how long the last starts took. Changes nothing, only stores the start times.",
   dataflow: "Access & data flow", dataflowSubtitle: "Which integrations reach the system, radios, cameras or the location, which send data to the internet and which rights the apps have. Only reads.",
   sysRefresh: "Refresh", sysRefreshHint: "Reads only the data of this page again. The inventory scan above is not touched.", sysReading: "Reading …", sysAsOf: "As of {time}", sysFree: "{n} free", sysSwapLabel: "Swap", sysChecked: "{n} integrations checked", accTabHigh: "{n} high", accTabOpen: "{n} open",
   sysOvTitle: "System", sysOvHint: "Disk, memory and processor right now", sysFreeOf: "{free} free of {total}",
@@ -15423,7 +15426,7 @@ Object.assign(TEXT.en, {
   sysFolder: "Folder", sysFolderHint: "The whole folder of the card is counted.", sysExternal: "external or not found", sysAppRunning: "running", sysAppStopped: "stopped",
   sysNoCategories: "The Supervisor did not send a breakdown.", sysNoConsumers: "Nothing measurable was found under /config.", sysNoCards: "No dashboard resources registered.", sysNoBlueprints: "No blueprints.",
   sysTruncated: "The folder measurement stopped after 20 seconds. The sizes are minimums and some entries may be missing.",
-  sysFootnote: "On Home Assistant OS and Supervised, the disk, the categories and the apps come from the Supervisor; otherwise the file system /config lies on is shown. Housekeeper counts the sizes under /config itself without following links; the recorder database counts with its -wal and -shm files. A custom card from HACS counts with its whole folder and is taken out of \"www\" so nothing counts twice. The CPU load is an average over 0.4 seconds. Nothing is changed and nothing is stored.",
+  sysFootnote: "On Home Assistant OS and Supervised, the disk, the categories and the apps come from the Supervisor; otherwise the file system /config lies on is shown. Housekeeper counts the sizes under /config itself without following links; the recorder database counts with its -wal and -shm files. A custom card from HACS counts with its whole folder and is taken out of \"www\" so nothing counts twice. The CPU load is an average over 0.4 seconds. Nothing is changed; only the start times are stored.",
 
   accHint: "System access and cloud data flow of the integrations, rights of the apps", accLoading: "Classifying the integrations …",
   accSumTotal: "Integrations checked", accSumAccess: "With system access", accSumHigh: "High risk", accSumExternal: "Cloud data flow",
@@ -15663,7 +15666,7 @@ class BatteryTableMixin {
 // SystemMixin: the pages "Storage & system", "Access & data flow" and "Credentials" under Operation and Security; mixed in by 99-register.js.
 // All three only read. A page loads on its first visit; its refresh button reads again.
 // A page and the WebSocket command it asks.
-const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories" };
+const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories", starts: "starts" };
 // What a tile of the credentials page opens: [tab, list, state filter]; "" clears the filters.
 const SEC_SHOWS = { "": ["entries", "seclist", ""], gap: ["entries", "seclist", "gap"], reauth: ["entries", "seclist", "reauth"], disabled: ["entries", "seclist", "disabled"], nomfa: ["accounts", "secusers", "nomfa"], tokens: ["tokens", "sectokens", ""] };
 const SYS_WARN_PERCENT = 75, SYS_RED_PERCENT = 90;
@@ -15680,6 +15683,7 @@ class SystemMixin {
     const st = this.sysState(name);
     st.loading = true; st.error = ""; st.requested = true; this.render();
     const extra = name !== "storage" ? {} : fresh ? { fresh: true } : quick ? { quick: true } : {};
+    if (name === "storage" && fresh) this.sysLoad("starts");
     try {
       st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...extra });
       // The sizes carry the time they were read; the rest of the page is live.
@@ -15780,21 +15784,24 @@ class SystemMixin {
         { label: this.t("sysRam"), value: this.esc(this.sysPercent(ram.percent)), sub: ramSub || this.esc(this.t("sysUnknown")), tone: this.sysTone(ram.percent), spark: `${this.sysMeter(ram.percent)}${this.sysLine(r.history, 2)}` },
         { label: this.t("sysCpu"), value: this.esc(this.sysPercent(cpu.percent)), sub: cpuSub || this.esc(this.t("sysUnknown")), tone: this.sysTone(cpu.percent), spark: `${this.sysMeter(cpu.percent)}${this.sysLine(r.history, 3)}` },
         swap.total ? { label: this.t("sysSwapLabel"), value: this.esc(this.sysPercent(swap.percent)), sub: of(swap.used, swap.total), hint: this.t("sysSwapHint"), tone: "mute", spark: `${this.sysMeter(swap.percent)}${this.sysLine(r.history, 4)}` } : null,
+        this.startTile(),
       ]);
       const cats = r.categories?.children || [];
       const sup = Boolean(r.supervisor) && cats.length > 0;
       const miss = r.cards.some(c => c.status === "missing");
+      const starts = this.sysEnsure("starts");
       const chips = [
         ...(sup ? [["category", "sysByCategory", cats.length]] : []),
         ["folder", "sysByFolder", r.breakdown.length],
         ["misc", "sysByMisc", r.cards.length + r.blueprints.length + (r.other || []).length + (r.other_rest?.count || 0)],
+        ["starts", "sysByStarts", starts.data ? starts.data.starts.length : undefined],
       ];
       const tabs = chips.map(([id, key, n]) => ({ id, label: this.t(key), count: n, tone: id === "misc" && miss ? "red" : "" }));
       const by = this.viewTabOf("storage", tabs, chips[0][0]);
       const choice = this.viewTabBar("storage", tabs, by);
       const title = key => `<h3 class="syssec">${this.esc(this.t(key))}</h3>`;
       const apps = `<p class="factnote">${this.t("sysAppsHint")} <button type="button" class="link" data-view="components">${this.t("components")}</button></p>`;
-      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats, r.categories?.used) : this.sysConsumers(r.breakdown)}${apps}`;
+      const list = by === "starts" ? `${title("sysHeadStarts")}${this.sysStarts()}<p class="factnote">${this.t("startsNote")}</p>` : by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats, r.categories?.used) : this.sysConsumers(r.breakdown)}${apps}`;
       const cut = r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
       return `<div class="stack">${head}${tiles}<div class="panel">${choice}${cut}${list}${this.howCounted("sysFootnote")}</div></div>`;
     });
@@ -16456,6 +16463,135 @@ class PolicyRowMixin {
       const area = this.polDraft(item).area;
       this.makeDetailPlan({ kind: "set_area", object_id: item.object_id, ...(area ? { target: area } : {}) });
     }));
+  }
+}
+
+// StartsMixin: the tab "Starts" of Storage & system and its tile: how long the last starts of Home Assistant took, and how long
+// each integration needed to set up. Mixed into the panel in 99-register.js; the data is `ha_housekeeper/starts` (newest first).
+Object.assign(TEXT.de, {
+  sysByStarts: "Starts", sysHeadStarts: "Frühere Starts", sysTileStart: "Letzter Start", startsMin: "Min.",
+  startsTileLoaded: "bis alles geladen {x}", startsTileNone: "Wird beim nächsten Start gemessen.", startsTileCap: "letzte {n} Starts · Schnitt {avg}",
+  startsBuilding: "Der Verlauf entsteht mit weiteren Starts.",
+  startsEmpty: "Noch kein Start gemessen. Der erste erscheint, wenn Home Assistant das nächste Mal gestartet und die Anlaufphase vorbei ist.",
+  startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Anteil",
+  startsUpdate: "nach Update", startsUpdateHint: "Die Version von Home Assistant war eine andere als beim Start davor.",
+  startsFromHk: "ab Housekeeper", startsFromHkHint: "Der Beginn des Prozesses ließ sich nicht lesen; die Zeit zählt ab dem Einrichten von Housekeeper und ist deshalb kürzer als der ganze Start.",
+  startsOpen: "Integrationen dieses Starts zeigen", startsClose: "Integrationen dieses Starts verbergen",
+  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Einrichtung je Integration, langsamste zuerst",
+  startsMore: "{n} weitere unter einer Sekunde", startsNoItems: "Für diesen Start liegen keine Zeiten je Integration vor.",
+  startState_loaded: "geladen", startState_setup_error: "Fehler", startState_setup_retry: "Wiederholung", startState_not_loaded: "nicht geladen",
+  startState_migration_error: "Fehler", startState_failed_unload: "Fehler", startState_setup_in_progress: "lädt",
+  startsNote: "Die Zeit je Integration misst Home Assistant selbst, vom Beginn bis zum Ende ihrer Einrichtung. Integrationen starten gleichzeitig; die Zeiten ergeben deshalb nicht die Dauer des Starts. „Alles geladen“ ist der Moment, in dem keine Integration mehr geladen hat. Aufgenommen wird ein Start, wenn die Anlaufphase vorbei ist.",
+});
+Object.assign(TEXT.en, {
+  sysByStarts: "Starts", sysHeadStarts: "Earlier starts", sysTileStart: "Last start", startsMin: "min",
+  startsTileLoaded: "everything loaded after {x}", startsTileNone: "Measured at the next start.", startsTileCap: "last {n} starts · average {avg}",
+  startsBuilding: "The line appears with more starts.",
+  startsEmpty: "No start measured yet. The first one appears after Home Assistant has started the next time and the warm-up is over.",
+  startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Share",
+  startsUpdate: "after update", startsUpdateHint: "The version of Home Assistant was a different one than at the start before.",
+  startsFromHk: "from Housekeeper", startsFromHkHint: "The start of the process could not be read; the time counts from the set-up of Housekeeper and is therefore shorter than the whole start.",
+  startsOpen: "Show the integrations of this start", startsClose: "Hide the integrations of this start",
+  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Set-up per integration, slowest first",
+  startsMore: "{n} more under a second", startsNoItems: "There are no times per integration for this start.",
+  startState_loaded: "loaded", startState_setup_error: "Error", startState_setup_retry: "Retrying", startState_not_loaded: "not loaded",
+  startState_migration_error: "Error", startState_failed_unload: "Error", startState_setup_in_progress: "loading",
+  startsNote: "Home Assistant itself measures the time per integration, from the beginning to the end of its set-up. Integrations start at the same time, so the times do not add up to the length of the start. \"All loaded\" is the moment no integration was loading any more. A start is recorded when the warm-up is over.",
+});
+
+class StartsMixin {
+  startList() { return this.sysState("starts").data?.starts || []; }
+
+  // 228 s as "3:48 Min."; under a minute in seconds.
+  startClock(seconds) {
+    if (!Number.isFinite(seconds)) return "–";
+    const total = Math.round(seconds);
+    if (total < 60) return `${this.formatNumber(total)} s`;
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")} ${this.t("startsMin")}`;
+  }
+
+  // The set-up of one integration in seconds: a decimal under ten, whole above.
+  startSeconds(seconds) {
+    const n = Number(seconds) || 0;
+    return `${this.formatNumber(n < 10 ? Math.round(n * 10) / 10 : Math.round(n))} s`;
+  }
+
+  startName(item) { return item.title || item.domain; }
+
+  startSlowest(start) { return (start.items || []).find(i => i.seconds > 0) || null; }
+
+  // The fourth tile of the page: the last start as a figure, a bar against the longest start, the line of the last starts.
+  startTile() {
+    const starts = this.startList();
+    const label = this.t("sysTileStart");
+    const last = starts[0];
+    if (!last || !Number.isFinite(last.boot_s)) return { label, value: "–", sub: this.esc(this.t("startsTileNone")), tone: "mute" };
+    const times = starts.map(s => s.boot_s).filter(Number.isFinite).reverse();
+    const before = times.slice(0, -1), avg = times.reduce((a, b) => a + b, 0) / times.length;
+    const tone = before.length >= 2 && last.boot_s > (before.reduce((a, b) => a + b, 0) / before.length) * 1.25 ? "warn" : "ok";
+    const width = Math.max(2, Math.round((last.boot_s / Math.max(...times)) * 100));
+    const meter = `<span class="sysmeter ${tone}" role="img" aria-label="${this.esc(this.startClock(last.boot_s))}"><i style="width:${width}%"></i></span>`;
+    const sub = Number.isFinite(last.loaded_s) ? this.esc(this.t("startsTileLoaded", { x: this.startClock(last.loaded_s) })) : "";
+    return { label, value: this.esc(this.startClock(last.boot_s)), sub, tone, spark: `${meter}${this.startLine(times, avg)}` };
+  }
+
+  startLine(values, avg) {
+    const rows = values.slice(-12), n = rows.length;
+    if (n < 3) return `<span class="spark-hint">${this.t("startsBuilding")}</span>`;
+    const w = 200, h = 36, pad = 4;
+    let lo = Math.min(...rows), hi = Math.max(...rows);
+    if (hi - lo < 10) { const mid = (hi + lo) / 2; lo = Math.max(0, mid - 5); hi = lo + 10; }
+    const x = i => pad + ((w - 2 * pad) * i) / (n - 1), y = v => h - pad - ((h - 2 * pad) * (v - lo)) / (hi - lo);
+    const cap = this.t("startsTileCap", { n: this.formatNumber(n), avg: this.startClock(avg) });
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${this.esc(cap)}"><polyline fill="none" stroke="var(--hk-muted)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="${rows.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"/><line class="spark-end sys-spark-end" x1="${x(n - 1).toFixed(1)}" y1="${y(rows[n - 1]).toFixed(1)}" x2="${x(n - 1).toFixed(1)}" y2="${y(rows[n - 1]).toFixed(1)}"/></svg><span class="spark-cap">${this.esc(cap)}</span>`;
+  }
+
+  startKey(start) { return `start:${start.at}`; }
+
+  startState(item) {
+    if (!item.state) return `<span class="muted">–</span>`;
+    const key = `startState_${item.state}`, text = this.t(key);
+    const tone = item.state === "loaded" ? "ok" : item.state === "setup_retry" ? "warn" : item.state === "not_loaded" || item.state === "setup_in_progress" ? "mute" : "red";
+    return `<span class="pill ${tone}">${this.esc(text === key ? item.state : text)}</span>`;
+  }
+
+  // The integrations of one start: those that took a second or more, and every one that did not load.
+  startDetail(start) {
+    if (!(this.bhOpen || []).includes(this.startKey(start))) return "";
+    const items = start.items || [];
+    const shown = items.filter(i => i.seconds >= 1 || (i.state && !["loaded", "not_loaded"].includes(i.state)));
+    const max = Math.max(0, ...shown.map(i => i.seconds));
+    const rows = shown.map(i => `<div class="startint"><span class="startname"><strong class="cut">${this.esc(this.startName(i))}</strong>${i.title ? `<span class="id cut">${this.esc(i.domain)}</span>` : ""}</span><span>${this.startState(i)}</span><b>${this.esc(this.startSeconds(i.seconds))}</b>${this.sysShare(i.seconds, max)}</div>`).join("");
+    const rest = items.length - shown.length;
+    const body = shown.length ? `<div class="sectionlabel">${this.t("startsDetailHead")}</div>${rows}${rest > 0 ? `<p class="factnote">${this.t("startsMore", { n: this.formatNumber(rest) })}</p>` : ""}` : `<p class="factnote">${this.t("startsNoItems")}</p>`;
+    return `<tr class="static remhist"><td colspan="5">${body}</td></tr>`;
+  }
+
+  sysStarts() {
+    const starts = this.startList();
+    if (!starts.length) return `<div class="emptymsg">${this.t("startsEmpty")}</div>`;
+    const open = s => (this.bhOpen || []).includes(this.startKey(s));
+    const max = Math.max(0, ...starts.map(s => s.boot_s || 0));
+    const slowest = s => { const i = this.startSlowest(s); return i ? `${this.startName(i)} · ${this.startSeconds(i.seconds)}` : "–"; };
+    const sorts = [
+      { key: "at", label: "startColAt", dir: "desc", get: s => s.at },
+      { key: "total", label: "startColTotal", dir: "desc", get: s => s.boot_s ?? null },
+      { key: "loaded", label: "startColLoaded", dir: "desc", get: s => s.loaded_s ?? null },
+    ];
+    return this.sysList("sysstarts", starts, {
+      sort: "at", dir: "desc", sorts, text: s => `${this.formatDate(s.at)} ${s.version || ""} ${slowest(s)}`, tie: s => s.at, empty: "startsEmpty",
+      rowAttrs: s => `data-bh-row="${this.esc(this.startKey(s))}" tabindex="0" role="button" aria-expanded="${open(s)}"`,
+      after: s => this.startDetail(s),
+      columns: [
+        { key: "at", label: "startColAt", dir: "desc", cell: s => `<div class="statcell">${this.expandBtn("data-bh-more", this.startKey(s), open(s), this.t(open(s) ? "startsClose" : "startsOpen"))}<div><strong>${this.esc(this.formatDate(s.at))}</strong>${s.version ? `<small>${this.esc(this.t("startsHaVersion", { v: s.version }))}</small>` : ""}${s.update ? ` <span class="pill warn" title="${this.esc(this.t("startsUpdateHint"))}">${this.t("startsUpdate")}</span>` : ""}</div></div>` },
+        { key: "total", label: "startColTotal", dir: "desc", cell: s => `${this.esc(this.startClock(s.boot_s))}${s.boot_from === "housekeeper" ? ` <span class="pill mute" title="${this.esc(this.t("startsFromHkHint"))}">${this.t("startsFromHk")}</span>` : ""}` },
+        { key: "loaded", label: "startColLoaded", dir: "desc", cell: s => this.esc(this.startClock(s.loaded_s)) },
+        { key: "slowest", label: "startColSlowest", sortable: false, cell: s => this.esc(slowest(s)) },
+        { key: "share", label: "startColShare", sortable: false, cell: s => this.sysShare(s.boot_s || 0, max) },
+      ],
+      exportName: "storage-starts", header: [this.t("startColAt"), "Home Assistant", this.t("startColTotal"), this.t("startColLoaded"), this.t("startColSlowest")],
+      rows: s => [s.at, s.version || "", s.boot_s ?? "", s.loaded_s ?? "", slowest(s)],
+    });
   }
 }
 
@@ -19162,7 +19298,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

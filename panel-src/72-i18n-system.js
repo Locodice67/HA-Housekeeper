@@ -4,7 +4,7 @@ Object.assign(TEXT.de, {
   sysTabMisc: "Sonstiges", sysTabMiscHint: "Karten, Blueprints, übrige Ordner", sysSecOther: "Weitere Ordner und Dateien in /config", sysNoOther: "Außer den bekannten Orten wurde unter /config nichts Messbares gefunden.", sysOtherMore: "Dazu {n} kleinere Einträge mit zusammen {size}.", sysKindFolder: "Ordner", sysKindFile: "Datei",
  
   haMenu: "Seitenleiste von Home Assistant öffnen",
-  storage: "Speicher & System", storageSubtitle: "Belegung von Datenträger, Arbeitsspeicher und CPU und die größten Speicherverbraucher. Liest nur; es wird nichts geändert und nichts gespeichert.",
+  storage: "Speicher & System", storageSubtitle: "Belegung von Datenträger, Arbeitsspeicher und CPU, die größten Speicherverbraucher und die Dauer der letzten Starts. Ändert nichts, speichert nur die Startzeiten.",
   dataflow: "Zugriffe & Datenfluss", dataflowSubtitle: "Welche Integrationen auf System, Funk, Kameras oder den Standort zugreifen, welche Daten ins Internet schicken und welche Rechte die Apps haben. Liest nur.",
   sysRefresh: "Aktualisieren", sysRefreshHint: "Liest nur die Daten dieser Seite neu. Der Inventar-Scan oben bleibt unberührt.", sysReading: "Wird gelesen …", sysAsOf: "Stand {time}", sysFree: "{n} frei", sysSwapLabel: "Swap", sysChecked: "{n} Integrationen geprüft", accTabHigh: "{n} hoch", accTabOpen: "{n} offen",
   sysOvTitle: "System", sysOvHint: "Datenträger, Speicher und Prozessor jetzt", sysFreeOf: "{free} frei von {total}",
@@ -24,7 +24,7 @@ Object.assign(TEXT.de, {
   sysFolder: "Ordner", sysFolderHint: "Gezählt wird der ganze Ordner der Karte.", sysExternal: "extern oder nicht gefunden", sysAppRunning: "läuft", sysAppStopped: "gestoppt",
   sysNoCategories: "Der Supervisor hat keine Aufteilung geliefert.", sysNoConsumers: "Unter /config wurde nichts Messbares gefunden.", sysNoCards: "Keine Dashboard-Ressourcen eingetragen.", sysNoBlueprints: "Keine Blueprints vorhanden.",
   sysTruncated: "Die Messung der Ordner wurde nach 20 Sekunden abgebrochen. Die Größen sind Mindestwerte, einzelne Einträge können fehlen.",
-  sysFootnote: "Datenträger, Kategorien und Apps kommen unter Home Assistant OS und Supervised vom Supervisor, sonst steht dort das Dateisystem, auf dem /config liegt. Die Größen unter /config zählt Housekeeper selbst, ohne Verknüpfungen zu folgen; die Recorder-Datenbank zählt mit ihren -wal- und -shm-Dateien. Eine Custom Card aus HACS zählt mit ihrem ganzen Ordner und wird aus „www“ herausgerechnet, damit nichts doppelt zählt. Die CPU-Last ist ein Mittel über 0,4 Sekunden. Es wird nichts geändert und nichts gespeichert.",
+  sysFootnote: "Datenträger, Kategorien und Apps kommen unter Home Assistant OS und Supervised vom Supervisor, sonst steht dort das Dateisystem, auf dem /config liegt. Die Größen unter /config zählt Housekeeper selbst, ohne Verknüpfungen zu folgen; die Recorder-Datenbank zählt mit ihren -wal- und -shm-Dateien. Eine Custom Card aus HACS zählt mit ihrem ganzen Ordner und wird aus „www“ herausgerechnet, damit nichts doppelt zählt. Die CPU-Last ist ein Mittel über 0,4 Sekunden. Es wird nichts geändert; gespeichert werden nur die Startzeiten.",
 
   accHint: "Systemzugriffe und Cloud-Datenfluss der Integrationen, Rechte der Apps", accLoading: "Die Integrationen werden eingeordnet …",
   accSumTotal: "Integrationen geprüft", accSumAccess: "Mit Systemzugriff", accSumHigh: "Hohes Risiko", accSumExternal: "Cloud-Datenfluss",
@@ -82,7 +82,7 @@ Object.assign(TEXT.en, {
   sysTabMisc: "Other", sysTabMiscHint: "cards, blueprints, remaining folders", sysSecOther: "Other folders and files in /config", sysNoOther: "Apart from the known places, nothing measurable was found under /config.", sysOtherMore: "Plus {n} smaller entries totalling {size}.", sysKindFolder: "Folder", sysKindFile: "File",
  
   haMenu: "Open the Home Assistant sidebar",
-  storage: "Storage & system", storageSubtitle: "Use of disk, memory and CPU and the largest consumers of space. Only reads; nothing is changed and nothing is stored.",
+  storage: "Storage & system", storageSubtitle: "Use of disk, memory and CPU, the largest consumers of space and how long the last starts took. Changes nothing, only stores the start times.",
   dataflow: "Access & data flow", dataflowSubtitle: "Which integrations reach the system, radios, cameras or the location, which send data to the internet and which rights the apps have. Only reads.",
   sysRefresh: "Refresh", sysRefreshHint: "Reads only the data of this page again. The inventory scan above is not touched.", sysReading: "Reading …", sysAsOf: "As of {time}", sysFree: "{n} free", sysSwapLabel: "Swap", sysChecked: "{n} integrations checked", accTabHigh: "{n} high", accTabOpen: "{n} open",
   sysOvTitle: "System", sysOvHint: "Disk, memory and processor right now", sysFreeOf: "{free} free of {total}",
@@ -102,7 +102,7 @@ Object.assign(TEXT.en, {
   sysFolder: "Folder", sysFolderHint: "The whole folder of the card is counted.", sysExternal: "external or not found", sysAppRunning: "running", sysAppStopped: "stopped",
   sysNoCategories: "The Supervisor did not send a breakdown.", sysNoConsumers: "Nothing measurable was found under /config.", sysNoCards: "No dashboard resources registered.", sysNoBlueprints: "No blueprints.",
   sysTruncated: "The folder measurement stopped after 20 seconds. The sizes are minimums and some entries may be missing.",
-  sysFootnote: "On Home Assistant OS and Supervised, the disk, the categories and the apps come from the Supervisor; otherwise the file system /config lies on is shown. Housekeeper counts the sizes under /config itself without following links; the recorder database counts with its -wal and -shm files. A custom card from HACS counts with its whole folder and is taken out of \"www\" so nothing counts twice. The CPU load is an average over 0.4 seconds. Nothing is changed and nothing is stored.",
+  sysFootnote: "On Home Assistant OS and Supervised, the disk, the categories and the apps come from the Supervisor; otherwise the file system /config lies on is shown. Housekeeper counts the sizes under /config itself without following links; the recorder database counts with its -wal and -shm files. A custom card from HACS counts with its whole folder and is taken out of \"www\" so nothing counts twice. The CPU load is an average over 0.4 seconds. Nothing is changed; only the start times are stored.",
 
   accHint: "System access and cloud data flow of the integrations, rights of the apps", accLoading: "Classifying the integrations …",
   accSumTotal: "Integrations checked", accSumAccess: "With system access", accSumHigh: "High risk", accSumExternal: "Cloud data flow",
