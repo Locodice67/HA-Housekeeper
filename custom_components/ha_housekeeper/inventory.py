@@ -142,6 +142,7 @@ from .service_check import missing_service_findings
 from .signals import SignalStore, situations
 from .signals import fire as signal_fire
 from .stale import StaleStore
+from .start_times import StartStore
 from .system_usage import supervisor_get, supervisor_token
 from .view_counts import view_counts
 from .watch import WATCH_KINDS, WatchStore, evaluate, make_before, next_due
@@ -888,6 +889,7 @@ STORE_NAMES = (
     "marks",
     "stale",
     "load",
+    "starts",
     "goals",
     "criteria",
     "coverage",
@@ -930,6 +932,7 @@ class InventoryScanner:
         self._window_seen: dict[str, bool] = {}  # which mark windows were open at the last apply
         self.stale = StaleStore(hass)
         self.load = LoadStore(hass)
+        self.starts = StartStore(hass)
         self._started = datetime.now(UTC)
         self._reauth_seen: set[str] | None = (
             None  # the entries that asked for a login at the last scan
@@ -1076,6 +1079,11 @@ class InventoryScanner:
             self._pending_since = None
             if self._settled_at is None:
                 self._settled_at = now
+
+    @property
+    def settled_at(self) -> float | None:
+        """``time.monotonic()`` of the moment no integration was loading any more; None while some are."""
+        return self._settled_at
 
     @property
     def warmup_settling(self) -> bool:

@@ -45,6 +45,7 @@ SCAN_HEALTH_STORAGE_KEY: Final = f"{DOMAIN}.scan_health"
 MONITOR_STORAGE_KEY: Final = f"{DOMAIN}.monitor"
 LOAD_STORAGE_KEY: Final = f"{DOMAIN}.load"
 WATCH_STORAGE_KEY: Final = f"{DOMAIN}.watch"
+STARTS_STORAGE_KEY: Final = f"{DOMAIN}.starts"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = (

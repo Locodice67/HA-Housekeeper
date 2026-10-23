@@ -12,6 +12,7 @@ from typing import Any
 from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import (
@@ -63,6 +64,7 @@ from .runtime import HousekeeperConfigEntry
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
 from .scan_trigger import ScanRefused
 from .services import async_register_services
+from .start_times import integration_rows, process_started
 from .system_usage import system_light
 from .watch import UPDATE_ENTITIES
 from .websocket_api import async_register as async_register_websocket
@@ -98,6 +100,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
     booting = hass.state is not CoreState.running
     if booting:
         scanner.begin_boot()
+    # What the start took is recorded once Home Assistant runs and the warm-up is over; where the process
+    # start cannot be read, the set-up of this entry is the best beginning there is.
+    boot: dict[str, Any] = {
+        "process": await hass.async_add_executor_job(process_started) if booting else None,
+        "began": time.time(),
+        "record": False,
+        "mono": 0.0,
+        "epoch": 0.0,
+    }
     levels = thresholds_from_options(entry.options)
     scanner.outage_info_minutes = levels[CONF_OUTAGE_INFO_MINUTES]
     scanner.outage_low_hours = levels[CONF_OUTAGE_LOW_HOURS]
@@ -184,7 +195,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         if final["done"]:
             return
         final["done"] = True
+        if boot["record"]:
+            boot["record"] = False
+            _record_start()
         entry.async_create_background_task(hass, _scan(), "HA Housekeeper final startup scan")
+
+    def _record_start() -> None:
+        anchor = boot["process"] or boot["began"]
+        boot_s = max(0.0, boot["epoch"] - anchor)
+        settled = scanner.settled_at
+        loaded_s = None if settled is None else boot_s + max(0.0, settled - boot["mono"])
+        try:
+            scanner.starts.record(
+                datetime.now(UTC),
+                HA_VERSION,
+                boot_s,
+                loaded_s,
+                "process" if boot["process"] else "housekeeper",
+                integration_rows(hass),
+                scanner.history.retention_days,
+            )
+        except Exception:
+            _LOGGER.exception("The time of this start could not be recorded")
 
     # The warm-up ends early once no integration is loading any more (plus a buffer): look every few seconds.
     @callback
@@ -201,6 +233,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         if not hass.data[DOMAIN].get("start_logged"):
             hass.data[DOMAIN]["start_logged"] = True
             scanner.events.record_start(datetime.now(UTC))
+            if booting:
+                boot.update(record=True, mono=time.monotonic(), epoch=time.time())
         if booting:
             scanner.begin_warmup(WARMUP_SECONDS)
             entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 5, _final_scan))

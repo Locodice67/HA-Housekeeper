@@ -84,6 +84,20 @@ async def websocket_system_light(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/starts"})
+@websocket_api.async_response
+@with_scanner
+async def websocket_starts(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """How long the last starts of Home Assistant took, and each integration's set-up time. Read-only."""
+    connection.send_result(msg["id"], _versioned(scanner.starts.report()))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/access"})
 @websocket_api.async_response
 @with_scanner
@@ -153,6 +167,7 @@ def async_register(hass: HomeAssistant) -> None:
     """Register the storage, access and credential-overview commands."""
     websocket_api.async_register_command(hass, websocket_system_usage)
     websocket_api.async_register_command(hass, websocket_system_light)
+    websocket_api.async_register_command(hass, websocket_starts)
     websocket_api.async_register_command(hass, websocket_access)
     websocket_api.async_register_command(hass, websocket_sensitive_fields)
     websocket_api.async_register_command(hass, websocket_open_flows)
