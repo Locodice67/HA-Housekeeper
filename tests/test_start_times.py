@@ -46,3 +46,22 @@ def test_starts_keep_the_retention_and_mark_an_update() -> None:
 def test_the_process_start_is_in_the_past_or_unknown() -> None:
     started = process_started()
     assert started is None or started < NOW.timestamp() + 10**9
+
+
+def test_an_entry_that_did_not_load_keeps_its_reason() -> None:
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from custom_components.ha_housekeeper import start_times
+
+    def entry(state: str, reason: str | None) -> SimpleNamespace:
+        return SimpleNamespace(
+            domain="switchbot", title="switchbot", state=SimpleNamespace(value=state), reason=reason
+        )
+
+    hass = SimpleNamespace(
+        config_entries=SimpleNamespace(async_entries=lambda: [entry("setup_retry", "No device")])
+    )
+    with patch.object(start_times, "async_get_setup_timings", lambda _hass: {"switchbot": 65.0}):
+        (row,) = start_times.integration_rows(hass)
+    assert row["state"] == "setup_retry" and row["reason"] == "No device"

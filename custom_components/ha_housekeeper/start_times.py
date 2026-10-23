@@ -52,11 +52,16 @@ def integration_rows(hass: HomeAssistant) -> list[dict[str, Any]]:
     for domain in sorted(set(timings) | set(entries)):
         mine = entries.get(domain, [])
         # One state per integration: "loaded" only when every entry is; else the first that is not.
-        bad = next((e.state.value for e in mine if e.state.value != "loaded"), None)
+        failed = next((e for e in mine if e.state.value != "loaded"), None)
+        bad = failed.state.value if failed else None
         row: dict[str, Any] = {"domain": domain, "seconds": round(float(timings.get(domain, 0)), 2)}
         if mine:
             row["state"] = bad or "loaded"
             row["entries"] = len(mine)
+            # Why the first entry that did not load did not: the integration's own message.
+            reason = getattr(failed, "reason", None)
+            if reason:
+                row["reason"] = str(reason)[:200]
             if len(mine) == 1 and mine[0].title:
                 row["title"] = str(mine[0].title)
         rows.append(row)
