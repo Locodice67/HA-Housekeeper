@@ -717,11 +717,7 @@ class CleanupMixin {
     const unusedCount = this.unreferencedRows().length, statsCount = (this.data.orphaned_statistics || []).length;
     const count = kind => this.cleanupCandidates(kind).length;
     const unusedRows = this.unreferencedRows();
-    const topDomain = (() => { const counts = new Map(); unusedRows.forEach(o => { const d = o.object_id.split(".")[0]; counts.set(d, (counts.get(d) || 0) + 1); }); return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; })();
-    const unusedFacts = [
-      this.data.meta.recorder_available && unusedRows.length ? { text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" } : null,
-      topDomain ? { text: this.t("unrefFactDomain", { name: topDomain[0] }), tone: "mute" } : null,
-    ].filter(Boolean);
+    const unusedExtra = this.data.meta.recorder_available && unusedRows.length ? [{ text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" }] : [];
     // One status pill per tile, as on Maintenance: how many with their noun, or "Nothing to do" in green.
     const status = (n, unit, tone) => (n ? { pill: this.tCount(unit, n), tone } : { pill: this.t("cleanupNothing"), tone: "ok" });
     // The tiles are the navigation: each one is one job, with how much there is to do.
@@ -730,7 +726,7 @@ class CleanupMixin {
       { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), ...status(count("disable_device"), "cuDevices", "warn") },
       { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), ...(held.length ? { pill: heldReady ? this.t("cuHeldReady", { n: this.formatNumber(held.length), ready: this.formatNumber(heldReady) }) : this.tCount("cuHeld", held.length), tone: heldReady ? "ok" : "mute" } : status(0)) },
       { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), ...status(statsCount, "cuStats", "mute") },
-      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), ...status(unusedCount, "cuUnused", "mute"), facts: unusedFacts },
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), ...status(unusedCount, "cuUnused", "mute"), extra: unusedExtra },
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
     const tiles = this.cleanupTiles(tabs, open);
