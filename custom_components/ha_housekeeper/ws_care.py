@@ -12,6 +12,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 
 from . import battery_trend, battery_voltage
+from .auto_pause import AutoPauseError
 from .backup_health import ATTEST_KINDS, backup_health
 from .battery_care import BatteryError, noted_types
 from .battery_kind import excluded
@@ -984,9 +985,66 @@ async def websocket_backup_attest(
     connection.send_result(msg["id"], _versioned(result))
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/auto_pause"})
+@websocket_api.async_response
+@with_scanner
+async def websocket_auto_pause(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The settings, the paused integrations and the candidates of auto-pause. Read-only."""
+    connection.send_result(msg["id"], _versioned(await scanner.auto_pause.report()))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/auto_pause_set",
+        vol.Required("action"): vol.In(["settings", "release", "never", "pause", "resume", "try"]),
+        vol.Optional("entry_id"): str,
+        vol.Optional("on"): bool,
+        vol.Optional("confirm", default=False): bool,
+        vol.Optional("values"): dict,
+    }
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_auto_pause_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Change the settings, release or exclude an integration, pause, resume or try one now."""
+    pause = scanner.auto_pause
+    action, entry_id = msg["action"], msg.get("entry_id", "")
+    try:
+        if action == "settings":
+            pause.set_settings(msg.get("values") or {})
+        elif action == "release":
+            pause.release(entry_id, msg.get("on", True))
+        elif action == "never":
+            pause.never(entry_id, msg.get("on", True))
+        elif action == "pause":
+            await pause.pause(entry_id, reason="manual", confirm=msg["confirm"])
+        elif action == "resume":
+            await pause.resume(entry_id)
+        else:
+            pause.try_now(entry_id)
+    except AutoPauseError as err:
+        connection.send_error(msg["id"], f"auto_pause_{err}", f"Not accepted: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(await pause.report()))
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register the commands of this part."""
     websocket_api.async_register_command(hass, websocket_preflight)
+    websocket_api.async_register_command(hass, websocket_auto_pause)
+    websocket_api.async_register_command(hass, websocket_auto_pause_set)
     websocket_api.async_register_command(hass, websocket_check_config)
     websocket_api.async_register_command(hass, websocket_backup_health)
     websocket_api.async_register_command(hass, websocket_policies)

@@ -1532,7 +1532,7 @@ class StylesMixin {
       .card-text{min-width:0;display:grid;gap:2px}.card-text small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.card-text strong{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2}.card-text em{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-overflow:ellipsis;white-space:nowrap}
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
-      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}
+      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apsettings,.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apsettings{padding:10px 0}.apmanual{padding-top:12px}.apbtns{margin-left:auto}.apnum input{width:5em}.apswitch{display:flex;align-items:center;gap:8px}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
       .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -5978,7 +5978,7 @@ class DiagnosisMixin {
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
     if (["automation", "script"].includes(item.object_type)) { this.ensureRuns(); this.ensureQuality(); }
-    if (item.object_type === "config_entry" || item.object_type === "integration") this.ensureReliability();
+    if (item.object_type === "config_entry" || item.object_type === "integration") { this.ensureReliability(); this.ensureAutoPause(); }
     if (item.object_type === "integration" && item.custom && this.detailTab === "overview") this.sysEnsure("storage"); // the folder size
     if (item.object_type === "integration" && this.detailTab === "access") { this.sysEnsure("dataflow"); this.sysEnsure("secrets"); }
     // The reports of Access & data flow and Credentials are read when their tab is opened, not with the page.
@@ -5997,7 +5997,7 @@ class DiagnosisMixin {
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div><div class="headpills">${this.pill(item.status)}<span class="pill mute">${this.t(item.object_type)}</span></div><h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
-      <div class="actions">${(item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
+      <div class="actions">${(item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${this.apPageActions(item.object_type === "config_entry" ? item.object_id : item.object_type === "integration" && item.entries?.length === 1 ? item.entries[0].object_id : "", item.state)}${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
       <div class="panel sumline">${summary}</div>
       ${this.statusBand(item, key)}
       <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>
@@ -6682,6 +6682,143 @@ class BackupMixin {
   }
 }
 
+// AutoPauseMixin: the tab "Auto-Pause" of Reliability and the button on an integration's page. An integration that keeps failing
+// to set up is paused (disabled) and tried again later; data is `ha_housekeeper/auto_pause`, changes go through `auto_pause_set`.
+// Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  apTab: "Auto-Pause", apTileHint: "{n} Kandidaten · pausiert Dauerfehler und versucht es später wieder",
+  apHead: "Dauerfehler automatisch pausieren", apHeadSub: "Pausiert freigegebene Datenlieferanten, die dauernd an der Einrichtung scheitern, und versucht es später wieder. Eine Pause von Hand braucht diesen Schalter nicht.",
+  apOn: "Ein", apOff: "Aus", apAttempts: "Fehlversuche", apHours: "in Stunden", apHouse: "Auch Integrationen pausieren, die eine Hausfunktion tragen",
+  apPlan: "Wiederholungen: 3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens {days} Tage ab Beginn der Pause. Danach bleibt die Pause bestehen und Housekeeper meldet es.",
+  apPaused: "Pausiert", apNonePaused: "Nichts pausiert.", apCandidates: "Kandidaten", apNoCandidates: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.",
+  apManual: "Integration pausieren", apPick: "Integration wählen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
+  apExhausted: "Keine Versuche mehr, bitte prüfen", apReasonAuto: "{n} Fehlversuche", apReasonManual: "von dir pausiert",
+  apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apRelease: "Freigeben", apUnrelease: "Freigabe entziehen", apReleased: "freigegeben",
+  apExcluded: "Nie pausiert", apExcludedNone: "Keine Ausnahmen.", apAllow: "Wieder zulassen", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
+  apLog: "Verlauf", apLogNone: "Noch nichts passiert.", apLog_paused: "pausiert", apLog_tried: "Versuch ohne Erfolg", apLog_back: "läuft wieder", apLog_ended: "Pause beendet", apLog_exhausted: "Pause bleibt, bitte prüfen",
+  apSend: "In Auto-Pause schicken", apSendHint: "Vorübergehende Störung? Auto-Pause entlastet die Quelle.", apPausedNow: "Pausiert seit {span}",
+  apConfirmTitle: "{name} pausieren?", apConfirmText: "{name} wird deaktiviert und danach in Abständen wieder versucht, höchstens {days} Tage lang.",
+  apWarnControl: "Die Integration hat Entitäten, die etwas steuern oder melden. Für die Dauer der Pause sind sie aus Home Assistant verschwunden.", apWarnHouse: "Eine Hausfunktion verlässt sich darauf.",
+  apConfirmYes: "Pausieren",
+  err_auto_pause_confirm_needed: "Die Integration steuert etwas oder trägt eine Hausfunktion: bitte bestätigen.", err_auto_pause_core: "Diese Integration wird nie pausiert.", err_auto_pause_reauth: "Die Integration braucht eine neue Anmeldung; eine Pause hilft nicht.", err_auto_pause_paused: "Bereits pausiert.", err_auto_pause_disabled: "Die Integration ist schon deaktiviert.", err_auto_pause_not_found: "Integration nicht gefunden.", err_auto_pause_not_paused: "Nicht pausiert.", err_auto_pause_busy: "Es läuft gerade ein Versuch.", err_auto_pause_invalid: "Wert nicht zulässig.",
+});
+Object.assign(TEXT.en, {
+  apTab: "Auto-pause", apTileHint: "{n} candidates · pauses constant failures and tries again later",
+  apHead: "Pause constant failures automatically", apHeadSub: "Pauses released data providers that keep failing to set up and tries them again later. A pause you start by hand does not need this switch.",
+  apOn: "On", apOff: "Off", apAttempts: "failed attempts", apHours: "within hours", apHouse: "Also pause integrations that carry a house function",
+  apPlan: "Retries: 3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, for up to {days} days from the start of the pause. After that the pause stays and Housekeeper tells you.",
+  apPaused: "Paused", apNonePaused: "Nothing paused.", apCandidates: "Candidates", apNoCandidates: "No integration meets the rule: cloud polling and data entities only.",
+  apManual: "Pause an integration", apPick: "Choose an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
+  apExhausted: "No more tries, please look", apReasonAuto: "{n} failed attempts", apReasonManual: "paused by you",
+  apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apRelease: "Release", apUnrelease: "Withdraw release", apReleased: "released",
+  apExcluded: "Never paused", apExcludedNone: "No exceptions.", apAllow: "Allow again", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
+  apLog: "History", apLogNone: "Nothing yet.", apLog_paused: "paused", apLog_tried: "try without success", apLog_back: "is back", apLog_ended: "pause ended", apLog_exhausted: "pause stays, please look",
+  apSend: "Send to auto-pause", apSendHint: "A temporary fault? Auto-pause spares the source.", apPausedNow: "Paused for {span}",
+  apConfirmTitle: "Pause {name}?", apConfirmText: "{name} will be disabled and tried again at intervals, for up to {days} days.",
+  apWarnControl: "The integration has entities that control or report something. They are gone from Home Assistant while it is paused.", apWarnHouse: "A house function relies on it.",
+  apConfirmYes: "Pause",
+  err_auto_pause_confirm_needed: "The integration controls something or carries a house function: please confirm.", err_auto_pause_core: "This integration is never paused.", err_auto_pause_reauth: "The integration needs a new login; a pause does not help.", err_auto_pause_paused: "Already paused.", err_auto_pause_disabled: "The integration is already disabled.", err_auto_pause_not_found: "Integration not found.", err_auto_pause_not_paused: "Not paused.", err_auto_pause_busy: "An attempt is running.", err_auto_pause_invalid: "Value not allowed.",
+});
+
+class AutoPauseMixin {
+  async loadAutoPause() {
+    this.apLoading = true;
+    try { this.autoPause = await this._hass.callWS({ type: "ha_housekeeper/auto_pause" }); this.apError = ""; }
+    catch (err) { this.apError = this.errText(err); }
+    this.apLoading = false; this.render();
+  }
+
+  // The first visit loads once; every change comes back with the new state.
+  ensureAutoPause() {
+    if (this.apLoading || this._apRequested) return;
+    this._apRequested = true;
+    setTimeout(() => this.loadAutoPause(), 0);
+  }
+
+  async apCall(payload) {
+    try { this.autoPause = await this._hass.callWS({ type: "ha_housekeeper/auto_pause_set", ...payload }); }
+    catch (err) { this.failed(err); }
+    this.render();
+  }
+
+  apPausedItem(entryId) { return (this.autoPause?.paused || []).find(p => p.entry_id === entryId) || null; }
+
+  apSpan(ms) {
+    const hours = Math.max(1, Math.round(ms / 3600000));
+    return hours >= 48 ? this.t("relDays", { n: Math.round(hours / 24) }) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
+  }
+
+  autoPauseTile() {
+    const a = this.autoPause, paused = a?.paused?.length || 0;
+    return { id: "autopause", icon: "mdi:pause-circle-outline", label: this.t("apTab"), hint: this.t("apTileHint", { n: this.formatNumber(a?.candidates?.length || 0) }), count: a ? paused : undefined, tone: paused ? "warn" : "mute", status: !a };
+  }
+
+  // Asks first where pausing has a consequence, then sends the entry into the pause.
+  apStart(entryId) {
+    const item = (this.autoPause?.pausable || []).find(p => p.entry_id === entryId);
+    if (!item) return;
+    const days = Math.round((this.autoPause.schedule?.end_hours || 168) / 24);
+    const warn = item.warn?.length ? { title: item.warn.includes("house_function") ? this.t("apWarnHouse") : this.t("apWarnControl"), hint: item.warn.length > 1 ? this.t("apWarnControl") : "" } : null;
+    this.confirmAsk(this.t("apConfirmText", { name: item.title, days }), () => this.apCall({ action: "pause", entry_id: entryId, confirm: true }), { title: this.t("apConfirmTitle", { name: item.title }), yes: this.t("apConfirmYes"), danger: false, ...(warn ? { warn } : {}) });
+  }
+
+  // The button on the page of an integration: send it in, or its state while it is paused.
+  apPageActions(entryId, state) {
+    const a = this.autoPause;
+    if (!a || !entryId) return "";
+    const paused = this.apPausedItem(entryId);
+    if (paused) {
+      const span = this.apSpan(Date.now() - new Date(paused.since).getTime());
+      return `<span class="pill warn">${this.esc(this.t("apPausedNow", { span }))}</span><button class="btn" data-ap-try="${this.esc(entryId)}">${this.t("apTryNow")}</button><button class="btn" data-ap-end="${this.esc(entryId)}">${this.t("apEnd")}</button>`;
+    }
+    if (!(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    const failing = state && state !== "loaded";
+    return `<button class="btn${failing ? " primary" : ""}" data-ap-send="${this.esc(entryId)}" title="${this.esc(failing ? this.t("apSendHint") : "")}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button>`;
+  }
+
+  autoPauseView() {
+    this.ensureAutoPause();
+    const a = this.autoPause;
+    if (this.apError) return `<div class="panel">${this.notice("err", this.apError)}</div>`;
+    if (!a) return `<div class="panel">${this.skeleton("relLoading")}</div>`;
+    const s = a.settings, days = Math.round(a.schedule.end_hours / 24), now = Date.now();
+    const num = (key, value, min, max) => `<label class="apnum"><input type="number" min="${min}" max="${max}" value="${value}" data-ap-num="${key}"> <span>${this.t(key === "attempts" ? "apAttempts" : "apHours")}</span></label>`;
+    const settings = `<section class="panel"><div class="panelhead"><div><h2>${this.t("apHead")}</h2><p>${this.t("apHeadSub")}</p></div><label class="apswitch"><input type="checkbox" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}> ${this.t(s.enabled ? "apOn" : "apOff")}</label></div>
+      <div class="apsettings">${num("attempts", s.attempts, 3, 500)}${num("hours", s.hours, 1, 48)}<label><input type="checkbox" data-ap-setting="house_functions" ${s.house_functions ? "checked" : ""}> ${this.t("apHouse")}</label></div>
+      <p class="factnote">${this.t("apPlan", { days })}</p></section>`;
+    const pausedRows = a.paused.map(p => {
+      const due = p.next ? new Date(p.next).getTime() - now : null;
+      const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
+        p.reason === "manual" ? this.t("apReasonManual") : this.t("apReasonAuto", { n: this.formatNumber(p.failures || 0) })].filter(Boolean).join(" · ");
+      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(p.title)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
+        <span class="apbtns"><button class="btn" data-ap-try="${this.esc(p.entry_id)}">${this.t("apTryNow")}</button><button class="btn" data-ap-end="${this.esc(p.entry_id)}">${this.t("apEnd")}</button><button class="btn" data-ap-never="${this.esc(p.entry_id)}">${this.t("apNever")}</button></span></div>`;
+    }).join("");
+    const options = (a.pausable || []).filter(p => !a.paused.some(q => q.entry_id === p.entry_id)).sort((x, y) => x.title.localeCompare(y.title)).map(p => `<option value="${this.esc(p.entry_id)}">${this.esc(p.title)} (${this.esc(p.domain)})</option>`).join("");
+    const manual = `<div class="apmanual"><select data-ap-pick aria-label="${this.esc(this.t("apManual"))}"><option value="">${this.t("apPick")}</option>${options}</select><button class="btn" data-ap-pause>${this.t("apPause")}</button></div>`;
+    const candRows = a.candidates.filter(c => !c.excluded).map(c => `<div class="row"><span class="tile ${c.approved ? "ok" : "mute"}"><ha-icon icon="mdi:cloud-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(c.title)}</strong><small>${this.esc(c.domain)} · ${this.esc(this.entryStateLabel(c.state))}${c.attempts ? ` · ${this.esc(this.t("apFailures", { n: this.formatNumber(c.attempts) }))}` : ""}${c.house_function ? ` · ${this.esc(this.t("apHouseFn"))}` : ""}</small></span>
+        <span class="apbtns">${c.approved ? `<span class="pill ok">${this.t("apReleased")}</span><button class="btn" data-ap-release="${this.esc(c.entry_id)}" data-on="0">${this.t("apUnrelease")}</button>` : `<button class="btn" data-ap-release="${this.esc(c.entry_id)}" data-on="1">${this.t("apRelease")}</button>`}<button class="btn" data-ap-never="${this.esc(c.entry_id)}">${this.t("apNever")}</button></span></div>`).join("");
+    const titleOf = id => (a.candidates.find(c => c.entry_id === id) || (a.pausable || []).find(p => p.entry_id === id) || {}).title || id;
+    const excluded = a.exclude.length ? a.exclude.map(id => `<span class="pill mute">${this.esc(titleOf(id))} <button class="link" data-ap-allow="${this.esc(id)}" title="${this.esc(this.t("apAllow"))}" aria-label="${this.esc(this.t("apAllow"))}">✕</button></span>`).join(" ") : `<span class="factnote">${this.t("apExcludedNone")}</span>`;
+    const log = a.log.length ? `<div class="tablewrap"><table class="evtable"><tbody>${a.log.map(l => `<tr><td>${this.esc(this.formatDate(l[0]))}</td><td>${this.esc(l[2])}</td><td>${this.esc(this.t(`apLog_${l[1]}`))}</td></tr>`).join("")}</tbody></table></div>` : `<p class="factnote">${this.t("apLogNone")}</p>`;
+    return `<div class="stack">${settings}
+      <section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} (${a.paused.length})</h2></div></div>${pausedRows || `<p class="factnote">${this.t("apNonePaused")}</p>`}${manual}</section>
+      <section class="panel"><div class="panelhead"><div><h2>${this.t("apCandidates")} (${a.candidates.filter(c => !c.excluded).length})</h2></div></div>${candRows || `<p class="factnote">${this.t("apNoCandidates")}</p>`}<div class="sectionlabel">${this.t("apExcluded")}</div><div>${excluded}</div></section>
+      <section class="panel"><div class="panelhead"><div><h2>${this.t("apLog")}</h2></div></div>${log}</section></div>`;
+  }
+
+  bindAutoPause(root) {
+    root.querySelectorAll("[data-ap-setting]").forEach(el => el.onchange = () => this.apCall({ action: "settings", values: { [el.dataset.apSetting]: el.checked } }));
+    root.querySelectorAll("[data-ap-num]").forEach(el => el.onchange = () => this.apCall({ action: "settings", values: { [el.dataset.apNum]: Number(el.value) } }));
+    root.querySelectorAll("[data-ap-release]").forEach(el => el.onclick = () => this.apCall({ action: "release", entry_id: el.dataset.apRelease, on: el.dataset.on === "1" }));
+    root.querySelectorAll("[data-ap-never]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apNever, on: true }));
+    root.querySelectorAll("[data-ap-allow]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apAllow, on: false }));
+    root.querySelectorAll("[data-ap-try]").forEach(el => el.onclick = () => this.apCall({ action: "try", entry_id: el.dataset.apTry }));
+    root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
+    root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = () => this.apStart(el.dataset.apSend));
+    root.querySelector("[data-ap-pause]")?.addEventListener("click", () => { const id = root.querySelector("[data-ap-pick]")?.value; if (id) this.apStart(id); });
+  }
+}
+
 // ReliabilityMixin: the reliability view; mixed into the panel in 99-register.js.
 const REL_GREEN = 99.5, REL_YELLOW = 95; // availability in percent: green from, yellow from, red below
 class ReliabilityMixin {
@@ -6744,6 +6881,7 @@ class ReliabilityMixin {
     if (layer) lines.push(layer);
     const flags = [];
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
+    if (this.apPausedItem(item.entry_id)) flags.push(`<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`);
     if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn" title="${this.esc(item.state)}">${this.esc(this.entryStateLabel(item.state))}</span>`);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
     if (item.setup?.attempts) lines.push(this.t("relAttempts", { n: this.formatNumber(item.setup.attempts), date: this.formatDate(item.setup.attempts_since) }));
@@ -6864,11 +7002,24 @@ class ReliabilityMixin {
 
   reliabilityView() {
     this.ensureReliability();
+    this.ensureAutoPause();
     const r = this.reliability;
+    const apOpen = (this.viewTab ||= {}).reliability === "autopause";
     const windows = [[1, "relWindow1"], [7, "relWindow7"], [30, "relWindow30"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
     const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
-    const head = this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
-    const alone = inner => `<div class="stack">${head}<div class="panel">${inner}</div></div>`;
+    const head = apOpen
+      ? this.pageBar({ left: "", loading: this.apLoading, attr: "data-ap-refresh" })
+      : this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
+    // Without numbers (no recorder, still loading) the tiles stay, so Auto-Pause is always reachable: it does not need them.
+    const alone = inner => {
+      const tabs = [
+        { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: "", status: true },
+        { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: "", status: true },
+        this.autoPauseTile(),
+      ];
+      const open = this.viewTabOf("reliability", tabs, "integrations");
+      return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "autopause" ? this.autoPauseView() : `<div class="panel">${inner}</div>`}</div>`;
+    };
     if (this.relError) return alone(`${this.notice("err", this.relError)}`);
     if (!r) return alone(this.skeleton("relLoading"));
     if (!r.available) return alone(`<p class="factnote">${this.t("relNoRecorder")}</p>`);
@@ -6899,9 +7050,10 @@ class ReliabilityMixin {
     const tabs = [
       { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: this.t("relTileIntHint", { avail: availText, window: this.t(`relWindow${r.window_days}`) }), count: r.entries.length, tone: outages || attention ? "warn" : "ok", pill: odd ? this.t("relTilePill", { n: this.formatNumber(odd) }) : "", pillTone: attention ? "red" : "warn" },
       { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: this.t("relTileUnstableHint"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok", pill: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "" },
+      this.autoPauseTile(),
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
-    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
+    const body = open === "autopause" ? this.autoPauseView() : open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
     return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "integrations" ? tiles : ""}${body}</div>`;
   }
 
@@ -19238,6 +19390,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-storm-window]").forEach(el => el.onclick = () => { this.stormsWindow = Number(el.dataset.stormWindow); this.storms = null; this.pages.stormfind = 1; this.pages.stormentities = 1; this.loadStorms(); });
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
+    root.querySelector("[data-ap-refresh]")?.addEventListener("click", () => this.loadAutoPause());
+    this.bindAutoPause(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
@@ -19381,7 +19535,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, AutoPauseMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

@@ -2596,11 +2596,28 @@ test("an old reliability reply is shown at once and renewed once in the backgrou
   assert.ok(el.reliabilityView().includes("As of "), "the age is named");
 });
 
+const AUTO_PAUSE = {
+  settings: { enabled: false, attempts: 20, hours: 6, house_functions: false }, exclude: [], log: [["2026-10-23T12:00:00+00:00", "paused", "Ravensburg"]],
+  schedule: { offsets: [1, 2, 3], end_hours: 168 },
+  paused: [{ entry_id: "e1", title: "Ravensburg", domain: "waste_collection_schedule", since: "2026-10-23T10:00:00+00:00", next: "2026-10-23T13:00:00+00:00", reason: "auto", failures: 41, done: 1, exhausted: false }],
+  candidates: [{ entry_id: "e2", title: "Strompreise", domain: "tibber", state: "loaded", attempts: 3, approved: false, excluded: false, house_function: false }],
+  pausable: [{ entry_id: "e2", title: "Strompreise", domain: "tibber", state: "loaded", warn: [] }],
+};
+
+test("the Auto-Pause tab shows without the recorder numbers and offers pause, try and release", () => {
+  const { el } = panel("en");
+  el._hass.callWS = async () => AUTO_PAUSE;
+  el.data = DATA; el.view = "reliability"; el.autoPause = AUTO_PAUSE; el._apRequested = true; (el.viewTab ||= {}).reliability = "autopause";
+  const html = el.autoPauseView();
+  assert.ok(html.includes("Ravensburg") && html.includes("data-ap-try") && html.includes("data-ap-release") && html.includes("Try 2 of 3"));
+  assert.ok(el.autoPauseTile().count === 1 && el.apPageActions("e2", "loaded").includes("data-ap-send"));
+});
+
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
   const queue = [];
   const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
   const calls = [];
-  el._hass.callWS = async msg => { calls.push(msg); return RELIABILITY; };
+  el._hass.callWS = async msg => { if (msg.type === "ha_housekeeper/auto_pause") return AUTO_PAUSE; calls.push(msg); return RELIABILITY; };
   const drain = async () => { while (queue.length) await queue.shift()(); };
   el.data = DATA; el.view = "reliability";
   el.ensureReliability(); el.ensureReliability(); el.render();

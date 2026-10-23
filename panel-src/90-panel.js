@@ -1158,6 +1158,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-storm-window]").forEach(el => el.onclick = () => { this.stormsWindow = Number(el.dataset.stormWindow); this.storms = null; this.pages.stormfind = 1; this.pages.stormentities = 1; this.loadStorms(); });
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
+    root.querySelector("[data-ap-refresh]")?.addEventListener("click", () => this.loadAutoPause());
+    this.bindAutoPause(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });

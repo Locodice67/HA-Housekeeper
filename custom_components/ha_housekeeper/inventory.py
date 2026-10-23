@@ -27,6 +27,7 @@ from homeassistant.util import dt as dt_util
 
 from . import followup
 from .app_links import app_edges, stopped_app_findings
+from .auto_pause import AutoPause
 from .automation_analysis import (
     is_concrete_id,
     missing_references,
@@ -907,6 +908,7 @@ STORE_NAMES = (
     "monitor",
     "runs",
     "config_changes",
+    "auto_pause",
 )
 
 
@@ -957,6 +959,7 @@ class InventoryScanner:
         self.monitor = MonitorStore(hass)
         self.runs = RunStore(hass)
         self.config_changes = ChangeStore(hass)
+        self.auto_pause = AutoPause(hass, self)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
         self.retry_runs = 0  # Rescans after a gap in a row; set by the scheduler in __init__.py
@@ -1156,6 +1159,10 @@ class InventoryScanner:
                             for e in self.hass.config_entries.async_entries()
                         },
                     )
+                    try:
+                        await self.auto_pause.check(datetime.now(UTC))
+                    except Exception:  # a failing pause must not fail the scan
+                        _LOGGER.warning("Auto-pause check failed", exc_info=True)
                     await self._observe_versions(snapshot)
                     self._observe_watch(snapshot)
                     snapshot["meta"]["view_counts"] = await view_counts(self, self.hass, snapshot)

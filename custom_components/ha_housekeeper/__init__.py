@@ -315,6 +315,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
 
     entry.async_on_unload(async_track_time_interval(hass, _sample_load, timedelta(minutes=5)))
     entry.async_on_unload(scanner.outage_scans.start())
+    entry.async_on_unload(scanner.auto_pause.start())
 
     # The vacation switch: look at the findings again when it moves, and once more when the grace
     # period after its end has passed. The switch can be chosen later in the panel, so the hook follows it.

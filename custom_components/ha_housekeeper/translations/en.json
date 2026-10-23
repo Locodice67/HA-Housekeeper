@@ -81,6 +81,10 @@
     "orphaned_statistics": {
       "title": "{count} statistics without an entity",
       "description": "Housekeeper found {count} statistics whose entity no longer exists. They take space in the database. [Show in Housekeeper]({link}). Nothing is changed automatically."
+    },
+    "auto_pause_exhausted": {
+      "title": "{title} paused for {days} days",
+      "description": "Housekeeper paused {title} after repeated failed setups and has tried it again for {days} days without success. It stays paused until you end the pause. [Open Auto-pause]({link})"
     }
   },
   "entity": {

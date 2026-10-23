@@ -22,6 +22,8 @@ from homeassistant.helpers.storage import Store
 from .const import ENTRY_STATES_STORAGE_KEY, STORAGE_VERSION
 
 SAVE_DELAY = 30
+RECENT_HOURS = 48
+RECENT_MAX = 600
 KEEP_DAYS = 60
 EPISODES_MAX = 50
 FAILING = frozenset({"setup_error", "setup_retry", "failed_unload", "migration_error"})
@@ -58,6 +60,11 @@ class EntryStateHistory:
                     self.items[key]["since"] = item["since"]
                     if isinstance(item.get("tries"), int):
                         self.items[key]["tries"] = item["tries"]
+                    self.items[key]["recent"] = [
+                        r
+                        for r in item.get("recent", [])
+                        if isinstance(r, list) and len(r) == 2 and isinstance(r[1], int)
+                    ][-RECENT_MAX:]
 
     def record(
         self, states: dict[str, str], now: datetime, tries: dict[str, int] | None = None
@@ -80,10 +87,15 @@ class EntryStateHistory:
                     day = item.setdefault("attempts", {})
                     key = now.date().isoformat()
                     day[key] = day.get(key, 0) + grown
+                    item.setdefault("recent", []).append([now.isoformat(), grown])
                 item["tries"] = n
             item["attempts"] = {
                 d: c for d, c in item.get("attempts", {}).items() if d >= day_horizon
             }
+            recent_horizon = (now - timedelta(hours=RECENT_HOURS)).isoformat()
+            item["recent"] = [r for r in item.get("recent", []) if r[0] >= recent_horizon][
+                -RECENT_MAX:
+            ]
             failing = state if state in FAILING else None
             if failing and item["state"] != failing:
                 item["episodes"].append([now.isoformat(), failing])
@@ -97,6 +109,11 @@ class EntryStateHistory:
         ]:
             del self.items[entry_id]
         self._store.async_delay_save(lambda: {"items": self.items}, SAVE_DELAY)
+
+    def attempts_since(self, entry_id: str, since: datetime) -> int:
+        """Failed setup attempts counted since ``since`` (at most ``RECENT_HOURS`` back)."""
+        item = self.items.get(entry_id) or {}
+        return sum(n for t, n in item.get("recent", []) if t >= since.isoformat())
 
     def summary(self, entry_id: str, now: datetime, days: int = 7) -> dict[str, Any] | None:
         """Episodes of the last ``days`` days, the last one and the failing state now; None if none."""
