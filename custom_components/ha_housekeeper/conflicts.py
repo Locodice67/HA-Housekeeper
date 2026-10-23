@@ -75,6 +75,7 @@ UNCHANGING = {
     "send_command",
     "locate",
 }
+TURNS_OFF = {"media_player", "light", "switch", "fan", "climate"}  # turn_off always ends in "off"
 QUIET_DOMAINS = {"notify", "persistent_notification", "tts", "logbook", "system_log", "script"}
 TRIGGER_KINDS = {"state", "numeric_state"}
 CLOCK = re.compile(r"^(\d{1,2}):(\d{2})(?::\d{2})?$")
@@ -96,14 +97,18 @@ def _range(trigger: dict[str, Any]) -> tuple[float, float] | None:
 
 
 def triggers_of(item: dict[str, Any]) -> dict[str, list[Any]]:
-    """Entity id -> the ``to`` values (numeric triggers: their range) of the triggers on it, ``None`` when unfiltered."""
+    """Entity id -> the ``to`` values (a list unpacked; numeric triggers: their range) of the triggers on it, ``None`` when unfiltered."""
     found: dict[str, list[Any]] = {}
     for trigger in item.get("triggers") or []:
         if not isinstance(trigger, dict) or _kind(trigger) not in TRIGGER_KINDS:
             continue
         to = trigger.get("to") if _kind(trigger) == "state" else _range(trigger)
+        if isinstance(to, list) and to and all(isinstance(v, str) for v in to):
+            values = to
+        else:
+            values = [to if isinstance(to, (str, tuple)) else None]
         for entity_id in _entity_ids(trigger):
-            found.setdefault(entity_id, []).append(to if isinstance(to, (str, tuple)) else None)
+            found.setdefault(entity_id, []).extend(values)
     return found
 
 
@@ -266,7 +271,7 @@ def _brief(item: dict[str, Any]) -> dict[str, str]:
     return {"entity_id": item["entity_id"], "name": item.get("name") or item["entity_id"]}
 
 
-def _fires(to: Any, service: str, own: bool) -> bool | None:
+def _fires(to: Any, service: str, own: bool, entity: str = "") -> bool | None:
     """Whether a command can make a state trigger with this ``to`` fire; ``None`` if unknown."""
     if service in UNCHANGING:
         return False
@@ -275,6 +280,8 @@ def _fires(to: Any, service: str, own: bool) -> bool | None:
     result = RESULT.get(service)
     if result is None:
         return None if service else True  # "" is a group or helper following its source
+    if service == "turn_off" and isinstance(to, str) and entity.split(".")[0] in TURNS_OFF:
+        return to == "off" and not own
     if service in ("turn_on", "turn_off") and to not in ("on", "off"):
         return True
     if isinstance(to, str):
@@ -328,7 +335,7 @@ def loops(
                 continue
             visited.add((entity, service))
             for other, to in triggered.get(entity, []):
-                fires = _fires(to, service, other is chain[-1])
+                fires = _fires(to, service, other is chain[-1], entity)
                 if fires is False:
                     continue
                 known = sure and fires is True

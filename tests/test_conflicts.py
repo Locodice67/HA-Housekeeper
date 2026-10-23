@@ -120,6 +120,12 @@ def test_commands_that_cannot_make_the_trigger_fire_are_no_loop_and_unknown_ones
         [call("media_player.media_play", "media_player.roon")],
     )
     assert find([snap, play], [], {}, TODAY)["total"] == 0
+    paused = auto(
+        "paused",
+        [{"trigger": "state", "entity_id": "media_player.roon", "to": ["paused"]}],
+        [call("media_player.turn_off", "media_player.roon")],
+    )
+    assert find([paused], [], {}, TODAY)["total"] == 0
     odd = auto("odd", [state("vacuum.rob", "cleaning")], [call("vacuum.clean_spot", "vacuum.rob")])
     busy = runs("automation.odd", [30])
     assert [i["stage"] for i in find([odd], [], busy, TODAY)["items"]] == ["static"]

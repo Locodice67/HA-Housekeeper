@@ -15,7 +15,7 @@
 
 ### Behoben
 
-- **Konflikte (Issue #38):** Zwei Automationen, die auf denselben Sensor mit verschiedenen Zuständen (`on` gegen `off`) oder getrennten Schwellen (`above` gegen `below`) reagieren, gelten nicht mehr als Gegenläufer.
+- **Konflikte (Issue #38):** Zwei Automationen, die auf denselben Sensor mit verschiedenen Zuständen (`on` gegen `off`) oder nicht überlappenden Schwellen (`above: 5` gegen `below: 5`) reagieren, gelten nicht mehr als Gegenläufer.
 - **Qualitätsansicht (Issue #39):**
   - Deaktivierte Automationen und Ziele mit Vermerk, Ausnahme, Label oder bewusst abgeschaltetem Eintrag gelten nicht mehr als veraltet.
   - Ein Lauf, der an einer Bedingung in den Aktionen endet, zählt als Bedingung statt als Fehlschlag.
@@ -28,7 +28,7 @@
 - **General GUI:**
   - Recorder → Database: the "Measure space per entity" button sits in the head of the card of the largest tables.
   - Storage & system: the parts of "Others" stay folded and show their space as a bar.
-- **Conflicts (issue #38):** Two automations that react to the same sensor with different states (`on` against `off`) or separate thresholds (`above` against `below`) are no longer reported as opposing.
+- **Conflicts (issue #38):** Two automations that react to the same sensor with different states (`on` against `off`) or non-overlapping thresholds (`above: 5` against `below: 5`) are no longer reported as opposing.
 - **Quality view (issue #39):**
   - Disabled automations and targets with a mark, an exception, a label or a deliberately switched-off entry are no longer rated as stale.
   - A run that ends at a condition inside the actions counts as a condition, not as a failure.
