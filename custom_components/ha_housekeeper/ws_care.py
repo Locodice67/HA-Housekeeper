@@ -1003,7 +1003,7 @@ async def websocket_auto_pause(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/auto_pause_set",
-        vol.Required("action"): vol.In(["settings", "release", "never", "pause", "resume", "try"]),
+        vol.Required("action"): vol.In(["settings", "never", "pause", "resume", "try"]),
         vol.Optional("entry_id"): str,
         vol.Optional("on"): bool,
         vol.Optional("confirm", default=False): bool,
@@ -1018,14 +1018,12 @@ async def websocket_auto_pause_set(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """Change the settings, release or exclude an integration, pause, resume or try one now."""
+    """Change the settings, exclude an integration, pause, resume or try one now."""
     pause = scanner.auto_pause
     action, entry_id = msg["action"], msg.get("entry_id", "")
     try:
         if action == "settings":
             pause.set_settings(msg.get("values") or {})
-        elif action == "release":
-            pause.release(entry_id, msg.get("on", True))
         elif action == "never":
             pause.never(entry_id, msg.get("on", True))
         elif action == "pause":

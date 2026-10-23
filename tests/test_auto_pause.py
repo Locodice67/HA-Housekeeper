@@ -51,7 +51,7 @@ def test_the_schedule_is_21_tries_within_7_days() -> None:
     assert OFFSETS[-1] < END_HOURS
 
 
-async def test_a_released_data_integration_is_paused_after_enough_failed_attempts(hass) -> None:
+async def test_a_data_integration_is_paused_after_enough_failed_attempts(hass) -> None:
     entry, scanner, pause = _setup(hass)
     states = {entry.entry_id: "setup_retry"}
     scanner.entry_states.record(states, NOW - timedelta(hours=2), {entry.entry_id: 0})
@@ -59,9 +59,10 @@ async def test_a_released_data_integration_is_paused_after_enough_failed_attempt
     pause.set_settings({"enabled": True})
     with patch.object(pause, "_iot_classes", return_value={entry.domain: "cloud_polling"}):
         entry.mock_state(hass, ConfigEntryState.SETUP_RETRY)
+        pause.never(entry.entry_id, True)
         await pause.check(NOW)
-        assert entry.entry_id not in pause.paused  # not released yet
-        pause.release(entry.entry_id, True)
+        assert entry.entry_id not in pause.paused  # excluded
+        pause.never(entry.entry_id, False)
         await pause.check(NOW)
     assert entry.entry_id in pause.paused and entry.disabled_by is ConfigEntryDisabler.USER
     assert pause.paused[entry.entry_id]["reason"] == "auto"

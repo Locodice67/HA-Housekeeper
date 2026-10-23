@@ -8,9 +8,9 @@ user disabled. It then enables the entry now and then, looks whether it loads, a
 again if not: 3 times after 1 hour, 3 times after 3 hours, 12 times after 6 hours, then daily, up
 to 7 days from the start. After that the entry stays paused and the user is asked to look.
 
-The automatic start is off until the user switches it on and releases an integration; only entries
-that cloud-poll and only provide data (no switches, locks, cameras) are candidates. A pause the user
-starts by hand needs no switch and no release.
+The automatic start is off until the user switches it on; then it applies to every candidate that is
+not excluded. Only entries that cloud-poll and only provide data (no switches, locks, cameras) are
+candidates. A pause the user starts by hand needs no switch.
 """
 
 from __future__ import annotations
@@ -142,7 +142,7 @@ def _span(start: datetime, end: datetime) -> str:
 
 
 class AutoPause:
-    """The settings, the releases and the paused entries."""
+    """The settings, the exclusions and the paused entries."""
 
     def __init__(self, hass: HomeAssistant, scanner: InventoryScanner) -> None:
         self.hass = hass
@@ -150,7 +150,6 @@ class AutoPause:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, AUTO_PAUSE_STORAGE_KEY)
         self.settings: dict[str, Any] = dict(DEFAULTS)
         self.exclude: set[str] = set()
-        self.approved: set[str] = set()
         self.paused: dict[str, dict[str, Any]] = {}
         self.log: list[list[str]] = []
         self._busy: set[str] = set()
@@ -175,10 +174,9 @@ class AutoPause:
                     )
                 ):
                     self.settings[key] = value
-        for name in ("exclude", "approved"):
-            value = data.get(name)
-            if isinstance(value, list):
-                setattr(self, name, {v for v in value if isinstance(v, str)})
+        value = data.get("exclude")
+        if isinstance(value, list):
+            self.exclude = {v for v in value if isinstance(v, str)}
         paused = data.get("paused")
         for entry_id, rec in (paused if isinstance(paused, dict) else {}).items():
             if (
@@ -205,7 +203,6 @@ class AutoPause:
             lambda: {
                 "settings": self.settings,
                 "exclude": sorted(self.exclude),
-                "approved": sorted(self.approved),
                 "paused": self.paused,
                 "log": self.log,
             },
@@ -472,7 +469,6 @@ class AutoPause:
                         "state": entry.state.value,
                         "attempts": summary.get("attempts") or 0,
                         "house_function": "house_function" in warn,
-                        "approved": entry.entry_id in self.approved,
                         "excluded": entry.entry_id in self.exclude,
                     }
                 )
@@ -519,14 +515,8 @@ class AutoPause:
                 self.settings[key] = value
         self._save()
 
-    def release(self, entry_id: str, on: bool) -> None:
-        (self.approved.add if on else self.approved.discard)(entry_id)
-        self._save()
-
     def never(self, entry_id: str, on: bool) -> None:
         (self.exclude.add if on else self.exclude.discard)(entry_id)
-        if on:
-            self.approved.discard(entry_id)
         self._save()
 
     async def pause(
@@ -584,14 +574,14 @@ class AutoPause:
         )
 
     async def check(self, now: datetime) -> None:
-        """After a scan: pause the released entries that failed their setup often enough."""
-        if not self.settings["enabled"] or not self.approved:
+        """After a scan: pause the candidates that failed their setup often enough."""
+        if not self.settings["enabled"]:
             return
         since = now - timedelta(hours=self.settings["hours"])
         report = None
-        for entry_id in sorted(self.approved - self.exclude):
-            entry = self.hass.config_entries.async_get_entry(entry_id)
-            if entry is None or entry.state is not ConfigEntryState.SETUP_RETRY:
+        for entry in self.hass.config_entries.async_entries():
+            entry_id = entry.entry_id
+            if entry.state is not ConfigEntryState.SETUP_RETRY or entry_id in self.exclude:
                 continue
             failures = self.scanner.entry_states.attempts_since(entry_id, since)
             if failures < self.settings["attempts"]:
