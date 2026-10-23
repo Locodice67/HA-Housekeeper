@@ -197,6 +197,25 @@ async def test_the_folder_walk_is_reused_and_a_refresh_waits_for_the_gap(
         assert len(walks) == 3, "an old walk is not reused"
 
 
+async def test_a_quick_first_visit_answers_at_once_and_reads_behind_it(
+    hass: HomeAssistant, tmp_path
+) -> None:
+    hass.config.config_dir = str(tmp_path)
+    write(tmp_path / "themes" / "t.yaml", 9)
+    with (
+        patch.dict(os.environ, {}, clear=False),
+        patch.object(module, "cpu_percent", return_value=1.0),
+    ):
+        os.environ.pop("SUPERVISOR_TOKEN", None)
+        first = await system_usage(hass, quick=True)
+        assert first["pending"] is True and first["stale"] is True and first["breakdown"] == []
+        assert first["cpu"]["percent"] == 1.0
+        await hass.async_block_till_done()
+        second = await system_usage(hass, quick=True)
+    assert second["pending"] is False and second["cached"] is True
+    assert {"id": "themes", "path": "themes", "bytes": 9} in second["breakdown"]
+
+
 async def test_the_folder_walk_runs_beside_the_supervisor(hass: HomeAssistant, tmp_path) -> None:
     """The page waits for the slower of the two, not for both one after the other."""
     hass.config.config_dir = str(tmp_path)
@@ -259,8 +278,8 @@ async def test_an_opened_page_gets_the_kept_sizes_at_once(hass: HomeAssistant, t
         patch.object(module, "storage_breakdown", counting),
     ):
         os.environ.pop("SUPERVISOR_TOKEN", None)
-        first = await system_usage(hass, quick=True)
-        assert len(walks) == 1 and first["stale"] is False, "nothing kept yet: the page waits"
+        await system_usage(hass)
+        assert len(walks) == 1
         with patch.object(module, "WALK_MAX_AGE", 0), patch.object(module, "WALK_MIN_GAP", 0):
             kept = await system_usage(hass, quick=True)
             assert len(walks) == 1 and kept["stale"] is True and kept["cached"] is True

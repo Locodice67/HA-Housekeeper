@@ -16,7 +16,7 @@ import os
 import re
 import shutil
 import time
-from collections.abc import Iterable
+from collections.abc import Coroutine, Iterable
 from datetime import UTC, datetime
 from typing import Any
 
@@ -521,6 +521,10 @@ async def _disk_usage(
     kept = hass.data.setdefault(_USAGE_KEY, _Walk())
     if quick and kept.result is not None:
         return kept.result, time.monotonic() - kept.at >= WALK_MAX_AGE
+    if quick:
+        # Nothing kept yet (the first visit after a start): the Supervisor's walk runs behind the page.
+        kept.start(hass, _disk_usage(hass, False))
+        return None, True
     async with kept.lock:
         age = time.monotonic() - kept.at
         if kept.result is not None and (age < WALK_MIN_GAP or (not fresh and age < WALK_MAX_AGE)):
@@ -645,6 +649,14 @@ class _Walk:
         self.result: dict[str, Any] | None = None
         self.signature: tuple[Any, ...] | None = None
         self.at = 0.0
+        self.task: asyncio.Task[Any] | None = None
+
+    def start(self, hass: HomeAssistant, work: Coroutine[Any, Any, Any]) -> None:
+        """Run ``work`` in the background unless an earlier one is still running."""
+        if self.task is not None and not self.task.done():
+            work.close()
+            return
+        self.task = hass.async_create_task(work)
 
 
 async def _folder_walk(
@@ -670,6 +682,20 @@ async def _folder_walk(
         max_age = WALK_TRUNCATED_AGE if walk.result.get("truncated") else WALK_MAX_AGE
         stale = walk.signature != signature or time.monotonic() - walk.at >= max_age
         return {**walk.result, "cached": True, "stale": stale}
+    if quick:
+        # Nothing kept yet (the first visit after a start): the page gets the live values at once.
+        walk.start(hass, _folder_walk(hass, config_dir, resources, blueprints, False))
+        return {
+            "storage": _empty_storage(),
+            "sizes": {},
+            "bp_sizes": [None] * len(blueprints),
+            "read_at": None,
+            "read_seconds": None,
+            "truncated": False,
+            "cached": False,
+            "stale": True,
+            "pending": True,
+        }
     async with walk.lock:
         age = time.monotonic() - walk.at
         max_age = WALK_TRUNCATED_AGE if (walk.result or {}).get("truncated") else WALK_MAX_AGE
@@ -789,6 +815,8 @@ async def system_usage(
         "truncated": walked["truncated"],
         # True when an old result was handed out at once (``quick``): the page asks again.
         "stale": walked["stale"] or bool(supervisor.get("stale")),
+        # True when nothing was read yet and the first read runs behind this answer.
+        "pending": bool(walked.get("pending")),
     }
 
 
