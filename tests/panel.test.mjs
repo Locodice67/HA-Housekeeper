@@ -5221,8 +5221,8 @@ test("storage shows the key figures, a red disk at 96 % and the Supervisor categ
   assert.ok(html.includes("&lt;b&gt;apps&lt;/b&gt;") && !html.includes("<b>apps</b>"), "Supervisor labels are escaped");
   el.viewTab = { storage: "misc" };
   el.render();
-  assert.ok(shadow.innerHTML.includes('data-fold="sysmisc_0"') && shadow.innerHTML.includes('data-fold="sysmisc_2"') && !shadow.innerHTML.includes("Motion light"), "the three lists are folds, the first one open");
-  el.folds = { sysmisc_1: true, sysmisc_2: true }; el.render();
+  assert.ok(shadow.innerHTML.includes('data-fold="sysmisc_0"') && shadow.innerHTML.includes('data-fold="sysmisc_2"') && !shadow.innerHTML.includes("Motion light"), "the three lists are folds, all folded");
+  el.folds = { sysmisc_0: true, sysmisc_1: true, sysmisc_2: true }; el.render();
   assert.ok(shadow.innerHTML.includes("card.js") && shadow.innerHTML.includes("Ordner") && shadow.innerHTML.includes("Motion light") && shadow.innerHTML.includes(".storage"), "cards, blueprints and the other entries share one tab");
 });
 

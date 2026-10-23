@@ -460,7 +460,7 @@ class ListsMixin {
   fold(id, head, body, def, force) {
     const open = force ?? this.foldOpen(id, def);
     const pill = `${head.count ? `<span class="pill mute">${this.esc(head.count)}</span>` : ""}${head.pill ? `<span class="pill ${head.tone || "mute"}">${this.esc(head.pill)}</span>` : ""}`;
-    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${pill}</button>`;
+    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${head.meter || ""}${pill}</button>`;
     return `<div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${body}</div>` : ""}</div>`;
   }
 }

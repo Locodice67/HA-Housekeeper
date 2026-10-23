@@ -189,7 +189,13 @@ class DbHealthMixin {
     });
     const more = r.tables_total > tables.length ? `<p class="factnote">${this.t("dbTablesMore", { n: this.formatNumber(r.tables_total - tables.length) })}</p>` : "";
     const at = r.tables_at ? ` ${this.t("dbTablesAt", { at: this.esc(this.relTime(new Date(r.tables_at * 1000).toISOString())) })}` : "";
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div></div>${list}${more}</div>`;
+    let again = "";
+    if (tables.some(t => this.spaceTable(t.name))) {
+      this.ensureSpace();
+      const busy = Boolean(this.space?.running);
+      again = `<div class="actions"><button class="btn quiet" data-space-start ${busy ? 'aria-busy="true"' : ""} ${busy || !this.space?.available ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("spaceAgain")}</button></div>`;
+    }
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div>${again}</div>${list}${more}</div>`;
   }
 
 }

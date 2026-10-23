@@ -90,11 +90,11 @@ class SystemMixin {
   }
 
   // One sortable, searchable list with paging and CSV export: the way every list of Housekeeper works.
-  // opt: { sort, dir, sorts, text, tie, filters, filterFns, columns, exportName, header, rows, empty, cls, rowAttrs }
+  // opt: { sort, dir, sorts, text, tie, filters, filterFns, columns, exportName, header, rows, empty, cls, rowAttrs, bare }; `bare` leaves out search, view and export (a list inside another list).
   sysList(id, items, opt) {
     this.lvState(id, opt.sort, opt.dir || "asc");
     if (opt.exportName) this.setExporter(id, opt.exportName, opt.header, () => refined.map(opt.rows));
-    const bar = items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
+    const bar = !opt.bare && (items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean)) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
     const refined = this.refine(id, items, { text: opt.text, filters: opt.filterFns || {}, sorts: opt.sorts, tie: opt.tie });
     const pg = this.paginate(id, refined, opt.pageSizes);
     this.lv[id].shown = refined.length;
@@ -203,8 +203,11 @@ class SystemMixin {
 
   // Everything that is not a place of its own: the dashboard cards, the blueprints and the other entries under /config.
   sysMisc(r) {
-    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count) }, body, index === 0);
     const other = r.other || [];
+    const sum = items => items.reduce((total, x) => total + (x.bytes || 0), 0);
+    const bytes = [sum(r.cards), sum(r.blueprints), sum(other) + (r.other_rest?.bytes || 0)], max = Math.max(...bytes);
+    // Always folded; the row itself shows what the part takes, as a bar against the largest part.
+    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count), meter: `<span class="dbshare">${this.sysShare(bytes[index], max)}<b>${this.esc(this.formatBytes(bytes[index]))}</b></span>` }, body, false);
     return `${part("sysTabCards", this.sysCards(r.cards), r.cards.length, 0)}${part("sysTabBlueprints", this.sysBlueprints(r.blueprints), r.blueprints.length, 1)}${part("sysSecOther", this.sysOther(other, r.other_rest), other.length + (r.other_rest?.count || 0), 2)}`;
   }
 
