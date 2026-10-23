@@ -61,6 +61,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 - **Dependencies**: see what an entity, device or automation is connected to, and what would break if you removed it.
 - **Guided cleanup**: preview, explicit confirmation, backup, verification and undo, step by step. Nothing runs on its own.
 - **Maintenance views**: batteries, reliability of integrations, recorder load and database, backup protection, automation runs and more.
+- **Auto-pause**: an integration that keeps failing to set up is paused and tried again later (3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, up to 7 days), so a service that is down is not asked a thousand times a day. Off by default; you release each integration, or send one in by hand.
 - **Home functions**: put together important functions of your home (heating, alarm, photovoltaics) from your own objects and keep an eye on them, with history, availability and sensors. A mark such as “Offline on purpose” can apply only at night or at fixed times.
 - **Exception rules and vacation mode**: leave out objects by area, label, integration or type, or only while a vacation entity or calendar says you are away, so that expected outages stay quiet.
 - **AI access**: programs and AI agents that can call Home Assistant services (for example ha-mcp) read the findings and, if you allow it, mark them in Housekeeper's own list, never in Home Assistant. Off by default, with limits, an automatic switch-off, a log of every call and an undo.
