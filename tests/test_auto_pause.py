@@ -85,3 +85,13 @@ async def test_a_control_integration_needs_a_confirmation_and_a_user_disabled_on
     with pytest.raises(AutoPauseError, match="disabled"):
         await pause.pause(other.entry_id, reason="manual", confirm=True)
     pause.start()()
+
+
+async def test_the_outage_of_a_paused_entry_keeps_its_start_after_the_pause(hass) -> None:
+    entry, _scanner, pause = _setup(hass)
+    pause.carry[entry.entry_id] = "2026-10-20T08:00:00+00:00"
+    assert pause.outage_start(entry.entry_id, "problem", "2026-10-23T08:00:00+00:00") == (
+        "2026-10-20T08:00:00+00:00"
+    )
+    assert pause.outage_start(entry.entry_id, "disabled", None) is None and pause.carry
+    assert pause.outage_start(entry.entry_id, "active", None) is None and not pause.carry

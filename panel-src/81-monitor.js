@@ -103,7 +103,7 @@ class MonitorMixin {
     const reasonOf = item => {
       const key = item.incident_open && item.state === "unverified" ? item.last_problem_key : item.reason_key;
       const object = key ? this.findObject(key)?.name || key : "";
-      const detail = item.incident_open && item.state === "unverified" ? `${this.t("monitorUnresolved")}: ${this.monitorReason(item.last_problem_reason)}` : this.monitorReason(item.reason);
+      const detail = item.incident_open && item.state === "unverified" ? `${this.t("monitorUnresolved")}: ${this.monitorReason(item.last_problem_reason)}` : this.apMonitorReason(key, item.reason);
       return [object, detail].filter(Boolean).join(" · ");
     };
     const sorts = [

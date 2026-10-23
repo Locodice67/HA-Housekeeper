@@ -2624,6 +2624,13 @@ test("a running pause is a maintenance row of the overview, a used-up one an ope
   assert.ok(el.apWouldPause("e2") && !el.apWouldPause("e1"));
 });
 
+test("a monitored function of a paused integration says paused instead of Disabled", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || ""; el.autoPause = AUTO_PAUSE;
+  assert.equal(el.apMonitorReason("config_entry:e1", "disabled"), "paused by auto-pause");
+  assert.equal(el.apMonitorReason("config_entry:e2", "disabled"), "Disabled");
+});
+
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
   const queue = [];
   const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });

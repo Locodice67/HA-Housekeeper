@@ -151,6 +151,8 @@ class AutoPause:
         self.settings: dict[str, Any] = dict(DEFAULTS)
         self.exclude: set[str] = set()
         self.paused: dict[str, dict[str, Any]] = {}
+        # Where an entry's outage began before it was paused: the pause must not start it afresh.
+        self.carry: dict[str, str] = {}
         self.log: list[list[str]] = []
         self._busy: set[str] = set()
         self._unsub: Callable[[], None] | None = None
@@ -177,6 +179,11 @@ class AutoPause:
         value = data.get("exclude")
         if isinstance(value, list):
             self.exclude = {v for v in value if isinstance(v, str)}
+        carry = data.get("carry")
+        if isinstance(carry, dict):
+            self.carry = {
+                k: v for k, v in carry.items() if isinstance(k, str) and isinstance(v, str)
+            }
         paused = data.get("paused")
         for entry_id, rec in (paused if isinstance(paused, dict) else {}).items():
             if (
@@ -204,6 +211,7 @@ class AutoPause:
                 "settings": self.settings,
                 "exclude": sorted(self.exclude),
                 "paused": self.paused,
+                "carry": self.carry,
                 "log": self.log,
             },
             SAVE_DELAY,
@@ -316,6 +324,18 @@ class AutoPause:
                 rec["trying"] = False
             self._save()
             self._schedule()
+
+    def outage_start(self, entry_id: str, status: str, since: str | None) -> str | None:
+        """The start of an entry's outage, from before its pause if it began earlier.
+
+        Dropped as soon as the entry is not a problem any more: a later outage is a new one.
+        """
+        began = self.carry.get(entry_id)
+        if status == "problem" and began and (since is None or began < since):
+            return began
+        if status not in ("problem", "disabled") and self.carry.pop(entry_id, None):
+            self._save()
+        return since
 
     def _recovered(self, entry_id: str) -> None:
         rec = self.paused.pop(entry_id, None)
@@ -531,6 +551,10 @@ class AutoPause:
             report = await self.report()
             if any(p["entry_id"] == entry_id and p["warn"] for p in report["pausable"]):
                 raise AutoPauseError("confirm_needed")
+        observed = getattr(self.scanner, "observations", None)
+        began = observed.since(f"config_entry:{entry_id}", "problem") if observed else None
+        if began:
+            self.carry[entry_id] = began
         self.paused[entry_id] = {
             "since": _now().isoformat(),
             "reason": reason,

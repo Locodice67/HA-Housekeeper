@@ -1582,6 +1582,10 @@ class InventoryScanner:
             item["status_since"] = self.observations.since(
                 f"{kind}:{item['object_id']}", _observed_as(item)
             )
+            if kind == "config_entry":
+                item["status_since"] = self.auto_pause.outage_start(
+                    item["object_id"], item["status"], item["status_since"]
+                )
             if kind == "entity" and item["status"] in ("unavailable", "unknown"):
                 item["status_since"], item["status_since_source"] = outage_start(
                     item["status_since"], item.get("last_changed")
