@@ -1151,6 +1151,10 @@ class InventoryScanner:
                             for e in self.hass.config_entries.async_entries()
                         },
                         datetime.now(UTC),
+                        {
+                            e.entry_id: getattr(e, "_tries", None)
+                            for e in self.hass.config_entries.async_entries()
+                        },
                     )
                     await self._observe_versions(snapshot)
                     self._observe_watch(snapshot)

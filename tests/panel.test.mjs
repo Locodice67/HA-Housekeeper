@@ -4000,6 +4000,7 @@ test("the batteries view shows the forecast with groups and the reminders, which
   assert.ok(el.remindersView().includes("data-rem-new") && !el.remindersView().includes("data-rem-form"));
   const row = el.relRowBody({ title: "Hue", domain: "hue", entities: 3, availability: 99, setup: { count: 2, days: 7, last: "2026-10-08T10:00:00+00:00", state: "setup_retry" } });
   assert.ok(row.includes("Setup failures: 2 in 7 days") && row.includes("Currently in state setup_retry"));
+  assert.ok(el.relRowBody({ title: "Hue", domain: "hue", entities: 3, availability: 99, setup: { count: 2, days: 7, attempts: 1200, attempts_since: "2026-10-20T10:00:00+00:00" } }).includes("About 1"));
   assert.equal(el.relSetupHint({ availability: 90, setup: { count: 3, days: 7 } }), "relHintOffline");
   assert.equal(el.relSetupHint({ availability: 90, layer: "cloud", setup: { count: 3, days: 7 } }), "relHintCloud");
   assert.equal(el.relSetupHint({ availability: 99.9, setup: { count: 3, days: 7 } }), "relHintEarly");

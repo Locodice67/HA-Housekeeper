@@ -90,6 +90,17 @@ async def _async(value):
     return value
 
 
+async def test_failed_attempts_are_counted_by_their_growth_between_scans(hass) -> None:
+    history = EntryStateHistory(hass)
+    history.record({"e1": "loaded"}, NOW, {"e1": 0})
+    assert history.summary("e1", NOW) is None
+    history.record({"e1": "setup_retry"}, NOW + timedelta(minutes=5), {"e1": 3})
+    history.record({"e1": "setup_retry"}, NOW + timedelta(minutes=10), {"e1": 8})
+    history.record({"e1": "setup_retry"}, NOW + timedelta(minutes=15), {"e1": 2})  # restarted
+    history.record({"e1": "setup_retry"}, NOW + timedelta(minutes=20), None)  # attribute gone
+    assert history.summary("e1", NOW + timedelta(hours=1))["attempts"] == 10
+
+
 async def test_a_failing_entry_counts_once_per_episode_and_old_ones_are_dropped(hass) -> None:
     history = EntryStateHistory(hass)
     history.record({"e1": "loaded", "e2": "loaded"}, NOW)

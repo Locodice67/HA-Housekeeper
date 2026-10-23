@@ -6746,6 +6746,7 @@ class ReliabilityMixin {
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
     if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn" title="${this.esc(item.state)}">${this.esc(this.entryStateLabel(item.state))}</span>`);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
+    if (item.setup?.attempts) lines.push(this.t("relAttempts", { n: this.formatNumber(item.setup.attempts), date: this.formatDate(item.setup.attempts_since) }));
     return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
   }
 
@@ -6821,7 +6822,8 @@ class ReliabilityMixin {
     if (!setup) return "–";
     const now = setup.state ? `<small>${this.t("relSetupNow", { state: this.esc(this.entryStateLabel(setup.state)) })}</small>` : "";
     const last = setup.last ? `<small>${this.t("relSetupLast", { date: this.formatDate(setup.last) })}</small>` : "";
-    return `${setup.count ? this.t("relSetupCount", { n: setup.count, days: setup.days }) : ""}${last}${now}`;
+    const tries = setup.attempts ? `<small>${this.t("relAttempts", { n: this.formatNumber(setup.attempts), date: this.formatDate(setup.attempts_since) })}</small>` : "";
+    return `${setup.count ? this.t("relSetupCount", { n: setup.count, days: setup.days }) : ""}${last}${tries}${now}`;
   }
 
   relEntriesList(r) {
@@ -10962,6 +10964,7 @@ Object.assign(TEXT.de, {
   remFName: "Name", remFEvery: "Abstand in Tagen", remFDue: "Fällig am", remFNote: "Notiz (optional)", remAllStates: "Alle Zustände", remSumAll: "Alle", remStateDue: "Überfällig", remStateSoon: "Bald fällig", remStateOk: "In Ordnung", remColName: "Name", remColEvery: "Abstand", remColLast: "Zuletzt erledigt", remColDue: "Fällig", remColActions: "Aktionen",
   remDialogNew: "Neue Erinnerung", remDialogEdit: "Erinnerung bearbeiten", remEveryN: "alle {n} Tage", remHistory: "Historie · {n}× erledigt", remNoHistory: "Noch nie erledigt.", remHistoryOpen: "Historie aufklappen", remHistoryClose: "Historie zuklappen", remToday: "heute", remOverdue: "{n} Tage überfällig", remIn: "in {n} Tagen", remInvalid: "Nicht gespeichert, bitte prüfen: {field}",
   reminders: "Erinnerungen", remindersSubtitle: "Termine für das, was du regelmäßig erledigst.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
+  relAttempts: "Etwa {n} Wiederholungen der Einrichtung, gezählt seit {date}",
   relSetup: "Einrichtungsfehler: {n} in {days} Tagen, zuletzt {last}", relSetupNow: "Gerade im Zustand {state}", relSetupNote: "Aus den Scans gezählt, so fein wie das Scan-Intervall.",
   event_reminder_due: "Wartungserinnerung fällig",
 });
@@ -10975,6 +10978,7 @@ Object.assign(TEXT.en, {
   remFName: "Name", remFEvery: "Interval in days", remFDue: "Due on", remFNote: "Note (optional)", remAllStates: "All states", remSumAll: "All", remStateDue: "Overdue", remStateSoon: "Due soon", remStateOk: "On track", remColName: "Name", remColEvery: "Interval", remColLast: "Last done", remColDue: "Due", remColActions: "Actions",
   remDialogNew: "New reminder", remDialogEdit: "Edit reminder", remEveryN: "every {n} days", remHistory: "History · done {n}×", remNoHistory: "Never done yet.", remHistoryOpen: "Show history", remHistoryClose: "Hide history", remToday: "today", remOverdue: "{n} days overdue", remIn: "in {n} days", remInvalid: "Not saved, please check: {field}",
   reminders: "Reminders", remindersSubtitle: "Dates for what you do regularly.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
+  relAttempts: "About {n} setup retries, counted since {date}",
   relSetup: "Setup failures: {n} in {days} days, last {last}", relSetupNow: "Currently in state {state}", relSetupNote: "Counted from the scans, as fine as the scan interval.",
   event_reminder_due: "maintenance reminder due",
 });
