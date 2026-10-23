@@ -1532,7 +1532,7 @@ class StylesMixin {
       .card-text{min-width:0;display:grid;gap:2px}.card-text small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.card-text strong{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2}.card-text em{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-overflow:ellipsis;white-space:nowrap}
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
-      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding-top:12px}.apbtns{margin-left:auto}
+      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apact{flex:none;padding-right:16px}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding-top:12px}.apbtns{margin-left:auto}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
       .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -2487,6 +2487,8 @@ class OverviewMixin {
     for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
       items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_JUMPS[g.id].view, jump: this.goalJump(g.id) });
     }
+    this.ensureAutoPause();
+    items.push(...this.apTodoItems());
     return items;
   }
 
@@ -6694,6 +6696,7 @@ Object.assign(TEXT.de, {
   apPlan: "Wiederholungen: 3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens {days} Tage ab Beginn der Pause. Danach bleibt die Pause bestehen und Housekeeper meldet es.",
   apPaused: "Pausiert", apManual: "Integration von Hand pausieren", apManualHint: "Wenn du schon weißt, dass es gerade ein Problem gibt.", apPick: "Integration wählen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
   apExhausted: "Keine Versuche mehr, bitte prüfen", apReasonAuto: "{n} Fehlversuche", apReasonManual: "von dir pausiert",
+  apTodoOne: "{name} ist pausiert", apTodoMany: "{n} Integrationen pausiert", apTodoHint: "Versuch {n} von {total}, nächster in {span} · seit {since}", apTodoExhaustedOne: "{name}: {days} Tage ohne Erfolg, bitte prüfen", apTodoExhaustedMany: "{n} Pausen ohne Erfolg, bitte prüfen", apTodoExhaustedHint: "Pause bleibt bestehen · Protokoll, Update und Quelle prüfen", apTodoCheck: "Bitte prüfen", apWouldPause: "Auto-Pause würde das pausieren",
   apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
   apWatched: "Dienste im Blick", apWatchedHint: "Datenlieferanten ohne Steuerfunktion, die Auto-Pause pausieren würde", apNoWatched: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
   apLog: "Verlauf", apLog_paused: "pausiert", apLog_tried: "Versuch ohne Erfolg", apLog_back: "läuft wieder", apLog_ended: "Pause beendet", apLog_exhausted: "Pause bleibt, bitte prüfen",
@@ -6712,6 +6715,7 @@ Object.assign(TEXT.en, {
   apPlan: "Retries: 3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, for up to {days} days from the start of the pause. After that the pause stays and Housekeeper tells you.",
   apPaused: "Paused", apManual: "Pause an integration by hand", apManualHint: "When you already know there is a problem right now.", apPick: "Choose an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
   apExhausted: "No more tries, please look", apReasonAuto: "{n} failed attempts", apReasonManual: "paused by you",
+  apTodoOne: "{name} is paused", apTodoMany: "{n} integrations paused", apTodoHint: "Try {n} of {total}, next in {span} · for {since}", apTodoExhaustedOne: "{name}: {days} days without success, please look", apTodoExhaustedMany: "{n} pauses without success, please look", apTodoExhaustedHint: "The pause stays · check the log, the update and the source", apTodoCheck: "Please look", apWouldPause: "Auto-pause would pause this",
   apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
   apWatched: "Services watched", apWatchedHint: "Data providers without a control function that auto-pause would pause", apNoWatched: "No integration meets the rule: cloud polling and data entities only.", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
   apLog: "History", apLog_paused: "paused", apLog_tried: "try without success", apLog_back: "is back", apLog_ended: "pause ended", apLog_exhausted: "pause stays, please look",
@@ -6731,9 +6735,11 @@ class AutoPauseMixin {
   }
 
   // The first visit loads once; every change comes back with the new state.
+  // Again after every new scan, so that the next try and a used-up schedule are not stale on the overview.
   ensureAutoPause() {
-    if (this.apLoading || this._apRequested) return;
-    this._apRequested = true;
+    const key = this.data?.meta?.scanned_at || "";
+    if (this.apLoading || (this._apRequested && this._apKey === key)) return;
+    this._apRequested = true; this._apKey = key;
     setTimeout(() => this.loadAutoPause(), 0);
   }
 
@@ -6744,6 +6750,38 @@ class AutoPauseMixin {
   }
 
   apPausedItem(entryId) { return (this.autoPause?.paused || []).find(p => p.entry_id === entryId) || null; }
+
+  // The rows of the overview's to-do card: a running pause is maintenance, a used-up schedule is open (never urgent).
+  apTodoItems() {
+    const a = this.autoPause;
+    if (!a?.paused?.length) return [];
+    const now = Date.now(), total = a.schedule.offsets.length, items = [];
+    const running = a.paused.filter(p => !p.exhausted), spent = a.paused.filter(p => p.exhausted);
+    const names = list => list.slice(0, 3).map(p => p.title || p.domain).join(", ") + (list.length > 3 ? ", …" : "");
+    const jump = 'data-jump="reliability" data-jump-tab="autopause"';
+    if (spent.length) items.push({ key: "autopause_exhausted", area: "state", tone: "warn", icon: "mdi:pause-circle-outline", text: spent.length === 1 ? this.t("apTodoExhaustedOne", { name: spent[0].title || spent[0].domain, days: Math.round(a.schedule.end_hours / 24) }) : this.t("apTodoExhaustedMany", { n: this.formatNumber(spent.length) }), hintText: this.t("apTodoExhaustedHint"), pill: this.t("apTodoCheck"), jump });
+    if (running.length) {
+      const one = running[0], due = one.next ? Math.max(new Date(one.next).getTime() - now, 0) : null;
+      items.push({ key: "autopause", area: "care", tone: "warn", icon: "mdi:pause-circle-outline", text: running.length === 1 ? this.t("apTodoOne", { name: one.title || one.domain }) : this.t("apTodoMany", { n: this.formatNumber(running.length) }),
+        hintText: running.length === 1 ? (due !== null ? this.t("apTodoHint", { n: Math.min(one.done + 1, total), total, span: this.apSpan(due), since: this.apSpan(now - new Date(one.since).getTime()) }) : this.t("apSince", { span: this.apSpan(now - new Date(one.since).getTime()) })) : names(running), jump });
+    }
+    return items;
+  }
+
+  // Beside an integration that is not loaded: "Paused" while it is, a button to pause it while it can be.
+  apRowAction(entryId, state) {
+    const a = this.autoPause;
+    if (!a || !entryId) return "";
+    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`;
+    if (!state || state === "loaded" || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
+  }
+
+  // Only a hint while the automatic pause is off and this integration would be one of its candidates.
+  apWouldPause(entryId) {
+    const a = this.autoPause;
+    return Boolean(a && !a.settings.enabled && a.candidates.some(c => c.entry_id === entryId && !c.excluded));
+  }
 
   apSpan(ms) {
     const hours = Math.max(1, Math.round(ms / 3600000));
@@ -6818,7 +6856,7 @@ class AutoPauseMixin {
     root.querySelectorAll("[data-ap-allow]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apAllow, on: false }));
     root.querySelectorAll("[data-ap-try]").forEach(el => el.onclick = () => this.apCall({ action: "try", entry_id: el.dataset.apTry }));
     root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
-    root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = () => this.apStart(el.dataset.apSend));
+    root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.apStart(el.dataset.apSend); });
     root.querySelector("[data-ap-pause]")?.addEventListener("click", () => { const id = root.querySelector("[data-ap-pick]")?.value; if (id) this.apStart(id); });
   }
 }
@@ -6885,8 +6923,9 @@ class ReliabilityMixin {
     if (layer) lines.push(layer);
     const flags = [];
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
-    if (this.apPausedItem(item.entry_id)) flags.push(`<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`);
+    const pausing = this.apRowAction(item.entry_id, item.state);
     if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn" title="${this.esc(item.state)}">${this.esc(this.entryStateLabel(item.state))}</span>`);
+    if (pausing) flags.push(pausing);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
     if (item.setup?.attempts) lines.push(this.t("relAttempts", { n: this.formatNumber(item.setup.attempts), date: this.formatDate(item.setup.attempts_since) }));
     return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
@@ -6978,7 +7017,7 @@ class ReliabilityMixin {
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
       { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
-      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
+      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", this.apRowAction(e.entry_id, e.state), e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
       { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },
       // The longest outage stands below their count instead of in a column of its own, so the table fits a window;
@@ -9670,7 +9709,10 @@ class CausesMixin {
     const total = this.causeTotal(c), sub = [this.causeCounts(c), this.causeLine({ ...c, impact: null })].filter(Boolean).join(" · ");
     // A missing target has no page of its own: its row opens the findings filtered to it and what it explains.
     const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
-    return `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small></span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
+    const down = c.kind === "integration_down" && !c.virtual && c.object_type === "config_entry";
+    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down ? this.apRowAction(c.object_id, "not_loaded") : "";
+    const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
+    return act ? `<div class="rowwrap">${row}<span class="apact">${act}</span></div>` : row;
   }
 
   // A single finding as a plain row of the overview: it opens the object; deciding and selecting happen on the Findings page.

@@ -232,7 +232,10 @@ class CausesMixin {
     const total = this.causeTotal(c), sub = [this.causeCounts(c), this.causeLine({ ...c, impact: null })].filter(Boolean).join(" · ");
     // A missing target has no page of its own: its row opens the findings filtered to it and what it explains.
     const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
-    return `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small></span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
+    const down = c.kind === "integration_down" && !c.virtual && c.object_type === "config_entry";
+    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down ? this.apRowAction(c.object_id, "not_loaded") : "";
+    const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
+    return act ? `<div class="rowwrap">${row}<span class="apact">${act}</span></div>` : row;
   }
 
   // A single finding as a plain row of the overview: it opens the object; deciding and selecting happen on the Findings page.

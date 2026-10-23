@@ -187,6 +187,8 @@ class OverviewMixin {
     for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
       items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_JUMPS[g.id].view, jump: this.goalJump(g.id) });
     }
+    this.ensureAutoPause();
+    items.push(...this.apTodoItems());
     return items;
   }
 

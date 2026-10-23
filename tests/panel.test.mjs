@@ -2607,10 +2607,21 @@ const AUTO_PAUSE = {
 test("the Auto-Pause tab shows without the recorder numbers and offers pause, try and exclusion", () => {
   const { el } = panel("en");
   el._hass.callWS = async () => AUTO_PAUSE;
-  el.data = DATA; el.view = "reliability"; el.autoPause = AUTO_PAUSE; el._apRequested = true; (el.viewTab ||= {}).reliability = "autopause";
+  el.data = DATA; el.view = "reliability"; el.autoPause = AUTO_PAUSE; el._apRequested = true; el._apKey = ""; (el.viewTab ||= {}).reliability = "autopause";
   const html = el.autoPauseView();
   assert.ok(html.includes("Ravensburg") && html.includes("data-ap-try") && html.includes("data-ap-never") && html.includes("Try 2 of 3"));
   assert.ok(el.autoPauseTile().count === 1 && el.apPageActions("e2", "loaded").includes("data-ap-send"));
+});
+
+test("a running pause is a maintenance row of the overview, a used-up one an open row, and a failing integration offers the pause", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || "";
+  el.autoPause = { ...AUTO_PAUSE, paused: [AUTO_PAUSE.paused[0], { ...AUTO_PAUSE.paused[0], entry_id: "e9", title: "Old", exhausted: true }] };
+  const items = el.apTodoItems();
+  assert.equal(JSON.stringify(items.map(i => [i.key, i.area, i.tone])), JSON.stringify([["autopause_exhausted", "state", "warn"], ["autopause", "care", "warn"]]));
+  assert.ok(items[1].text === "Ravensburg is paused" && items[1].hintText.startsWith("Try 2 of 3") && items[0].text.includes("7 days"));
+  assert.ok(el.apRowAction("e2", "setup_retry").includes('data-ap-send="e2"') && el.apRowAction("e2", "loaded") === "" && el.apRowAction("e1", "x").includes("Paused"));
+  assert.ok(el.apWouldPause("e2") && !el.apWouldPause("e1"));
 });
 
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {

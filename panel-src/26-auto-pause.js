@@ -10,6 +10,7 @@ Object.assign(TEXT.de, {
   apPlan: "Wiederholungen: 3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens {days} Tage ab Beginn der Pause. Danach bleibt die Pause bestehen und Housekeeper meldet es.",
   apPaused: "Pausiert", apManual: "Integration von Hand pausieren", apManualHint: "Wenn du schon weißt, dass es gerade ein Problem gibt.", apPick: "Integration wählen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
   apExhausted: "Keine Versuche mehr, bitte prüfen", apReasonAuto: "{n} Fehlversuche", apReasonManual: "von dir pausiert",
+  apTodoOne: "{name} ist pausiert", apTodoMany: "{n} Integrationen pausiert", apTodoHint: "Versuch {n} von {total}, nächster in {span} · seit {since}", apTodoExhaustedOne: "{name}: {days} Tage ohne Erfolg, bitte prüfen", apTodoExhaustedMany: "{n} Pausen ohne Erfolg, bitte prüfen", apTodoExhaustedHint: "Pause bleibt bestehen · Protokoll, Update und Quelle prüfen", apTodoCheck: "Bitte prüfen", apWouldPause: "Auto-Pause würde das pausieren",
   apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
   apWatched: "Dienste im Blick", apWatchedHint: "Datenlieferanten ohne Steuerfunktion, die Auto-Pause pausieren würde", apNoWatched: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
   apLog: "Verlauf", apLog_paused: "pausiert", apLog_tried: "Versuch ohne Erfolg", apLog_back: "läuft wieder", apLog_ended: "Pause beendet", apLog_exhausted: "Pause bleibt, bitte prüfen",
@@ -28,6 +29,7 @@ Object.assign(TEXT.en, {
   apPlan: "Retries: 3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, for up to {days} days from the start of the pause. After that the pause stays and Housekeeper tells you.",
   apPaused: "Paused", apManual: "Pause an integration by hand", apManualHint: "When you already know there is a problem right now.", apPick: "Choose an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
   apExhausted: "No more tries, please look", apReasonAuto: "{n} failed attempts", apReasonManual: "paused by you",
+  apTodoOne: "{name} is paused", apTodoMany: "{n} integrations paused", apTodoHint: "Try {n} of {total}, next in {span} · for {since}", apTodoExhaustedOne: "{name}: {days} days without success, please look", apTodoExhaustedMany: "{n} pauses without success, please look", apTodoExhaustedHint: "The pause stays · check the log, the update and the source", apTodoCheck: "Please look", apWouldPause: "Auto-pause would pause this",
   apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
   apWatched: "Services watched", apWatchedHint: "Data providers without a control function that auto-pause would pause", apNoWatched: "No integration meets the rule: cloud polling and data entities only.", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
   apLog: "History", apLog_paused: "paused", apLog_tried: "try without success", apLog_back: "is back", apLog_ended: "pause ended", apLog_exhausted: "pause stays, please look",
@@ -47,9 +49,11 @@ class AutoPauseMixin {
   }
 
   // The first visit loads once; every change comes back with the new state.
+  // Again after every new scan, so that the next try and a used-up schedule are not stale on the overview.
   ensureAutoPause() {
-    if (this.apLoading || this._apRequested) return;
-    this._apRequested = true;
+    const key = this.data?.meta?.scanned_at || "";
+    if (this.apLoading || (this._apRequested && this._apKey === key)) return;
+    this._apRequested = true; this._apKey = key;
     setTimeout(() => this.loadAutoPause(), 0);
   }
 
@@ -60,6 +64,38 @@ class AutoPauseMixin {
   }
 
   apPausedItem(entryId) { return (this.autoPause?.paused || []).find(p => p.entry_id === entryId) || null; }
+
+  // The rows of the overview's to-do card: a running pause is maintenance, a used-up schedule is open (never urgent).
+  apTodoItems() {
+    const a = this.autoPause;
+    if (!a?.paused?.length) return [];
+    const now = Date.now(), total = a.schedule.offsets.length, items = [];
+    const running = a.paused.filter(p => !p.exhausted), spent = a.paused.filter(p => p.exhausted);
+    const names = list => list.slice(0, 3).map(p => p.title || p.domain).join(", ") + (list.length > 3 ? ", …" : "");
+    const jump = 'data-jump="reliability" data-jump-tab="autopause"';
+    if (spent.length) items.push({ key: "autopause_exhausted", area: "state", tone: "warn", icon: "mdi:pause-circle-outline", text: spent.length === 1 ? this.t("apTodoExhaustedOne", { name: spent[0].title || spent[0].domain, days: Math.round(a.schedule.end_hours / 24) }) : this.t("apTodoExhaustedMany", { n: this.formatNumber(spent.length) }), hintText: this.t("apTodoExhaustedHint"), pill: this.t("apTodoCheck"), jump });
+    if (running.length) {
+      const one = running[0], due = one.next ? Math.max(new Date(one.next).getTime() - now, 0) : null;
+      items.push({ key: "autopause", area: "care", tone: "warn", icon: "mdi:pause-circle-outline", text: running.length === 1 ? this.t("apTodoOne", { name: one.title || one.domain }) : this.t("apTodoMany", { n: this.formatNumber(running.length) }),
+        hintText: running.length === 1 ? (due !== null ? this.t("apTodoHint", { n: Math.min(one.done + 1, total), total, span: this.apSpan(due), since: this.apSpan(now - new Date(one.since).getTime()) }) : this.t("apSince", { span: this.apSpan(now - new Date(one.since).getTime()) })) : names(running), jump });
+    }
+    return items;
+  }
+
+  // Beside an integration that is not loaded: "Paused" while it is, a button to pause it while it can be.
+  apRowAction(entryId, state) {
+    const a = this.autoPause;
+    if (!a || !entryId) return "";
+    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`;
+    if (!state || state === "loaded" || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
+  }
+
+  // Only a hint while the automatic pause is off and this integration would be one of its candidates.
+  apWouldPause(entryId) {
+    const a = this.autoPause;
+    return Boolean(a && !a.settings.enabled && a.candidates.some(c => c.entry_id === entryId && !c.excluded));
+  }
 
   apSpan(ms) {
     const hours = Math.max(1, Math.round(ms / 3600000));
@@ -134,7 +170,7 @@ class AutoPauseMixin {
     root.querySelectorAll("[data-ap-allow]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apAllow, on: false }));
     root.querySelectorAll("[data-ap-try]").forEach(el => el.onclick = () => this.apCall({ action: "try", entry_id: el.dataset.apTry }));
     root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
-    root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = () => this.apStart(el.dataset.apSend));
+    root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.apStart(el.dataset.apSend); });
     root.querySelector("[data-ap-pause]")?.addEventListener("click", () => { const id = root.querySelector("[data-ap-pick]")?.value; if (id) this.apStart(id); });
   }
 }

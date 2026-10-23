@@ -60,8 +60,9 @@ class ReliabilityMixin {
     if (layer) lines.push(layer);
     const flags = [];
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
-    if (this.apPausedItem(item.entry_id)) flags.push(`<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`);
+    const pausing = this.apRowAction(item.entry_id, item.state);
     if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn" title="${this.esc(item.state)}">${this.esc(this.entryStateLabel(item.state))}</span>`);
+    if (pausing) flags.push(pausing);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
     if (item.setup?.attempts) lines.push(this.t("relAttempts", { n: this.formatNumber(item.setup.attempts), date: this.formatDate(item.setup.attempts_since) }));
     return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
@@ -153,7 +154,7 @@ class ReliabilityMixin {
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
       { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
-      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
+      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", this.apRowAction(e.entry_id, e.state), e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
       { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },
       // The longest outage stands below their count instead of in a column of its own, so the table fits a window;
