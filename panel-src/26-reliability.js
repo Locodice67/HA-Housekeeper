@@ -128,7 +128,7 @@ class ReliabilityMixin {
     if (!setup) return null;
     if (setup.state === "failed_unload" || setup.state === "migration_error") return "relHintUnload";
     if (setup.state === "setup_error") return "relHintError";
-    if (setup.count >= 2 && row.availability !== null && row.availability !== undefined && row.availability < 95) return "relHintOffline";
+    if (setup.count >= 2 && row.availability !== null && row.availability !== undefined && row.availability < 95) return row.layer === "cloud" ? "relHintCloud" : "relHintOffline";
     return setup.count >= 2 ? "relHintEarly" : null;
   }
 
