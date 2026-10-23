@@ -98,8 +98,8 @@ WARMUP_SECONDS: Final = 300
 WARMUP_SETTLE_SECONDS: Final = 60
 # An integration that is loading for less than this long does not restart the buffer (late, short set-ups are common).
 WARMUP_BLIP_SECONDS: Final = 15
-# How many titles of loading integrations the start notice names.
-WARMUP_NAMES: Final = 4
+# How many titles of loading integrations the start notice can list (it shows the first few and unfolds the rest).
+WARMUP_NAMES: Final = 60
 # Version of the WebSocket reply contract; raise it when a field is renamed or removed.
 API_SCHEMA: Final = 1
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"

@@ -50,21 +50,28 @@ class OverviewMixin {
     const steps = ["warmupS1", "warmupS2", "warmupS3", "warmupS4"].map((k, n) => `<li class="${n < at ? "done" : n === at ? "on" : ""}"><i>${n < at ? "✓" : ""}</i>${this.t(k)}</li>`).join("");
     const total = w.total || 0, done = Math.min(w.done || 0, total);
     let body = "", line = "";
-    if (w.booting) { body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span></div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine"); }
+    if (w.booting) {
+      // The server says how long Home Assistant has been loading; the clock runs on from there between two answers.
+      const since = Number.isFinite(w.bootSeconds) ? `<span>${this.esc(this.t("warmupSince", { x: clock(w.bootSeconds + Math.round((Date.now() - w.bootAt) / 1000)) }))}</span>` : "";
+      body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span>${since}</div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine");
+    }
     else if (scanning) {
       const order = ["registries", "devices", "automations", "finalizing"], phase = st?.running ? order.indexOf(st.phase) : -1;
       const percent = st?.running ? st.progress : 0;
       body = `<div class="wduo">${pair(`${this.t(phase >= 0 ? `warmupPhase_${order[phase]}` : "warmupPhase_start")}${phase >= 0 ? ` <b>${phase + 1}/${order.length}</b>` : ""}`, `${percent} %`, percent / 100)}<div></div></div>`;
       line = this.t("warmupAfter");
     } else {
-      const names = (w.names || []).map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
-      const more = (w.pending || 0) > (w.names || []).length ? ` +${w.pending - w.names.length}` : "";
+      // The first few names; a click unfolds the rest (the box is redrawn every second, so the click is caught on the box, see 90-panel.js).
+      const all = w.names || [], shown = this._warmAll ? all : all.slice(0, WARMUP_NAMES_SHOWN);
+      const names = shown.map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
+      const toggle = all.length > WARMUP_NAMES_SHOWN ? ` <button type="button" class="link" data-warm-all>${this.esc(this._warmAll ? this.t("warmupFewer") : `+${all.length - WARMUP_NAMES_SHOWN}`)}</button>` : "";
+      const more = toggle + ((w.pending || 0) > all.length ? ` +${w.pending - all.length}` : "");
       // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
       const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
       body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
       line = w.settling
         ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
-        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")}`;
+        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")} ${this.t("warmupEarly")}`;
     }
     // The notice is redrawn every second; the offset keeps the animations in step with the clock instead of restarting.
     return `<div class="wph" style="--wt:-${Date.now() % 2000}ms">${head}<ol class="wtr">${steps}</ol>${body}<div class="wline">${line}</div></div>`;
@@ -83,10 +90,10 @@ class OverviewMixin {
         const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
         this.scanStatus = s;
         const w = s.warmup || {};
-        this._warm = { ...this._warm, booting: Boolean(w.booting), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
+        this._warm = { ...this._warm, booting: Boolean(w.booting), bootSeconds: Number.isFinite(w.boot_seconds) ? w.boot_seconds : null, bootAt: Date.now(), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
         draw();
         // The final scan is in: take it at once, the notice goes away by itself.
-        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(this.t("warmupDoneToast")); }
+        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(`${this.t("warmupDoneToast")}${await this.startToastNote()}`, false, 30000); }
       } catch (_) { /* the next tick asks again */ } finally { asking = false; }
     };
     ask();
@@ -97,10 +104,24 @@ class OverviewMixin {
     }, 1000);
   }
 
+  // What the start took, for the toast that ends the notice: the whole start and the slowest integration; empty when it is not known.
+  async startToastNote() {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/starts" });
+      this.sysState("starts").data = result;
+      const last = result?.starts?.[0];
+      if (!last || !Number.isFinite(last.boot_s) || Date.now() - Date.parse(last.at) > 15 * 60 * 1000) return "";
+      const slow = this.startSlowest(last);
+      const parts = [this.t("warmupDoneTook", { x: this.startClock(last.boot_s) }), slow ? this.t("warmupDoneSlow", { name: this.startName(slow), s: this.startSeconds(slow.seconds) }) : ""];
+      return ` ${parts.filter(Boolean).join(", ")}.`;
+    } catch (_) { return ""; }
+  }
+
   stopWarmupTicker() {
     if (this._warmTick) window.clearInterval(this._warmTick);
     this._warmTick = null;
     this._warm = null;
+    this._warmAll = false;
   }
 
   // What to do now, most urgent first: outages (integrations and devices that are down) and new critical findings, then an

@@ -69,7 +69,7 @@ class ListsMixin {
   }
 
   // A short message at the bottom of the page for small actions; it goes away by itself.
-  toast(text, error = false) {
+  toast(text, error = false, ms = 0) {
     const root = this.shadowRoot;
     if (!root?.querySelector || typeof document === "undefined") return;
     try {
@@ -77,7 +77,7 @@ class ListsMixin {
       const el = document.createElement("div");
       el.className = error ? "toast bad" : "toast"; el.setAttribute("role", error ? "alert" : "status"); el.textContent = text;
       root.appendChild(el);
-      setTimeout(() => el.remove(), error ? 8000 : 2600);
+      setTimeout(() => el.remove(), ms || (error ? 8000 : 2600));
     } catch (_) { /* a missing message is no loss */ }
   }
 

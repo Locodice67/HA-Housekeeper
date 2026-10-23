@@ -1283,6 +1283,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); this.focusListPage(id); });
     root.querySelectorAll("[data-lpagesize]").forEach(el => el.onchange = () => { (this.listSizes ||= {})[el.dataset.lpagesize] = Number(el.value); this.pages[el.dataset.lpagesize] = 1; this.render(); });
+    root.querySelectorAll("[data-warmup]").forEach(box => box.addEventListener("click", ev => {
+      if (!ev.target?.closest?.("[data-warm-all]")) return;
+      this._warmAll = !this._warmAll;
+      box.innerHTML = this.warmupInner();
+    }));
     root.querySelectorAll("[data-bh-more], [data-bh-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label");
       if (el.dataset.bhRow !== undefined && inner && inner !== el && el.contains(inner)) return;

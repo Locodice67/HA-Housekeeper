@@ -961,6 +961,9 @@ class InventoryScanner:
         self.paused = False
         self.retry_runs = 0  # Rescans after a gap in a row; set by the scheduler in __init__.py
         self._booting = False
+        self.boot_anchor: float | None = (
+            None  # epoch seconds the start counts from; set in __init__.py
+        )
         self._warmup_until: float | None = None
         self._settled_at: float | None = None  # since when no integration has been loading
         self._pending_since: float | None = None  # since when an integration has been loading again
@@ -1084,6 +1087,13 @@ class InventoryScanner:
     def settled_at(self) -> float | None:
         """``time.monotonic()`` of the moment no integration was loading any more; None while some are."""
         return self._settled_at
+
+    @property
+    def boot_seconds(self) -> int | None:
+        """How long Home Assistant has been loading, while it still is; None once it runs."""
+        if not self._booting or self.boot_anchor is None:
+            return None
+        return max(0, round(time.time() - self.boot_anchor))
 
     @property
     def warmup_settling(self) -> bool:

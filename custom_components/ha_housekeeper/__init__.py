@@ -109,6 +109,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         "mono": 0.0,
         "epoch": 0.0,
     }
+    if booting:
+        scanner.boot_anchor = boot["process"] or boot["began"]
     levels = thresholds_from_options(entry.options)
     scanner.outage_info_minutes = levels[CONF_OUTAGE_INFO_MINUTES]
     scanner.outage_low_hours = levels[CONF_OUTAGE_LOW_HOURS]

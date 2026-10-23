@@ -1,3 +1,4 @@
+const WARMUP_NAMES_SHOWN = 4; // names of loading integrations the start notice shows before it unfolds the rest
 const ICONS = {
   service: "mdi:cog-off-outline", entity: "mdi:shape-outline", device: "mdi:devices", config_entry: "mdi:puzzle-outline", integration: "mdi:puzzle",
   area: "mdi:floor-plan", automation: "mdi:robot-outline", floor: "mdi:layers-outline",

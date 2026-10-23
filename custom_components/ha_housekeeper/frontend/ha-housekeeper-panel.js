@@ -373,6 +373,7 @@ const TEXT = {
   },
 };
 
+const WARMUP_NAMES_SHOWN = 4; // names of loading integrations the start notice shows before it unfolds the rest
 const ICONS = {
   service: "mdi:cog-off-outline", entity: "mdi:shape-outline", device: "mdi:devices", config_entry: "mdi:puzzle-outline", integration: "mdi:puzzle",
   area: "mdi:floor-plan", automation: "mdi:robot-outline", floor: "mdi:layers-outline",
@@ -1881,7 +1882,7 @@ class ListsMixin {
   }
 
   // A short message at the bottom of the page for small actions; it goes away by itself.
-  toast(text, error = false) {
+  toast(text, error = false, ms = 0) {
     const root = this.shadowRoot;
     if (!root?.querySelector || typeof document === "undefined") return;
     try {
@@ -1889,7 +1890,7 @@ class ListsMixin {
       const el = document.createElement("div");
       el.className = error ? "toast bad" : "toast"; el.setAttribute("role", error ? "alert" : "status"); el.textContent = text;
       root.appendChild(el);
-      setTimeout(() => el.remove(), error ? 8000 : 2600);
+      setTimeout(() => el.remove(), ms || (error ? 8000 : 2600));
     } catch (_) { /* a missing message is no loss */ }
   }
 
@@ -2347,21 +2348,28 @@ class OverviewMixin {
     const steps = ["warmupS1", "warmupS2", "warmupS3", "warmupS4"].map((k, n) => `<li class="${n < at ? "done" : n === at ? "on" : ""}"><i>${n < at ? "✓" : ""}</i>${this.t(k)}</li>`).join("");
     const total = w.total || 0, done = Math.min(w.done || 0, total);
     let body = "", line = "";
-    if (w.booting) { body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span></div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine"); }
+    if (w.booting) {
+      // The server says how long Home Assistant has been loading; the clock runs on from there between two answers.
+      const since = Number.isFinite(w.bootSeconds) ? `<span>${this.esc(this.t("warmupSince", { x: clock(w.bootSeconds + Math.round((Date.now() - w.bootAt) / 1000)) }))}</span>` : "";
+      body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span>${since}</div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine");
+    }
     else if (scanning) {
       const order = ["registries", "devices", "automations", "finalizing"], phase = st?.running ? order.indexOf(st.phase) : -1;
       const percent = st?.running ? st.progress : 0;
       body = `<div class="wduo">${pair(`${this.t(phase >= 0 ? `warmupPhase_${order[phase]}` : "warmupPhase_start")}${phase >= 0 ? ` <b>${phase + 1}/${order.length}</b>` : ""}`, `${percent} %`, percent / 100)}<div></div></div>`;
       line = this.t("warmupAfter");
     } else {
-      const names = (w.names || []).map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
-      const more = (w.pending || 0) > (w.names || []).length ? ` +${w.pending - w.names.length}` : "";
+      // The first few names; a click unfolds the rest (the box is redrawn every second, so the click is caught on the box, see 90-panel.js).
+      const all = w.names || [], shown = this._warmAll ? all : all.slice(0, WARMUP_NAMES_SHOWN);
+      const names = shown.map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
+      const toggle = all.length > WARMUP_NAMES_SHOWN ? ` <button type="button" class="link" data-warm-all>${this.esc(this._warmAll ? this.t("warmupFewer") : `+${all.length - WARMUP_NAMES_SHOWN}`)}</button>` : "";
+      const more = toggle + ((w.pending || 0) > all.length ? ` +${w.pending - all.length}` : "");
       // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
       const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
       body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
       line = w.settling
         ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
-        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")}`;
+        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")} ${this.t("warmupEarly")}`;
     }
     // The notice is redrawn every second; the offset keeps the animations in step with the clock instead of restarting.
     return `<div class="wph" style="--wt:-${Date.now() % 2000}ms">${head}<ol class="wtr">${steps}</ol>${body}<div class="wline">${line}</div></div>`;
@@ -2380,10 +2388,10 @@ class OverviewMixin {
         const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
         this.scanStatus = s;
         const w = s.warmup || {};
-        this._warm = { ...this._warm, booting: Boolean(w.booting), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
+        this._warm = { ...this._warm, booting: Boolean(w.booting), bootSeconds: Number.isFinite(w.boot_seconds) ? w.boot_seconds : null, bootAt: Date.now(), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
         draw();
         // The final scan is in: take it at once, the notice goes away by itself.
-        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(this.t("warmupDoneToast")); }
+        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(`${this.t("warmupDoneToast")}${await this.startToastNote()}`, false, 30000); }
       } catch (_) { /* the next tick asks again */ } finally { asking = false; }
     };
     ask();
@@ -2394,10 +2402,24 @@ class OverviewMixin {
     }, 1000);
   }
 
+  // What the start took, for the toast that ends the notice: the whole start and the slowest integration; empty when it is not known.
+  async startToastNote() {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/starts" });
+      this.sysState("starts").data = result;
+      const last = result?.starts?.[0];
+      if (!last || !Number.isFinite(last.boot_s) || Date.now() - Date.parse(last.at) > 15 * 60 * 1000) return "";
+      const slow = this.startSlowest(last);
+      const parts = [this.t("warmupDoneTook", { x: this.startClock(last.boot_s) }), slow ? this.t("warmupDoneSlow", { name: this.startName(slow), s: this.startSeconds(slow.seconds) }) : ""];
+      return ` ${parts.filter(Boolean).join(", ")}.`;
+    } catch (_) { return ""; }
+  }
+
   stopWarmupTicker() {
     if (this._warmTick) window.clearInterval(this._warmTick);
     this._warmTick = null;
     this._warm = null;
+    this._warmAll = false;
   }
 
   // What to do now, most urgent first: outages (integrations and devices that are down) and new critical findings, then an
@@ -9953,7 +9975,7 @@ Object.assign(TEXT.de, {
   warmupLoaded: "{done} von {total} Integrationen geladen", warmupLoadedAll: "{done} Integrationen geladen", warmupWait: "Wartezeit, höchstens noch", warmupBuffer: "Sicherheitspuffer, noch", warmupMin: "Min.",
   warmupNames: "Laden noch:", warmupLocked: "Bereinigen ist bis dahin gesperrt.", warmupBlip: "{name} lädt kurz neu, der Puffer läuft weiter.",
   warmupBootLine: "Home Assistant lädt noch. Die Wartezeit beginnt danach. Bereinigen ist bis dahin gesperrt.", warmupAfter: "Danach sind die Befunde endgültig, und Bereinigen ist wieder frei.",
-  warmupBooting: "Home Assistant lädt", warmupAsking: "Stand wird abgefragt …", warmupDoneToast: "Die Befunde sind endgültig.",
+  warmupBooting: "Home Assistant lädt", warmupSince: "seit {x}", warmupFewer: "weniger", warmupEarly: "Die Wartezeit endet früher, sobald nichts mehr lädt.", warmupDoneTook: "Start nach {x}", warmupDoneSlow: "langsamste Integration: {name} ({s})", warmupAsking: "Stand wird abgefragt …", warmupDoneToast: "Die Befunde sind endgültig.",
   warmupPhase_start: "Der Scan startet", warmupPhase_registries: "Register lesen", warmupPhase_devices: "Geräte und Entitäten", warmupPhase_automations: "Automationen und Verweise", warmupPhase_finalizing: "Befunde berechnen",
 });
 Object.assign(TEXT.en, {
@@ -9961,7 +9983,7 @@ Object.assign(TEXT.en, {
   warmupLoaded: "{done} of {total} integrations loaded", warmupLoadedAll: "{done} integrations loaded", warmupWait: "Waiting time, at most", warmupBuffer: "Safety buffer, left", warmupMin: "min",
   warmupNames: "Still loading:", warmupLocked: "Cleanup is locked until then.", warmupBlip: "{name} is reloading briefly, the buffer keeps running.",
   warmupBootLine: "Home Assistant is still loading. The waiting time starts afterwards. Cleanup is locked until then.", warmupAfter: "After that the findings are final and cleanup is free again.",
-  warmupBooting: "Home Assistant is loading", warmupAsking: "Asking for the state …", warmupDoneToast: "The findings are final.",
+  warmupBooting: "Home Assistant is loading", warmupSince: "for {x}", warmupFewer: "fewer", warmupEarly: "The waiting time ends earlier as soon as nothing is loading any more.", warmupDoneTook: "Start took {x}", warmupDoneSlow: "slowest integration: {name} ({s})", warmupAsking: "Asking for the state …", warmupDoneToast: "The findings are final.",
   warmupPhase_start: "The scan is starting", warmupPhase_registries: "Reading registries", warmupPhase_devices: "Devices and entities", warmupPhase_automations: "Automations and references", warmupPhase_finalizing: "Working out findings",
 });
 
@@ -19286,6 +19308,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); this.focusListPage(id); });
     root.querySelectorAll("[data-lpagesize]").forEach(el => el.onchange = () => { (this.listSizes ||= {})[el.dataset.lpagesize] = Number(el.value); this.pages[el.dataset.lpagesize] = 1; this.render(); });
+    root.querySelectorAll("[data-warmup]").forEach(box => box.addEventListener("click", ev => {
+      if (!ev.target?.closest?.("[data-warm-all]")) return;
+      this._warmAll = !this._warmAll;
+      box.innerHTML = this.warmupInner();
+    }));
     root.querySelectorAll("[data-bh-more], [data-bh-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label");
       if (el.dataset.bhRow !== undefined && inner && inner !== el && el.contains(inner)) return;
