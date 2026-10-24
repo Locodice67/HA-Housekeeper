@@ -275,6 +275,13 @@ class AutoPause:
     @callback
     def _tick(self, now: datetime) -> None:
         self._unsub = None
+        if getattr(self.scanner, "warming_up", False):
+            # An attempt switches the entry on: during the start it would be the slowest one.
+            left = max(30, getattr(self.scanner, "warmup_seconds_left", 0))
+            self._unsub = async_track_point_in_utc_time(
+                self.hass, self._tick, now + timedelta(seconds=left)
+            )
+            return
         for entry_id, rec in list(self.paused.items()):
             due = self._due(rec)
             if due is None or due > now or entry_id in self._busy:

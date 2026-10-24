@@ -1076,13 +1076,21 @@ class InventoryScanner:
         if self._booting or self._warmup_until is None:
             return
         entries = list(self.hass.config_entries.async_entries())
-        loading = [e for e in entries if e.state is ConfigEntryState.SETUP_IN_PROGRESS]
+        # An entry that auto-pause switches on for a try is no part of the start.
+        trying = {i for i, rec in self.auto_pause.paused.items() if rec.get("trying")}
+        loading = [
+            e
+            for e in entries
+            if e.state is ConfigEntryState.SETUP_IN_PROGRESS
+            and getattr(e, "entry_id", None) not in trying
+        ]
         # Ignored and disabled entries are never set up, so they are no part of the progress.
         enabled = [
             e
             for e in entries
             if getattr(e, "disabled_by", None) is None
             and getattr(e, "source", None) != SOURCE_IGNORE
+            and getattr(e, "entry_id", None) not in trying
         ]
         self.integrations_pending = len(loading)
         self.integrations_loading = [str(getattr(e, "title", "") or e.domain) for e in loading][

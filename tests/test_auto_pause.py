@@ -95,3 +95,30 @@ async def test_the_outage_of_a_paused_entry_keeps_its_start_after_the_pause(hass
     )
     assert pause.outage_start(entry.entry_id, "disabled", None) is None and pause.carry
     assert pause.outage_start(entry.entry_id, "active", None) is None and not pause.carry
+
+
+async def test_no_attempt_starts_while_home_assistant_is_starting(hass) -> None:
+    entry, scanner, pause = _setup(hass)
+    scanner.warming_up = True
+    scanner.warmup_seconds_left = 120
+    pause.paused[entry.entry_id] = {
+        "since": (NOW - timedelta(days=1)).isoformat(),
+        "reason": "auto",
+        "failures": 20,
+        "done": 0,
+        "trying": False,
+        "exhausted": False,
+        "title": entry.title,
+        "domain": entry.domain,
+    }
+    with (
+        patch.object(pause, "_attempt", new=lambda *a, **k: None),
+        patch.object(hass, "async_create_background_task") as started,
+    ):
+        pause._tick(NOW)
+        assert not started.called and pause._unsub is not None
+        pause._unsub()
+        scanner.warming_up = False
+        pause._tick(NOW)
+        assert started.called
+    pause._unsub()
