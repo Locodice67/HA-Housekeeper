@@ -141,18 +141,19 @@ class AutoPauseMixin {
     this.confirmAsk(this.t("apConfirmText", { name: item.title, days }), () => this.apCall({ action: "pause", entry_id: entryId, confirm: true }), { title: this.t("apConfirmTitle", { name: item.title }), yes: this.t("apConfirmYes"), danger: false, ...(warn ? { warn } : {}) });
   }
 
-  // The button on the page of an integration: send it in, or its state while it is paused.
-  apPageActions(entryId, state) {
-    const a = this.autoPause;
-    if (!a || !entryId) return "";
-    const paused = this.apPausedItem(entryId);
+  // The auto-pause on the page of an integration, in three parts for its head: the pill of a pause, the one button that fits
+  // (try again while paused, send in while it fails) and the entries for the menu (the rest).
+  apPageParts(entryId, state) {
+    const a = this.autoPause, none = { pill: "", primary: "", menu: [] };
+    if (!a || !entryId) return none;
+    const id = this.esc(entryId), paused = this.apPausedItem(entryId);
     if (paused) {
       const span = this.apSpan(Date.now() - new Date(paused.since).getTime());
-      return `<span class="pill warn">${this.esc(this.t("apPausedNow", { span }))}</span><button class="btn" data-ap-try="${this.esc(entryId)}">${this.t("apTryNow")}</button><button class="btn" data-ap-end="${this.esc(entryId)}">${this.t("apEnd")}</button>`;
+      return { pill: `<span class="pill warn">${this.esc(this.t("apPausedNow", { span }))}</span>`, primary: `<button class="btn primary" data-ap-try="${id}"><ha-icon icon="mdi:refresh"></ha-icon>${this.t("apTryNow")}</button>`, menu: [["mdi:play-circle-outline", "apEnd", `data-ap-end="${id}"`]] };
     }
-    if (!(a.pausable || []).some(p => p.entry_id === entryId)) return "";
-    const failing = state && state !== "loaded";
-    return `<button class="btn${failing ? " primary" : ""}" data-ap-send="${this.esc(entryId)}" title="${this.esc(failing ? this.t("apSendHint") : "")}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button>`;
+    if (!(a.pausable || []).some(p => p.entry_id === entryId)) return none;
+    if (state && state !== "loaded") return { ...none, primary: `<button class="btn primary" data-ap-send="${id}" title="${this.esc(this.t("apSendHint"))}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button>` };
+    return { ...none, menu: [["mdi:pause-circle-outline", "apSend", `data-ap-send="${id}"`]] };
   }
 
   autoPauseView() {
