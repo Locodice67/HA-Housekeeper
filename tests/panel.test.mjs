@@ -2625,7 +2625,7 @@ test("a running pause is a maintenance row of the overview, a used-up one an ope
   const items = el.apTodoItems();
   assert.equal(JSON.stringify(items.map(i => [i.key, i.area, i.tone])), JSON.stringify([["autopause_exhausted", "state", "warn"], ["autopause", "care", "warn"]]));
   assert.ok(items[1].text === "Ravensburg is paused" && items[1].hintText.startsWith("Try 2 of 3") && items[0].text.includes("7 days"));
-  assert.ok(el.apRowAction("e2", "setup_retry").includes('data-ap-send="e2"') && el.apRowAction("e2", "loaded") === "" && el.apRowAction("e1", "x").includes("Paused"));
+  assert.ok(el.apRowMenu("e2", "setup_retry").includes('data-ap-send="e2"') && el.apRowMenu("e2", "loaded") === "" && el.apRowAction("e2") === "" && el.apRowAction("e1").includes("Paused") && el.apRowMenu("e1", "x") === "");
   assert.ok(el.apWouldPause("e2") && !el.apWouldPause("e1"));
 });
 

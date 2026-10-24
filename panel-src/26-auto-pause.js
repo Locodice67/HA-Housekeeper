@@ -93,19 +93,16 @@ class AutoPauseMixin {
     return items;
   }
 
-  // Beside an integration that is not loaded: "Paused" while it is, a button to pause it while it can be.
-  apRowAction(entryId, state) {
-    const a = this.autoPause;
-    if (!a || !entryId) return "";
-    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`;
-    if (!state || state === "loaded" || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
-    return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
+  // Beside an integration that is paused: the "Paused" pill. The way to pause one sits in the row menu (apRowMenu).
+  apRowAction(entryId) {
+    return this.autoPause && entryId && this.apPausedItem(entryId) ? `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>` : "";
   }
 
-  // The same offer as a menu entry: the overview rows carry a menu in a column of their own, so the chips stay in line.
-  apRowMenu(entryId) {
+  // The offer to pause as a menu entry: rows carry the menu in a column of their own, so the chips stay in line.
+  // With a `state` the offer stands only while the integration is not loaded.
+  apRowMenu(entryId, state = "any") {
     const a = this.autoPause;
-    if (!a || !entryId || this.apPausedItem(entryId) || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    if (!a || !entryId || !state || state === "loaded" || this.apPausedItem(entryId) || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button></div></details>`;
   }
 
