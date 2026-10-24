@@ -105,7 +105,7 @@ class PropertiesMixin {
     ]);
     const members = this.data.objects.filter(o => o.object_type === "entity" && o.device_id === item.object_id).sort((a, b) => a.name.localeCompare(b.name));
     const memberRows = this.objectTable(`members-${item.object_id}`, members.map(m => ({ key: `entity:${m.object_id}`, type: "entity", name: m.name, sub: m.object_id, tone: this.tone(m.status), state: m.status, stateLabel: this.statusLabel(m.status), pill: this.pill(m.status), value: m.state === null || m.state === undefined ? "" : `${m.state}${m.unit ? ` ${m.unit}` : ""}` })), {
-      extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value ? this.esc(r.value) : `<span class="muted">—</span>` }], empty: t("propNoEntities"),
+      extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value ? this.esc(r.value) : `<span class="muted">—</span>` }], empty: t("propNoEntities"), menu: true, stripe: true, sort: "status",
     });
     const entities = `<section class="panel wide"><div class="panelhead"><h2><ha-icon icon="mdi:shape-outline" class="propicon"></ha-icon>${t("propEntities")} (${members.length})</h2></div>${memberRows}</section>`;
     const technical = this.propCard(t("propTechnical"), "mdi:identifier", [

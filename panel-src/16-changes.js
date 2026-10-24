@@ -133,7 +133,7 @@ class ChangesMixin {
       const shown = items.filter(matches);
       if (items.length && !shown.length) return `<div class="emptymsg">${this.t("changesFiltered", { n: items.length })}</div>`;
       this.lvState(`changes-${id}`, sort, "asc");
-      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false });
+      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false, menu: true, stripe: true });
     };
     const objRow = (type, id, over) => {
       const key = `${type}:${id}`, obj = this.findObject(key);

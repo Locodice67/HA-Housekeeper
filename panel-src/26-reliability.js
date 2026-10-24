@@ -80,7 +80,7 @@ class ReliabilityMixin {
     const list = this.objectTable(`relaffected-${row.entry_id || row.domain || ""}`, items.map(m => {
       const tone = m.availability >= REL_GREEN ? "ok" : m.availability >= REL_YELLOW ? "warn" : "red";
       return { key: `entity:${m.entity_id}`, type: "entity", name: m.name, sub: m.entity_id, tone, state: tone, stateLabel: this.t({ ok: "relAvailOk", warn: "relAvailWarn", red: "relAvailRed" }[tone]), avail: m.availability, pill: `<span class="pill ${tone}">${this.formatNumber(m.availability)} %</span>`, rank: m.availability };
-    }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "" });
+    }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "", menu: true, stripe: true, sort: "status" });
     const more = row.affected_total > items.length ? `<p class="factnote">${this.t("relAffectedMore", { shown: items.length, total: row.affected_total })}</p>` : "";
     const hintKey = this.relSetupHint(row);
     const hint = hintKey ? `<div class="factnote"><strong>${this.t("relHintTitle")}</strong> ${this.t(hintKey, { n: row.setup.count, days: row.setup.days })}</div>` : "";

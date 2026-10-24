@@ -151,7 +151,7 @@ class IntegrationPageMixin {
 
   intUsedCard(item) {
     const used = this.intUsedBy(item);
-    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed") });
+    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed"), menu: true, stripe: true, sort: "status" });
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("intUsedTitle")}</h2></div>${rows}</section></div>`;
   }
 

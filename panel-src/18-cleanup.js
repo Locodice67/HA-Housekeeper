@@ -706,7 +706,7 @@ class CleanupMixin {
       { key: "since", label: "recurringColSince", dir: "desc", get: r => r.since, cell: r => this.esc(this.formatDate(r.since)) },
       { key: "domains", label: "recurringColDomains", dir: "asc", get: r => r.domains, cell: r => this.esc(r.domains || "–") },
     ];
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras })}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras, menu: true, stripe: true })}</div>`;
   }
 
   cleanupView() {

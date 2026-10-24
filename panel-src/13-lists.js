@@ -287,11 +287,12 @@ class ListsMixin {
   // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
   // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
   // The bar shows from `min` rows on; a row opens its object.
-  // Options: menu(row) -> entries of rowMenuHtml puts the three dots in a column of their own; stripe marks the red rows at their edge;
+  // Options: menu(row) -> entries of rowMenuHtml (or true for the usual one of objectRowMenu) puts the three dots in a column of their own; stripe marks the red rows at their edge;
   // sort: the first sort ("status" puts the problems on top, the names after them); statusFirst puts the state next to the name.
   objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", menu = null, stripe = false, sort = "name", statusFirst = false, tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
     if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
     this.lvState(id, sort, "asc");
+    if (menu === true) menu = r => this.objectRowMenu(r);
     const types = [...new Set(rows.map(r => r.type))].sort();
     const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
     const sorts = [
@@ -320,6 +321,13 @@ class ListsMixin {
     const tone = r => (stripe && r.tone === "red" ? ' data-rowtone="red"' : "");
     const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) + tone(r) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     return `${bar}${table}${pg.footer}`;
+  }
+
+  // The usual menu of an object row: open it, open it in Home Assistant, show it in the dependency diagram.
+  objectRowMenu(r) {
+    const obj = r.open === false ? null : this.findObject(r.key), path = obj ? this.haPath(obj) : null;
+    if (!obj) return [];
+    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`]];
   }
 
   // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.

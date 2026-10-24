@@ -2102,11 +2102,12 @@ class ListsMixin {
   // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
   // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
   // The bar shows from `min` rows on; a row opens its object.
-  // Options: menu(row) -> entries of rowMenuHtml puts the three dots in a column of their own; stripe marks the red rows at their edge;
+  // Options: menu(row) -> entries of rowMenuHtml (or true for the usual one of objectRowMenu) puts the three dots in a column of their own; stripe marks the red rows at their edge;
   // sort: the first sort ("status" puts the problems on top, the names after them); statusFirst puts the state next to the name.
   objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", menu = null, stripe = false, sort = "name", statusFirst = false, tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
     if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
     this.lvState(id, sort, "asc");
+    if (menu === true) menu = r => this.objectRowMenu(r);
     const types = [...new Set(rows.map(r => r.type))].sort();
     const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
     const sorts = [
@@ -2135,6 +2136,13 @@ class ListsMixin {
     const tone = r => (stripe && r.tone === "red" ? ' data-rowtone="red"' : "");
     const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) + tone(r) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     return `${bar}${table}${pg.footer}`;
+  }
+
+  // The usual menu of an object row: open it, open it in Home Assistant, show it in the dependency diagram.
+  objectRowMenu(r) {
+    const obj = r.open === false ? null : this.findObject(r.key), path = obj ? this.haPath(obj) : null;
+    if (!obj) return [];
+    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`]];
   }
 
   // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.
@@ -3498,7 +3506,7 @@ class ChangesMixin {
       const shown = items.filter(matches);
       if (items.length && !shown.length) return `<div class="emptymsg">${this.t("changesFiltered", { n: items.length })}</div>`;
       this.lvState(`changes-${id}`, sort, "asc");
-      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false });
+      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false, menu: true, stripe: true });
     };
     const objRow = (type, id, over) => {
       const key = `${type}:${id}`, obj = this.findObject(key);
@@ -4609,7 +4617,7 @@ class CleanupMixin {
       { key: "since", label: "recurringColSince", dir: "desc", get: r => r.since, cell: r => this.esc(this.formatDate(r.since)) },
       { key: "domains", label: "recurringColDomains", dir: "asc", get: r => r.domains, cell: r => this.esc(r.domains || "–") },
     ];
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras })}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras, menu: true, stripe: true })}</div>`;
   }
 
   cleanupView() {
@@ -6162,7 +6170,7 @@ class PropertiesMixin {
     ]);
     const members = this.data.objects.filter(o => o.object_type === "entity" && o.device_id === item.object_id).sort((a, b) => a.name.localeCompare(b.name));
     const memberRows = this.objectTable(`members-${item.object_id}`, members.map(m => ({ key: `entity:${m.object_id}`, type: "entity", name: m.name, sub: m.object_id, tone: this.tone(m.status), state: m.status, stateLabel: this.statusLabel(m.status), pill: this.pill(m.status), value: m.state === null || m.state === undefined ? "" : `${m.state}${m.unit ? ` ${m.unit}` : ""}` })), {
-      extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value ? this.esc(r.value) : `<span class="muted">—</span>` }], empty: t("propNoEntities"),
+      extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value ? this.esc(r.value) : `<span class="muted">—</span>` }], empty: t("propNoEntities"), menu: true, stripe: true, sort: "status",
     });
     const entities = `<section class="panel wide"><div class="panelhead"><h2><ha-icon icon="mdi:shape-outline" class="propicon"></ha-icon>${t("propEntities")} (${members.length})</h2></div>${memberRows}</section>`;
     const technical = this.propCard(t("propTechnical"), "mdi:identifier", [
@@ -6990,7 +6998,7 @@ class ReliabilityMixin {
     const list = this.objectTable(`relaffected-${row.entry_id || row.domain || ""}`, items.map(m => {
       const tone = m.availability >= REL_GREEN ? "ok" : m.availability >= REL_YELLOW ? "warn" : "red";
       return { key: `entity:${m.entity_id}`, type: "entity", name: m.name, sub: m.entity_id, tone, state: tone, stateLabel: this.t({ ok: "relAvailOk", warn: "relAvailWarn", red: "relAvailRed" }[tone]), avail: m.availability, pill: `<span class="pill ${tone}">${this.formatNumber(m.availability)} %</span>`, rank: m.availability };
-    }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "" });
+    }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "", menu: true, stripe: true, sort: "status" });
     const more = row.affected_total > items.length ? `<p class="factnote">${this.t("relAffectedMore", { shown: items.length, total: row.affected_total })}</p>` : "";
     const hintKey = this.relSetupHint(row);
     const hint = hintKey ? `<div class="factnote"><strong>${this.t("relHintTitle")}</strong> ${this.t(hintKey, { n: row.setup.count, days: row.setup.days })}</div>` : "";
@@ -17533,7 +17541,7 @@ class IntegrationPageMixin {
 
   intUsedCard(item) {
     const used = this.intUsedBy(item);
-    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed") });
+    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed"), menu: true, stripe: true, sort: "status" });
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("intUsedTitle")}</h2></div>${rows}</section></div>`;
   }
 
