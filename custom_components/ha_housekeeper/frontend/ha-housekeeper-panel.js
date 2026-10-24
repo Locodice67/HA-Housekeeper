@@ -2911,11 +2911,11 @@ class FindingsMixin {
   }
 
   // One finding as a row of the table; below a head (depth) it is indented and keeps the room of the fold arrow.
-  findingTableRow(f, depth = 0, inGroup = false) {
+  findingTableRow(f, depth = 0, inGroup = false, gap = false) {
     const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
     const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
     const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
-    const name = depth ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
+    const name = depth || gap ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
     return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
   }
@@ -18254,7 +18254,7 @@ class ObjectGroupsMixin {
   // The rows of a node in the findings table: its head, and while open the nodes and findings below it, indented.
   nodeRows(n, depth = 0) {
     // An object with a single finding of its own is that finding's row: no head that says the same again.
-    if (!n.cause && !n.kids.length && n.findings.length === 1 && this.findingKey(n.findings[0]) === n.key && !n.key.startsWith("dashboard:")) return this.findingTableRow(n.findings[0], depth);
+    if (!n.cause && !n.kids.length && n.findings.length === 1 && this.findingKey(n.findings[0]) === n.key && !n.key.startsWith("dashboard:")) return this.findingTableRow(n.findings[0], depth, false, true);
     const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
     const keys = f.list.map(x => x.key);
     (this._findGroups ||= {})[id] = keys;
