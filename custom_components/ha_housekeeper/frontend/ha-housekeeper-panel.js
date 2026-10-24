@@ -6701,7 +6701,7 @@ Object.assign(TEXT.de, {
   apReasonPaused: "pausiert von Auto-Pause",
   apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
   apWatched: "Dienste im Blick", apWatchedHint: "Datenlieferanten ohne Steuerfunktion, die Auto-Pause pausieren würde", apNoWatched: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
-  apMore: "Dienste und Einstellungen", apAttemptsTitle: "Fehlversuche bis zur Pause", apHoursTitle: "Zeitraum", apLogWhen: "Zeitpunkt", apLogWho: "Integration", apLogWhat: "Ereignis",
+  apMore: "Dienste", apAttemptsTitle: "Fehlversuche bis zur Pause", apHoursTitle: "Zeitraum", apLogWhen: "Zeitpunkt", apLogWho: "Integration", apLogWhat: "Ereignis",
   apLog: "Verlauf", apLog_paused: "pausiert", apLog_tried: "Versuch ohne Erfolg", apLog_back: "läuft wieder", apLog_ended: "Pause beendet", apLog_exhausted: "Pause bleibt, bitte prüfen",
   apSend: "In Auto-Pause schicken", apSendHint: "Vorübergehende Störung? Auto-Pause entlastet die Quelle.", apPausedNow: "Pausiert seit {span}",
   apConfirmTitle: "{name} pausieren?", apConfirmText: "{name} wird deaktiviert und danach in Abständen wieder versucht, höchstens {days} Tage lang.",
@@ -6723,7 +6723,7 @@ Object.assign(TEXT.en, {
   apReasonPaused: "paused by auto-pause",
   apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
   apWatched: "Services watched", apWatchedHint: "Data providers without a control function that auto-pause would pause", apNoWatched: "No integration meets the rule: cloud polling and data entities only.", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
-  apMore: "Services and settings", apAttemptsTitle: "Failed attempts before a pause", apHoursTitle: "Time window", apLogWhen: "When", apLogWho: "Integration", apLogWhat: "Event",
+  apMore: "Services", apAttemptsTitle: "Failed attempts before a pause", apHoursTitle: "Time window", apLogWhen: "When", apLogWho: "Integration", apLogWhat: "Event",
   apLog: "History", apLog_paused: "paused", apLog_tried: "try without success", apLog_back: "is back", apLog_ended: "pause ended", apLog_exhausted: "pause stays, please look",
   apSend: "Send to auto-pause", apSendHint: "A temporary fault? Auto-pause spares the source.", apPausedNow: "Paused for {span}",
   apConfirmTitle: "Pause {name}?", apConfirmText: "{name} will be disabled and tried again at intervals, for up to {days} days.",
@@ -6848,8 +6848,8 @@ class AutoPauseMixin {
     const s = a.settings, days = Math.round(a.schedule.end_hours / 24), now = Date.now();
     const watched = a.candidates.filter(c => !c.excluded);
     const menu = (id, ...items) => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items.map(([key, attr, icon]) => `<button type="button" class="menuitem" ${attr}="${this.esc(id)}"><ha-icon icon="${icon}"></ha-icon>${this.t(key)}</button>`).join("")}</div></details>`;
-    const main = `<section class="panel"><div class="panelhead"><div><h2>${this.t("apHead")}</h2><p>${this.t("apHeadSub")}</p></div></div>
-      <div class="row"><span class="tile ${s.enabled ? "ok" : "mute"}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apSwitch")}</strong><small>${this.t(s.enabled ? "apStatusOn" : "apStatusOff", { n: this.formatNumber(watched.length) })}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apSwitch"))}" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}></div></section>`;
+    const mainTop = `<div class="panelhead"><div><h2>${this.t("apHead")}</h2><p>${this.t("apHeadSub")}</p></div></div>
+      <div class="row"><span class="tile ${s.enabled ? "ok" : "mute"}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apSwitch")}</strong><small>${this.t(s.enabled ? "apStatusOn" : "apStatusOff", { n: this.formatNumber(watched.length) })}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apSwitch"))}" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}></div>`;
     const pausedRows = a.paused.map(p => {
       const due = p.next ? new Date(p.next).getTime() - now : null;
       const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
@@ -6874,7 +6874,7 @@ class AutoPauseMixin {
     const settingsFold = this.fold("ap_settings", { tone: "mute", title: this.t("apSettings"), sub: this.t("apSettingsSub", { a: s.attempts, h: s.hours }) }, settingsBody, false);
     const manualFold = this.fold("ap_manual", { tone: "mute", title: this.t("apManual"), sub: this.t("apManualHint") }, `<div class="apmanual">${this.pickerBox("autopause", this.t("apPick"))}</div>`, false);
     const log = a.log.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apLog")}</h2></div></div><div class="tablewrap"><table class="evtable"><thead><tr><th>${this.t("apLogWhen")}</th><th>${this.t("apLogWho")}</th><th>${this.t("apLogWhat")}</th></tr></thead><tbody>${a.log.map(l => `<tr><td>${this.esc(this.formatDate(l[0]))}</td><td>${this.esc(l[2])}</td><td><span class="pill ${{ paused: "warn", back: "ok", exhausted: "red" }[l[1]] || "mute"}">${this.esc(this.t(`apLog_${l[1]}`))}</span></td></tr>`).join("")}</tbody></table></div></section>` : "";
-    return `<div class="stack">${main}${watching}${paused}<section class="panel apmore"><div class="panelhead"><div><h2>${this.t("apMore")}</h2></div></div>${watchedFold}${settingsFold}${manualFold}</section>${log}</div>`;
+    return `<div class="stack"><section class="panel apmore">${mainTop}${settingsFold}</section>${watching}${paused}<section class="panel apmore${this._picker?.name === "autopause" && this._picker.open ? " ovvis" : ""}"><div class="panelhead"><div><h2>${this.t("apMore")}</h2></div></div>${watchedFold}${manualFold}</section>${log}</div>`;
   }
 
   bindAutoPause(root) {

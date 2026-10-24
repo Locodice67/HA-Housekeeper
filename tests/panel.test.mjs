@@ -2649,6 +2649,11 @@ test("the manual pause is picked from the search field of the panel and asks bef
   el.autoPause = AUTO_PAUSE;
   el.folds = { ap_manual: true };
   assert.ok(el.autoPauseView().includes('data-picker="autopause"'));
+  assert.ok(!el.autoPauseView().includes("ovvis"));
+  el._picker = { name: "autopause", open: true, index: 0 };
+  assert.ok(el.autoPauseView().includes("ovvis"));
+  const page = el.autoPauseView();
+  assert.ok(page.indexOf('data-fold="ap_settings"') < page.indexOf('data-fold="ap_watched"') && page.indexOf("Pause automatically") < page.indexOf('data-fold="ap_settings"'));
 });
 
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
