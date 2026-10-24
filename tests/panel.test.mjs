@@ -740,16 +740,16 @@ test("long lists are paged with a default of 20 and a page-size choice", () => {
   el.view = "unreferenced";
   assert.equal(el.pageSize, 20);
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 20);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 20);
   assert.ok(shadow.innerHTML.includes("1–20 of 45") && shadow.innerHTML.includes("Page 1 of 3"));
   el.pages.unreferenced = 3;
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 5);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 5);
   assert.ok(shadow.innerHTML.includes("41–45 of 45"));
   el.pageSize = 50;
   el.pages = {};
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 45);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 45);
   assert.ok(!shadow.innerHTML.includes("Page 1 of"));
 });
 
@@ -1182,8 +1182,8 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   el.viewTab = {}; el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
   assert.ok(html.includes("light.c") && html.includes("hidden by label") && html.includes(">Show<"));
   assert.equal((html.match(/data-policy-ignore=/g) || []).length, 1, "only the user's own decision can be undone");
-  assert.equal((html.match(/data-decide-open=/g) || []).length, 0, "a row with a fix offers it; hiding sits in the folded-open part");
-  assert.ok(html.includes(">Assign area<"));
+  assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "a row offers its fix and hiding in its menu");
+  assert.ok(html.includes("</ha-icon>Assign area<"));
   el.polOpen = ["policy.entity_area|light.a|", "policy.entity_area|light.b|"]; el.render(); html = shadow.innerHTML;
   assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "folded open: the others ask what to do; the label hides one");
   await el.changePolicy({ type: "ha_housekeeper/set_policy", rule: "device_area", enabled: true });
@@ -4954,8 +4954,8 @@ test("a violation row folds open to a rename that checks the name and plans one 
   el.polOpen = ["kb"];
   const html = el.polDetail(item);
   assert.ok(html.includes("data-pol-id") && html.includes("data-pol-rename-go") && html.includes("disabled"), "taken: the plan button stays off");
-  const menu = el.polRowMenu(item);
-  assert.ok(/data-object=[^>]*>.*Open object<\/button><button type="button" class="menuitem" data-decide-open/.test(menu), "open object and hide sit in the row menu");
+  const { act } = el.polItemParts(item);
+  assert.ok(act.includes("data-object=") && act.includes("data-decide-open") && !act.includes("data-pol-open"), "open object and hide sit in the row menu, the fix is not offered twice");
   el.polDraft(item).value = "hall_wall";
   await el.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `light.${el.polDraft(item).value}` });
   assert.equal(calls[0].actions[0].target, "light.hall_wall");

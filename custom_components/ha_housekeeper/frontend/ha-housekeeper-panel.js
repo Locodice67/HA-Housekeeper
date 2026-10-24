@@ -5063,8 +5063,9 @@ class InventoryMixin {
       { key: "reason", label: "reason", dir: "asc", cell: item => this.esc(reasonText(item) || "—") },
       { key: "since", label: "since", dir: "desc", cell: item => this.formatDate(item.status_since) },
       ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
-    const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
+    const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
     return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
@@ -5595,6 +5596,7 @@ class UnusedMixin {
       { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: o => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(o) })) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
@@ -8350,26 +8352,13 @@ class PoliciesMixin {
   polItemParts(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : item.by === "rule" ? "hidByRule" : "polHiddenLabel")}</span>` : "";
     const due = item.resurfaced ? `<span class="pill warn">${this.t("dueLabel")}</span>` : "";
-    const button = item.by === "label" || item.by === "rule" ? ""
-      : item.ignored ? `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="0">${this.t("polShow")}</button>`
-      : `<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
     const decision = item.ignored && item.by === "user" ? `<small>${this.esc(this.decisionLabel(item))}</small>` : "";
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
     const open = this.polIsOpen(item), main = this.polMainAction(item);
-    // A row with a fix offers it as its button (it folds the row open); the other rows keep their hide button; an opened row has it next to "open object".
-    const act = open ? this.polRowMenu(item) : main ? `<button class="btn" data-pol-open="${this.esc(item.key)}">${this.t(main)}</button>` : button;
+    // The menu of a row: the fix that folds it open (not once it is open), hide or show, and open the object.
+    const hide = item.by === "label" || item.by === "rule" ? null : item.ignored ? ["mdi:eye-outline", "polShow", `data-policy-ignore="${this.esc(item.key)}" data-policy-value="0"`] : ["mdi:eye-off-outline", "polHide", `data-decide-open="${this.esc(item.key)}"`];
+    const act = this.rowMenuHtml([!open && main ? ["mdi:wrench-outline", main, `data-pol-open="${this.esc(item.key)}"`] : null, hide, ["recorder", "system", "user"].includes(item.object_type) ? null : ["mdi:open-in-new", "decOpenObject", `data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`]]);
     return { pill, due, decision, form, open, act };
-  }
-
-  // The menu of an opened row: open the object, hide or show the violation.
-  polRowMenu(item) {
-    const entry = (attrs, icon, key) => `<button type="button" class="menuitem" ${attrs}><ha-icon icon="${icon}"></ha-icon>${this.t(key)}</button>`;
-    const key = this.esc(item.key);
-    const items = [
-      ["recorder", "system", "user"].includes(item.object_type) ? "" : entry(`data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`, "mdi:open-in-new", "polOpenObject"),
-      item.by === "label" || item.by === "rule" ? "" : item.ignored ? entry(`data-policy-ignore="${key}" data-policy-value="0"`, "mdi:eye-outline", "polShow") : entry(`data-decide-open="${key}"`, "mdi:eye-off-outline", "polHide"),
-    ].filter(Boolean);
-    return items.length ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("polRowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items.join("")}</div></details>` : "";
   }
 
   // The compact row of the object's own page: the violation with its note and fix, no table around it.
@@ -8441,7 +8430,7 @@ class PoliciesMixin {
       // Each column only stands while a row of the list has something for it.
       ...(shown.some(item => this.polItemNote(item) || this.polItemParts(item).decision) ? [{ key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" }] : []),
       ...(shown.some(item => item.ignored || item.resurfaced) ? [{ key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } }] : []),
-      { key: "act", label: "btColAct", sortable: false, cell: item => this.polItemParts(item).act },
+      { key: "act", label: "btColAct", menu: true, narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
       const { open, form } = this.polItemParts(item);
