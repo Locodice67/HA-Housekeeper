@@ -1532,7 +1532,7 @@ class StylesMixin {
       .card-text{min-width:0;display:grid;gap:2px}.card-text small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.card-text strong{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2}.card-text em{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-overflow:ellipsis;white-space:nowrap}
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
-      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:16px}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding:12px 16px}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
+      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:8px}.rowslot{width:34px;height:34px}.rowwrap>.row{flex:1;min-width:0;border-bottom:0}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding:12px 16px}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
       .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -6783,6 +6783,13 @@ class AutoPauseMixin {
     return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
   }
 
+  // The same offer as a menu entry: the overview rows carry a menu in a column of their own, so the chips stay in line.
+  apRowMenu(entryId) {
+    const a = this.autoPause;
+    if (!a || !entryId || this.apPausedItem(entryId) || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button></div></details>`;
+  }
+
   // A monitored function that a paused integration carries reads "paused", not just "Disabled".
   apMonitorReason(key, reason) {
     if (reason === "disabled") this.ensureAutoPause();
@@ -9727,9 +9734,9 @@ class CausesMixin {
     // A missing target has no page of its own: its row opens the findings filtered to it and what it explains.
     const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
     const down = c.kind === "integration_down" && !c.virtual && c.object_type === "config_entry";
-    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down ? this.apRowAction(c.object_id, "not_loaded") : "";
+    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down && this.apPausedItem(c.object_id) ? this.apRowAction(c.object_id, "not_loaded") : "", menu = down ? this.apRowMenu(c.object_id) : "";
     const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
-    return act ? `<div class="rowwrap">${row}<span class="apact">${act}</span></div>` : row;
+    return `<div class="rowwrap">${row}${act ? `<span class="apact">${act}</span>` : ""}${menu || '<span class="rowmenu rowslot"></span>'}</div>`;
   }
 
   // A single finding as a plain row of the overview: it opens the object; deciding and selecting happen on the Findings page.
@@ -9738,7 +9745,8 @@ class CausesMixin {
     const { key, object, title } = this.findingRowContent(finding);
     const what = this.esc(object?.reason && !finding.affected_object ? this.t(object.reason) : this.findingTitle(finding));
     const since = finding.first_detected_at ? this.esc(this.t("ovFoundAt", { age: this.relTime(finding.first_detected_at) })) : "";
-    return `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${[what, since].filter(Boolean).join(" · ")}</small></span>${this.impactChip(finding.impact)}</button>`;
+    const row = `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${[what, since].filter(Boolean).join(" · ")}</small></span>${this.impactChip(finding.impact)}</button>`;
+    return `<div class="rowwrap">${row}<span class="rowmenu rowslot"></span></div>`;
   }
 
   // Only in the flat view: "Follow-up of Integration Cloud" next to a finding that a cause explains.

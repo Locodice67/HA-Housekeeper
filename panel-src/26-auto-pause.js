@@ -97,6 +97,13 @@ class AutoPauseMixin {
     return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
   }
 
+  // The same offer as a menu entry: the overview rows carry a menu in a column of their own, so the chips stay in line.
+  apRowMenu(entryId) {
+    const a = this.autoPause;
+    if (!a || !entryId || this.apPausedItem(entryId) || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button></div></details>`;
+  }
+
   // A monitored function that a paused integration carries reads "paused", not just "Disabled".
   apMonitorReason(key, reason) {
     if (reason === "disabled") this.ensureAutoPause();

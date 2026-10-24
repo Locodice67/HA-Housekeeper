@@ -233,9 +233,9 @@ class CausesMixin {
     // A missing target has no page of its own: its row opens the findings filtered to it and what it explains.
     const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
     const down = c.kind === "integration_down" && !c.virtual && c.object_type === "config_entry";
-    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down ? this.apRowAction(c.object_id, "not_loaded") : "";
+    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down && this.apPausedItem(c.object_id) ? this.apRowAction(c.object_id, "not_loaded") : "", menu = down ? this.apRowMenu(c.object_id) : "";
     const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
-    return act ? `<div class="rowwrap">${row}<span class="apact">${act}</span></div>` : row;
+    return `<div class="rowwrap">${row}${act ? `<span class="apact">${act}</span>` : ""}${menu || '<span class="rowmenu rowslot"></span>'}</div>`;
   }
 
   // A single finding as a plain row of the overview: it opens the object; deciding and selecting happen on the Findings page.
@@ -244,7 +244,8 @@ class CausesMixin {
     const { key, object, title } = this.findingRowContent(finding);
     const what = this.esc(object?.reason && !finding.affected_object ? this.t(object.reason) : this.findingTitle(finding));
     const since = finding.first_detected_at ? this.esc(this.t("ovFoundAt", { age: this.relTime(finding.first_detected_at) })) : "";
-    return `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${[what, since].filter(Boolean).join(" · ")}</small></span>${this.impactChip(finding.impact)}</button>`;
+    const row = `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${[what, since].filter(Boolean).join(" · ")}</small></span>${this.impactChip(finding.impact)}</button>`;
+    return `<div class="rowwrap">${row}<span class="rowmenu rowslot"></span></div>`;
   }
 
   // Only in the flat view: "Follow-up of Integration Cloud" next to a finding that a cause explains.
