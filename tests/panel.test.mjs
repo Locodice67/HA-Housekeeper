@@ -5817,6 +5817,8 @@ test("an object table can carry a row menu, put the problems on top and mark the
   assert.ok(html.indexOf("Zeta") < html.indexOf("Alpha"), "the problem row comes first");
   assert.ok(html.includes('data-rowtone="red"') && (html.match(/class="rowmenu"/g) || []).length === 2, "a stripe on the red row, a menu on each");
   assert.ok(!el.objectTable("t-nomenu", rows, { min: 1 }).includes("rowmenu"), "without the option the table stays as it was");
+  const menu = el.rowMenuHtml([["mdi:text-box-outline", "updNotes", 'href="https://example.org/n"'], null, ["mdi:delete-outline", "deletePlan", 'data-plan-delete="p1"']]);
+  assert.ok(menu.includes('<a class="menuitem" href="https://example.org/n" target="_blank" rel="noopener noreferrer">') && menu.includes("menusep") && menu.includes('data-plan-delete="p1"'), "a link entry, a line, a button entry");
 });
 
 test("the changes page counts what a filter shows, says so, and lists objects as tables", () => {

@@ -193,7 +193,7 @@ class MaintenanceMixin {
       { key: "version", label: "updColVersion", sortable: false, cell: u => `<span class="verchip">${this.esc(u.installed ?? "–")} → ${this.esc(u.latest ?? "–")}</span>` },
       { key: "group", label: "updColGroup", cell: u => `<span class="pill mute">${this.t(`updGroup_${u.group}`)}</span>` },
       { key: "state", label: "updColState", sortable: false, cell: u => pills(u) || "–" },
-      { key: "actions", label: "updColActions", sortable: false, cell: u => `<span class="updact">${typeof u.release_url === "string" && u.release_url.startsWith("https://") ? `<a class="btn quiet" href="${this.esc(u.release_url)}" target="_blank" rel="noopener noreferrer">${this.t("updNotes")}</a>` : ""}<button class="btn quiet" data-ha-path="/config/updates" title="${this.esc(this.t("updOpenHa"))}">${this.t("updOpen")}</button></span>` },
+      { key: "actions", label: "updColActions", sortable: false, menu: true, narrow: true, cell: u => this.rowMenuHtml([typeof u.release_url === "string" && u.release_url.startsWith("https://") ? ["mdi:text-box-outline", "updNotes", `href="${this.esc(u.release_url)}"`] : null, ["mdi:open-in-new", "updOpenHa", 'data-ha-path="/config/updates"']]) },
     ];
     const table = rows.length ? this.listTable(id, columns, pg.rows, { cls: "upds", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     const current = groups.filter(g => !updates.some(u => u.group === g)).map(g => `<div class="row rel"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.t(`updCurrent_${g}`)}</strong></span></div>`).join("");

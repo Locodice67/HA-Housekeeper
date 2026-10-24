@@ -107,11 +107,11 @@ class ListsMixin {
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
   // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
   // "only the selected" stays while it is on, so the way back is there.
-  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line. Nothing without entries.
+  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line; attributes that start with href= make an external link. Nothing without entries.
   rowMenuHtml(entries) {
     const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
     if (!list.some(Boolean)) return "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (e ? `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>` : '<hr class="menusep">')).join("")}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
   }
 
   selTools(id, count, clearAttr) {
