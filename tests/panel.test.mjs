@@ -5807,6 +5807,18 @@ test("object lists share one table: device entities, integration entries, remind
   assert.ok(rem.includes('data-exp-menu="reminders"') && !rem.includes("data-export-list") && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
 });
 
+test("an object table can carry a row menu, put the problems on top and mark them at the edge", () => {
+  const { el } = panel("en");
+  const rows = [
+    { key: "config_entry:a", type: "config_entry", name: "Alpha", sub: "", tone: "ok", state: "active", stateLabel: "Active", pill: "<b>ok</b>" },
+    { key: "config_entry:z", type: "config_entry", name: "Zeta", sub: "", tone: "red", state: "problem", stateLabel: "Problem", pill: "<b>bad</b>" },
+  ];
+  const html = el.objectTable("t-menu", rows, { min: 1, sort: "status", stripe: true, statusFirst: true, menu: r => [["mdi:open-in-new", "polOpenObject", `data-object="${r.key}"`]] });
+  assert.ok(html.indexOf("Zeta") < html.indexOf("Alpha"), "the problem row comes first");
+  assert.ok(html.includes('data-rowtone="red"') && (html.match(/class="rowmenu"/g) || []).length === 2, "a stripe on the red row, a menu on each");
+  assert.ok(!el.objectTable("t-nomenu", rows, { min: 1 }).includes("rowmenu"), "without the option the table stays as it was");
+});
+
 test("the changes page counts what a filter shows, says so, and lists objects as tables", () => {
   const { el, shadow } = panel("en");
   el.view = "changes";

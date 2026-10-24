@@ -107,6 +107,13 @@ class ListsMixin {
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
   // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
   // "only the selected" stays while it is on, so the way back is there.
+  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line. Nothing without entries.
+  rowMenuHtml(entries) {
+    const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
+    if (!list.some(Boolean)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (e ? `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>` : '<hr class="menusep">')).join("")}</div></details>`;
+  }
+
   selTools(id, count, clearAttr) {
     if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
     return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
@@ -267,7 +274,7 @@ class ListsMixin {
     columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
       const on = st.sort === c.key, sortedHere = on || c.sortKeys?.includes(st.sort);
-      const inner = c.allBox ? c.allBox(rows) : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+      const inner = c.allBox ? c.allBox(rows) : c.menu ? `<span class="sr-only">${this.t(c.label)}</span>` : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
       return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${sortedHere ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}${c.headSuffix ? c.headSuffix() : ""}</th>`;
     }).join("");
     const body = rows.map(item => {
@@ -280,9 +287,11 @@ class ListsMixin {
   // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
   // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
   // The bar shows from `min` rows on; a row opens its object.
-  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
+  // Options: menu(row) -> entries of rowMenuHtml puts the three dots in a column of their own; stripe marks the red rows at their edge;
+  // sort: the first sort ("status" puts the problems on top, the names after them); statusFirst puts the state next to the name.
+  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", menu = null, stripe = false, sort = "name", statusFirst = false, tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
     if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
-    this.lvState(id, "name", "asc");
+    this.lvState(id, sort, "asc");
     const types = [...new Set(rows.map(r => r.type))].sort();
     const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
     const sorts = [
@@ -297,15 +306,19 @@ class ListsMixin {
     ];
     const st = this.lv[id];
     const bar = withBar && (rows.length >= min || st.q) ? this.listBar(id, { table: true, dense: true, sorts, filters }) : "";
-    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => r.key });
+    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => (sort === "status" ? `${r.name}\u0000${r.key}` : r.key) });
     const pg = this.paginate(id, shown);
+    const stateCol = { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill };
     const columns = [
       { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${tile(r)}<div>${this.nameCell(r.name, r.sub)}</div></div>` },
+      ...(statusFirst ? [stateCol] : []),
       ...(types.length > 1 ? [{ key: "type", label: "sortType", dir: "asc", cell: r => this.esc(this.t(r.type)) }] : []),
       ...extras.map(x => ({ key: x.key, label: x.label, dir: x.dir || "asc", cell: x.cell })),
-      { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill },
+      ...(statusFirst ? [] : [stateCol]),
+      ...(menu && shown.some(r => this.rowMenuHtml(menu(r))) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml(menu(r)) }] : []),
     ];
-    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
+    const tone = r => (stripe && r.tone === "red" ? ' data-rowtone="red"' : "");
+    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) + tone(r) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     return `${bar}${table}${pg.footer}`;
   }
 

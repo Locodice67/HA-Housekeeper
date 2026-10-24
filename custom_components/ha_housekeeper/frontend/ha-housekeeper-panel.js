@@ -1555,7 +1555,7 @@ class StylesMixin {
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}
       select{appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23808a84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;cursor:pointer}input:focus,select:focus{border-color:var(--hk-blue)}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:0 1 200px;min-width:0}.listbar select{flex:0 1 180px;min-width:0}.sortgroup{display:flex;gap:4px;margin-left:auto;min-width:0}.sortgroup select{flex:0 1 180px;min-width:0}.dirbtn{flex:none}@media(max-width:560px){.listbar>select{flex:1 1 130px}.viewgroup{flex:1 1 100%}.sortgroup{flex:1 1 100%;margin-left:0}.sortgroup select{flex:1 1 auto}}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
-      .setrow.stackrow{grid-template-columns:1fr;gap:8px}.setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:end}.setrow:has(>div:first-child+:last-child){grid-template-columns:minmax(150px,1fr) minmax(0,360px)}.setrow:has(>div:first-child+:last-child)>:last-child{min-width:0}.setrow:has(>div:first-child+:last-child)>:is(select,.seg,.rangewin,input[type=number]){justify-self:end}.setrow:has(>div:first-child+:last-child)>select.w460{justify-self:stretch;max-width:none}.setrow:has(>div:first-child+:last-child) input:not([type=number],[type=checkbox],[type=radio]){width:100%;max-width:none;box-sizing:border-box}.excnum{justify-content:flex-end}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
+      .setrow.stackrow{grid-template-columns:1fr;gap:8px}.setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}tr[data-rowtone="red"]>td:first-child{box-shadow:inset 3px 0 0 var(--hk-red,#b3392f)}.setrow .btn{justify-self:end}.setrow:has(>div:first-child+:last-child){grid-template-columns:minmax(150px,1fr) minmax(0,360px)}.setrow:has(>div:first-child+:last-child)>:last-child{min-width:0}.setrow:has(>div:first-child+:last-child)>:is(select,.seg,.rangewin,input[type=number]){justify-self:end}.setrow:has(>div:first-child+:last-child)>select.w460{justify-self:stretch;max-width:none}.setrow:has(>div:first-child+:last-child) input:not([type=number],[type=checkbox],[type=radio]){width:100%;max-width:none;box-sizing:border-box}.excnum{justify-content:flex-end}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
       @media(max-width:700px){.setrow,.setrow:has(>div:first-child+:last-child){grid-template-columns:1fr}.setrow:has(>div:first-child+:last-child)>:is(select,.seg,.rangewin,input[type=number]),.setrow .btn,.excnum{justify-self:start;justify-content:flex-start}}
       .row,.btn,.card,.chip,.nav,.dirbtn{transition:background-color .15s ease,border-color .15s ease,color .15s ease}.bar i{transition:width .4s ease}@keyframes hk-spin{to{transform:rotate(360deg)}}.loading ha-icon,.btn[aria-busy="true"] ha-icon{animation:hk-spin 1s linear infinite}
       .tablewrap{overflow-x:auto;overflow-y:visible}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}.thbtn{padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
@@ -1922,6 +1922,13 @@ class ListsMixin {
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
   // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
   // "only the selected" stays while it is on, so the way back is there.
+  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line. Nothing without entries.
+  rowMenuHtml(entries) {
+    const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
+    if (!list.some(Boolean)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (e ? `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>` : '<hr class="menusep">')).join("")}</div></details>`;
+  }
+
   selTools(id, count, clearAttr) {
     if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
     return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
@@ -2082,7 +2089,7 @@ class ListsMixin {
     columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
       const on = st.sort === c.key, sortedHere = on || c.sortKeys?.includes(st.sort);
-      const inner = c.allBox ? c.allBox(rows) : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+      const inner = c.allBox ? c.allBox(rows) : c.menu ? `<span class="sr-only">${this.t(c.label)}</span>` : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
       return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${sortedHere ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}${c.headSuffix ? c.headSuffix() : ""}</th>`;
     }).join("");
     const body = rows.map(item => {
@@ -2095,9 +2102,11 @@ class ListsMixin {
   // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
   // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
   // The bar shows from `min` rows on; a row opens its object.
-  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
+  // Options: menu(row) -> entries of rowMenuHtml puts the three dots in a column of their own; stripe marks the red rows at their edge;
+  // sort: the first sort ("status" puts the problems on top, the names after them); statusFirst puts the state next to the name.
+  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", menu = null, stripe = false, sort = "name", statusFirst = false, tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
     if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
-    this.lvState(id, "name", "asc");
+    this.lvState(id, sort, "asc");
     const types = [...new Set(rows.map(r => r.type))].sort();
     const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
     const sorts = [
@@ -2112,15 +2121,19 @@ class ListsMixin {
     ];
     const st = this.lv[id];
     const bar = withBar && (rows.length >= min || st.q) ? this.listBar(id, { table: true, dense: true, sorts, filters }) : "";
-    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => r.key });
+    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => (sort === "status" ? `${r.name}\u0000${r.key}` : r.key) });
     const pg = this.paginate(id, shown);
+    const stateCol = { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill };
     const columns = [
       { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${tile(r)}<div>${this.nameCell(r.name, r.sub)}</div></div>` },
+      ...(statusFirst ? [stateCol] : []),
       ...(types.length > 1 ? [{ key: "type", label: "sortType", dir: "asc", cell: r => this.esc(this.t(r.type)) }] : []),
       ...extras.map(x => ({ key: x.key, label: x.label, dir: x.dir || "asc", cell: x.cell })),
-      { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill },
+      ...(statusFirst ? [] : [stateCol]),
+      ...(menu && shown.some(r => this.rowMenuHtml(menu(r))) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml(menu(r)) }] : []),
     ];
-    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
+    const tone = r => (stripe && r.tone === "red" ? ' data-rowtone="red"' : "");
+    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) + tone(r) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     return `${bar}${table}${pg.footer}`;
   }
 
@@ -6786,9 +6799,13 @@ class AutoPauseMixin {
 
   // The offer to pause as a menu entry: rows carry the menu in a column of their own, so the chips stay in line.
   // With a `state` the offer stands only while the integration is not loaded.
-  apRowMenu(entryId, state = "any") {
+  apCanPause(entryId, state = "any") {
     const a = this.autoPause;
-    if (!a || !entryId || !state || state === "loaded" || this.apPausedItem(entryId) || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
+    return Boolean(a && entryId && state && state !== "loaded" && !this.apPausedItem(entryId) && (a.pausable || []).some(p => p.entry_id === entryId));
+  }
+
+  apRowMenu(entryId, state = "any") {
+    if (!this.apCanPause(entryId, state)) return "";
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button></div></details>`;
   }
 
@@ -7049,7 +7066,7 @@ class ReliabilityMixin {
       { key: "outages", label: "relSortOutages", dir: "desc", cell: e => `${outagesCell(e)}${e.shared_outages ? `<small class="muted u-block">${this.esc(this.t("relLongestSub", { d: this.relDuration(e.longest_outage) }))}</small>` : ""}` },
       { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? `${this.esc(this.formatDate(new Date(e.last_disruption.end * 1000).toISOString()))}<small class="muted u-block">${this.esc(this.relDuration(e.last_disruption.seconds))}</small>` : this.esc(this.t("relNoDisruption"))) },
       ...(compare ? [{ key: "delta", label: "relColDelta", dir: "asc", cell: e => (delta(e) === null ? "–" : this.esc(`${delta(e) > 0 ? "+" : delta(e) < 0 ? "−" : "±"}${this.formatNumber(Math.abs(delta(e)))}`)) }] : []),
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: e => this.apRowMenu(e.entry_id, e.state) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.apRowMenu(e.entry_id, e.state) },
     ];
     return this.sysList("relentries", r.entries, {
       sort: "avail", dir: "asc",
@@ -17472,8 +17489,10 @@ class IntegrationPageMixin {
     const docs = /^https:\/\//.test(item.documentation || "") ? `<a class="btn" href="${this.esc(item.documentation)}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:book-open-variant"></ha-icon>${this.t("intDocs")}</a>` : "";
     const folder = item.custom ? `<section class="panel"><div class="panelhead"><h2>${this.t("intFolder")}</h2></div><div class="facts">${fact("intFolder", this.esc(item.integration_dir || `custom_components/${item.domain}`))}${size ? fact("intFolderSize", this.esc(this.formatBytes(size.bytes))) : ""}</div></section>` : "";
     const hacs = item.hacs ? this.intHacsCard(item.hacs) : "";
-    const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), entities: e.entity_count || 0, devices: e.device_count || 0 })), {
-      min: 8, extras: [
+    const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), pause: this.apCanPause(e.object_id, e.state) ? e.object_id : "", entities: e.entity_count || 0, devices: e.device_count || 0 })), {
+      min: 8, sort: "status", statusFirst: true, stripe: true,
+      menu: r => [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(this.haPath({ object_type: "config_entry", domain: item.domain }))}"`], ...(r.pause ? [null, ["mdi:pause-circle-outline", "apSend", `data-ap-send="${this.esc(r.pause)}"`]] : [])],
+      extras: [
         { key: "entities", label: "objColEntities", dir: "desc", get: r => r.entities, cell: r => this.formatNumber(r.entities) },
         { key: "devices", label: "objColDevices", dir: "desc", get: r => r.devices, cell: r => this.formatNumber(r.devices) },
       ],

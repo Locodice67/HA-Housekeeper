@@ -162,7 +162,7 @@ class ReliabilityMixin {
       { key: "outages", label: "relSortOutages", dir: "desc", cell: e => `${outagesCell(e)}${e.shared_outages ? `<small class="muted u-block">${this.esc(this.t("relLongestSub", { d: this.relDuration(e.longest_outage) }))}</small>` : ""}` },
       { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? `${this.esc(this.formatDate(new Date(e.last_disruption.end * 1000).toISOString()))}<small class="muted u-block">${this.esc(this.relDuration(e.last_disruption.seconds))}</small>` : this.esc(this.t("relNoDisruption"))) },
       ...(compare ? [{ key: "delta", label: "relColDelta", dir: "asc", cell: e => (delta(e) === null ? "–" : this.esc(`${delta(e) > 0 ? "+" : delta(e) < 0 ? "−" : "±"}${this.formatNumber(Math.abs(delta(e)))}`)) }] : []),
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: e => this.apRowMenu(e.entry_id, e.state) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.apRowMenu(e.entry_id, e.state) },
     ];
     return this.sysList("relentries", r.entries, {
       sort: "avail", dir: "asc",
