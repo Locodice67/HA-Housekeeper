@@ -488,6 +488,9 @@ class AutoPause:
                         "domain": entry.domain,
                         "state": entry.state.value,
                         "attempts": summary.get("attempts") or 0,
+                        "window": self.scanner.entry_states.attempts_since(
+                            entry.entry_id, now - timedelta(hours=self.settings["hours"])
+                        ),
                         "house_function": "house_function" in warn,
                         "excluded": entry.entry_id in self.exclude,
                     }

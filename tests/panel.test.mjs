@@ -2610,6 +2610,11 @@ test("the Auto-Pause tab shows without the recorder numbers and offers pause, tr
   el.data = DATA; el.view = "reliability"; el.autoPause = AUTO_PAUSE; el._apRequested = true; el._apKey = ""; (el.viewTab ||= {}).reliability = "autopause";
   const html = el.autoPauseView();
   assert.ok(html.includes("Ravensburg") && html.includes("data-ap-try") && html.includes("data-ap-never") && html.includes("Try 2 of 3"));
+  assert.ok(!html.includes("Under observation"));
+  el.autoPause = { ...AUTO_PAUSE, candidates: [{ ...AUTO_PAUSE.candidates[0], window: 5, state: "setup_retry" }] };
+  const watching = el.autoPauseView();
+  assert.ok(watching.includes("Under observation") && watching.includes("5 of 20 failed attempts in 6 h") && watching.includes("would be paused at 20") && watching.includes("width:25%"));
+  el.autoPause = AUTO_PAUSE;
   assert.ok(el.autoPauseTile().count === 1 && el.apPageActions("e2", "loaded").includes("data-ap-send"));
 });
 

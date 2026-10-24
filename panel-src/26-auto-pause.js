@@ -11,6 +11,7 @@ Object.assign(TEXT.de, {
   apPaused: "Pausiert", apManual: "Integration von Hand pausieren", apManualHint: "Wenn du schon weißt, dass es gerade ein Problem gibt.", apPick: "Integration wählen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
   apExhausted: "Keine Versuche mehr, bitte prüfen", apReasonAuto: "{n} Fehlversuche", apReasonManual: "von dir pausiert",
   apTodoOne: "{name} ist pausiert", apTodoMany: "{n} Integrationen pausiert", apTodoHint: "Versuch {n} von {total}, nächster in {span} · seit {since}", apTodoExhaustedOne: "{name}: {days} Tage ohne Erfolg, bitte prüfen", apTodoExhaustedMany: "{n} Pausen ohne Erfolg, bitte prüfen", apTodoExhaustedHint: "Pause bleibt bestehen · Protokoll, Update und Quelle prüfen", apTodoCheck: "Bitte prüfen", apWouldPause: "Auto-Pause würde das pausieren",
+  apWatching: "Unter Beobachtung", apWatchingHint: "Datenlieferanten, die gerade Fehlversuche sammeln", apWindow: "{n} von {limit} Fehlversuchen in {hours} Std.", apWindowOff: "würde bei {limit} pausieren",
   apReasonPaused: "pausiert von Auto-Pause",
   apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
   apWatched: "Dienste im Blick", apWatchedHint: "Datenlieferanten ohne Steuerfunktion, die Auto-Pause pausieren würde", apNoWatched: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
@@ -32,6 +33,7 @@ Object.assign(TEXT.en, {
   apPaused: "Paused", apManual: "Pause an integration by hand", apManualHint: "When you already know there is a problem right now.", apPick: "Choose an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
   apExhausted: "No more tries, please look", apReasonAuto: "{n} failed attempts", apReasonManual: "paused by you",
   apTodoOne: "{name} is paused", apTodoMany: "{n} integrations paused", apTodoHint: "Try {n} of {total}, next in {span} · for {since}", apTodoExhaustedOne: "{name}: {days} days without success, please look", apTodoExhaustedMany: "{n} pauses without success, please look", apTodoExhaustedHint: "The pause stays · check the log, the update and the source", apTodoCheck: "Please look", apWouldPause: "Auto-pause would pause this",
+  apWatching: "Under observation", apWatchingHint: "Data providers that are collecting failed attempts right now", apWindow: "{n} of {limit} failed attempts in {hours} h", apWindowOff: "would be paused at {limit}",
   apReasonPaused: "paused by auto-pause",
   apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
   apWatched: "Services watched", apWatchedHint: "Data providers without a control function that auto-pause would pause", apNoWatched: "No integration meets the rule: cloud polling and data entities only.", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
@@ -157,6 +159,11 @@ class AutoPauseMixin {
       return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
         <span class="apbtns"><button class="btn" data-ap-try="${this.esc(p.entry_id)}">${this.t("apTryNow")}</button>${menu(p.entry_id, ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
     }).join("");
+    const failing = watched.filter(c => c.window > 0 || c.state !== "loaded").sort((x, y) => y.window - x.window || x.title.localeCompare(y.title));
+    const watching = failing.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apWatching")} <span class="pill warn">${this.formatNumber(failing.length)}</span></h2><p>${this.t("apWatchingHint")}</p></div></div>${failing.map(c => {
+      const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), s.enabled ? "" : this.t("apWindowOff", { limit: this.formatNumber(s.attempts) })].filter(Boolean).join(" · ");
+      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:cloud-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(c.title || c.domain)}</strong><small>${this.esc(sub)}</small><small>${this.esc(this.t("apWindow", { n: this.formatNumber(c.window), limit: this.formatNumber(s.attempts), hours: s.hours }))}</small><span class="bar evbar apbar"><i style="width:${Math.min(100, Math.round((c.window / s.attempts) * 100))}%"></i></span></span></div>`;
+    }).join("")}</section>` : "";
     const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${pausedRows}</section>` : "";
     const rows = [...a.candidates].sort((x, y) => Number(x.excluded) - Number(y.excluded)).map(c => {
       const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), c.attempts ? this.t("apFailures", { n: this.formatNumber(c.attempts) }) : "", c.house_function ? this.t("apHouseFn") : ""].filter(Boolean).join(" · ");
@@ -170,7 +177,7 @@ class AutoPauseMixin {
     const options = (a.pausable || []).filter(p => !a.paused.some(q => q.entry_id === p.entry_id)).sort((x, y) => (x.title || x.domain).localeCompare(y.title || y.domain)).map(p => `<option value="${this.esc(p.entry_id)}">${this.esc(p.title && p.title !== p.domain ? `${p.title} (${p.domain})` : p.domain)}</option>`).join("");
     const manualFold = this.fold("ap_manual", { tone: "mute", title: this.t("apManual"), sub: this.t("apManualHint") }, `<div class="apmanual"><select data-ap-pick aria-label="${this.esc(this.t("apManual"))}"><option value="">${this.t("apPick")}</option>${options}</select><button class="btn" data-ap-pause>${this.t("apPause")}</button></div>`, false);
     const log = a.log.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apLog")}</h2></div></div><div class="tablewrap"><table class="evtable"><thead><tr><th>${this.t("apLogWhen")}</th><th>${this.t("apLogWho")}</th><th>${this.t("apLogWhat")}</th></tr></thead><tbody>${a.log.map(l => `<tr><td>${this.esc(this.formatDate(l[0]))}</td><td>${this.esc(l[2])}</td><td><span class="pill ${{ paused: "warn", back: "ok", exhausted: "red" }[l[1]] || "mute"}">${this.esc(this.t(`apLog_${l[1]}`))}</span></td></tr>`).join("")}</tbody></table></div></section>` : "";
-    return `<div class="stack">${main}${paused}<section class="panel apmore"><div class="panelhead"><div><h2>${this.t("apMore")}</h2></div></div>${watchedFold}${settingsFold}${manualFold}</section>${log}</div>`;
+    return `<div class="stack">${main}${watching}${paused}<section class="panel apmore"><div class="panelhead"><div><h2>${this.t("apMore")}</h2></div></div>${watchedFold}${settingsFold}${manualFold}</section>${log}</div>`;
   }
 
   bindAutoPause(root) {
