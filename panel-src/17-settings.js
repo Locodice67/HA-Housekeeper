@@ -170,7 +170,7 @@ class SettingsMixin {
       { key: "until", label: "decColStatus", cell: f => `<span class="pill ${tone[state(f)]}">${this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`)}</span>${until(f) ? `<small class="muted u-block">${this.esc(until(f))}</small>` : ""}` },
       { key: "reason", label: "decideReason", sortable: false, cell: f => (f.ignore_info?.reason ? this.esc(f.ignore_info.reason) : "–") },
       { key: "now", label: "decColNow", sortable: false, cell: f => `<span class="pill ${nowTone[now(f)]}">${this.esc(nowText(f))}</span>${f.resting && f.seen && now(f) !== "gone" ? `<small class="muted u-block">${this.esc(this.t("decLastSeen", { when: this.formatDate(f.seen) }))}</small>` : ""}` },
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
     ];
     const restN = refined.filter(f => f.resting).length;
     let table = refined.length ? this.listTable("decided", columns, pg.rows, { cls: "objs", rowAttrs: f => `class="static${f.resting ? " restrow" : ""}${now(f) === "due" ? " duerow" : ""}"${f.resting ? ' data-rest="1"' : ""}`, after: f => (this.decide?.key === f.key ? `<tr class="static"><td colspan="${columns.length}"><div class="pad">${this.decideForm(f)}</div></td></tr>` : "") }) : "";

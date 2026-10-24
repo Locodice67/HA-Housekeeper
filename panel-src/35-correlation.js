@@ -117,7 +117,7 @@ class CorrelationMixin {
         const left = running(it) ? `<small class="muted">${this.esc(this.t("incLeft", { hours: Math.max(0, Math.ceil((Date.parse(w.until) - Date.now()) / 3600000)) }))}</small>` : "";
         return `<span class="pill ${tones[w.result?.verdict] || "mute"}">${this.esc(this.t(`watchV_${w.result?.verdict || "unknown"}`))}</span>${left}`;
       } },
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: it => (running(it) ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button></div></details>` : "") },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: it => (running(it) ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button></div></details>` : "") },
     ];
     const table = this.listTable("corr", columns, pg.rows, { cls: "inc", rowAttrs: it => `data-inc-row="${this.esc(this.incidentId(it))}" tabindex="0" role="button" aria-expanded="${isOpen(it)}"`,
       after: it => (isOpen(it) ? `<tr class="static remhist"><td colspan="${columns.length}"><div class="incdetail">${this.incidentBody(it)}</div></td></tr>` : "") });

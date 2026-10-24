@@ -50,7 +50,7 @@ class WatchMixin {
     const columns = [
       { key: "name", label: "sortName", sortable: false, cell: r => `<div class="statcell">${this.tile(r.type, tone)}<div>${this.nameCell(r.name, r.key)}</div></div>` },
       { key: "state", label: "sortStatus", sortable: false, cell: state },
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
     ];
     const more = keys.length > WATCH_LIST ? `<p class="sub">${this.t("watchMore", { n: this.formatNumber(keys.length - WATCH_LIST) })}</p>` : "";
     return this.listTable(id, columns, rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"` }) + more;

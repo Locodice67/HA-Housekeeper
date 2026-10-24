@@ -3718,7 +3718,7 @@ class SettingsMixin {
       { key: "until", label: "decColStatus", cell: f => `<span class="pill ${tone[state(f)]}">${this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`)}</span>${until(f) ? `<small class="muted u-block">${this.esc(until(f))}</small>` : ""}` },
       { key: "reason", label: "decideReason", sortable: false, cell: f => (f.ignore_info?.reason ? this.esc(f.ignore_info.reason) : "–") },
       { key: "now", label: "decColNow", sortable: false, cell: f => `<span class="pill ${nowTone[now(f)]}">${this.esc(nowText(f))}</span>${f.resting && f.seen && now(f) !== "gone" ? `<small class="muted u-block">${this.esc(this.t("decLastSeen", { when: this.formatDate(f.seen) }))}</small>` : ""}` },
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
     ];
     const restN = refined.filter(f => f.resting).length;
     let table = refined.length ? this.listTable("decided", columns, pg.rows, { cls: "objs", rowAttrs: f => `class="static${f.resting ? " restrow" : ""}${now(f) === "due" ? " duerow" : ""}"${f.resting ? ' data-rest="1"' : ""}`, after: f => (this.decide?.key === f.key ? `<tr class="static"><td colspan="${columns.length}"><div class="pad">${this.decideForm(f)}</div></td></tr>` : "") }) : "";
@@ -8798,7 +8798,7 @@ class CorrelationMixin {
         const left = running(it) ? `<small class="muted">${this.esc(this.t("incLeft", { hours: Math.max(0, Math.ceil((Date.parse(w.until) - Date.now()) / 3600000)) }))}</small>` : "";
         return `<span class="pill ${tones[w.result?.verdict] || "mute"}">${this.esc(this.t(`watchV_${w.result?.verdict || "unknown"}`))}</span>${left}`;
       } },
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: it => (running(it) ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button></div></details>` : "") },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: it => (running(it) ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button></div></details>` : "") },
     ];
     const table = this.listTable("corr", columns, pg.rows, { cls: "inc", rowAttrs: it => `data-inc-row="${this.esc(this.incidentId(it))}" tabindex="0" role="button" aria-expanded="${isOpen(it)}"`,
       after: it => (isOpen(it) ? `<tr class="static remhist"><td colspan="${columns.length}"><div class="incdetail">${this.incidentBody(it)}</div></td></tr>` : "") });
@@ -8947,7 +8947,7 @@ class WatchMixin {
     const columns = [
       { key: "name", label: "sortName", sortable: false, cell: r => `<div class="statcell">${this.tile(r.type, tone)}<div>${this.nameCell(r.name, r.key)}</div></div>` },
       { key: "state", label: "sortStatus", sortable: false, cell: state },
-      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
     ];
     const more = keys.length > WATCH_LIST ? `<p class="sub">${this.t("watchMore", { n: this.formatNumber(keys.length - WATCH_LIST) })}</p>` : "";
     return this.listTable(id, columns, rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"` }) + more;
@@ -9415,7 +9415,7 @@ class OftenMixin {
         { key: "name", label: "oftenColObject", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.type, "warn")}<div>${this.nameCell(r.title, r.id)}${r.note ? `<small class="muted">${this.esc(r.note)}</small>` : ""}</div></div>` },
         { key: "pattern", label: "oftenColPattern", dir: "asc", cell: r => this.esc(r.pattern) },
         { key: "hides", label: "oftenColFindings", dir: "desc", cell: r => this.formatNumber(r.hides) },
-        { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
       ],
     });
     const n = [...sel].length;
