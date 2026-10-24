@@ -6844,7 +6844,7 @@ test("a start compares each integration with its usual time and links to the one
   const starts = [item(75), item(20), item(22), item(21)].map((i, n) => ({ at: `2026-10-2${3 - n}T10:00:00Z`, items: [i] }));
   el.sysState("starts").data = { starts };
   assert.match(el.startCompare(starts[0], starts[0].items[0]), /pill warn[^>]*>54 s slower than usual/);
-  assert.match(el.startCompare(starts[1], starts[1].items[0]), /pill mute[^>]*>as usual</, "close to the average");
+  assert.match(el.startCompare(starts[1], starts[1].items[0]), /muted[^>]*>as usual</, "close to the average");
   assert.match(el.startCompare(starts[3], starts[3].items[0]), /class="muted"/, "no earlier starts to compare with");
   const row = el.startRow(starts[0], starts[0].items[0], 75, new Map([["alexa_devices", { custom: true }]]));
   assert.match(row, /data-object="integration:alexa_devices"/);

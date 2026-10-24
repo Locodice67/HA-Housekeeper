@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   startsEntries: "{n} Einträge", startsOwn: "eigene", startsOwnHint: "Eigene Integration, nicht von Home Assistant mitgeliefert.", startsOpenObject: "Öffnet die Seite dieser Integration",
   startsVsMore: "{x} langsamer als üblich", startsVsLess: "{x} schneller als üblich", startsVsSame: "wie üblich", startsVsSlow: "wie üblich langsam",
   startsVsAvg: "Schnitt der letzten {n} Starts: {x}", startsVsNone: "Zu wenige frühere Starts zum Vergleichen.",
-  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Einrichtung je Integration, langsamste zuerst",
+  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Einrichtung je Integration, langsamste zuerst", startsColInt: "Integration", startsColState: "Status", startsColTime: "Dauer", startsColVs: "Vergleich",
   startsMore: "{n} weitere unter einer Sekunde", startsNoItems: "Für diesen Start liegen keine Zeiten je Integration vor.",
   startState_loaded: "geladen", startState_setup_error: "Fehler", startState_setup_retry: "Wiederholung", startState_not_loaded: "nicht geladen",
   startState_migration_error: "Fehler", startState_failed_unload: "Fehler", startState_setup_in_progress: "lädt",
@@ -34,7 +34,7 @@ Object.assign(TEXT.en, {
   startsEntries: "{n} entries", startsOwn: "custom", startsOwnHint: "A custom integration, not shipped with Home Assistant.", startsOpenObject: "Opens the page of this integration",
   startsVsMore: "{x} slower than usual", startsVsLess: "{x} faster than usual", startsVsSame: "as usual", startsVsSlow: "as usual, and slow",
   startsVsAvg: "Average of the last {n} starts: {x}", startsVsNone: "Too few earlier starts to compare with.",
-  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Set-up per integration, slowest first",
+  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Set-up per integration, slowest first", startsColInt: "Integration", startsColState: "Status", startsColTime: "Time", startsColVs: "Comparison",
   startsMore: "{n} more under a second", startsNoItems: "There are no times per integration for this start.",
   startState_loaded: "loaded", startState_setup_error: "Error", startState_setup_retry: "Retrying", startState_not_loaded: "not loaded",
   startState_migration_error: "Error", startState_failed_unload: "Error", startState_setup_in_progress: "loading",
@@ -104,6 +104,7 @@ class StartsMixin {
     const key = `startState_${item.state}`, text = this.t(key);
     const tone = item.state === "loaded" ? "ok" : item.state === "setup_retry" ? "warn" : item.state === "not_loaded" || item.state === "setup_in_progress" ? "mute" : "red";
     const hint = item.state === "setup_in_progress" ? ` title="${this.esc(this.t("startsLoadingHint"))}"` : "";
+    if (item.state === "loaded") return `<span class="startok"><ha-icon icon="mdi:check"></ha-icon>${this.esc(text === key ? item.state : text)}</span>`;
     return `<span class="pill ${tone}"${hint}>${this.esc(text === key ? item.state : text)}</span>`;
   }
 
@@ -123,6 +124,7 @@ class StartsMixin {
       : delta <= -edge ? ["ok", this.t("startsVsLess", { x: this.startSeconds(-delta) })]
       : ["mute", this.t(usual.avg >= 30 ? "startsVsSlow" : "startsVsSame")];
     const hint = this.t("startsVsAvg", { n: this.formatNumber(usual.n), x: this.startSeconds(usual.avg) });
+    if (tone === "mute") return `<span class="muted" title="${this.esc(hint)}">${this.esc(text)}</span>`;
     return `<span class="pill ${tone}" title="${this.esc(hint)}">${this.esc(text)}</span>`;
   }
 
@@ -146,8 +148,9 @@ class StartsMixin {
     const known = new Map(this.compIntegrations().map(g => [g.domain, g]));
     const rows = shown.map(i => this.startRow(start, i, max, known)).join("");
     const rest = items.length - shown.length;
-    const body = shown.length ? `<div class="sectionlabel">${this.t("startsDetailHead")}</div>${rows}${rest > 0 ? `<p class="factnote">${this.t("startsMore", { n: this.formatNumber(rest) })}</p>` : ""}` : `<p class="factnote">${this.t("startsNoItems")}</p>`;
-    return `<tr class="static remhist"><td colspan="5">${body}</td></tr>`;
+    const head = `<div class="startint starthead"><span>${this.t("startsColInt")}</span><span>${this.t("startsColState")}</span><span>${this.t("startsColTime")}</span><span>${this.t("startsColVs")}</span><span></span></div>`;
+    const body = shown.length ? `<div class="sectionlabel">${this.t("startsDetailHead")} <span class="pill mute">${this.formatNumber(shown.length)}</span></div>${head}${rows}${rest > 0 ? `<p class="factnote">${this.t("startsMore", { n: this.formatNumber(rest) })}</p>` : ""}` : `<p class="factnote">${this.t("startsNoItems")}</p>`;
+    return `<tr class="static remhist startdet"><td colspan="5">${body}</td></tr>`;
   }
 
   sysStarts() {
