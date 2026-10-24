@@ -2636,6 +2636,16 @@ test("a monitored function of a paused integration says paused instead of Disabl
   assert.equal(el.apMonitorReason("config_entry:e2", "disabled"), "Disabled");
 });
 
+test("the manual pause is picked from the search field of the panel and asks before it pauses", () => {
+  const { el } = panel("en");
+  const objects = [{ object_type: "config_entry", object_id: "e2", name: "Strompreise", domain: "tibber" }, { object_type: "config_entry", object_id: "e1", name: "Ravensburg", domain: "waste_collection_schedule" }, { object_type: "config_entry", object_id: "e3", name: "Strompreis Nord", domain: "x" }];
+  el.data = { ...DATA, objects }; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || ""; el.autoPause = AUTO_PAUSE;
+  el.apPickText = "Strom";
+  assert.equal(el.pickerResults("autopause").map(o => o.object_id).join(), "e2");
+  el.folds = { ap_manual: true };
+  assert.ok(el.autoPauseView().includes('data-picker="autopause"'));
+});
+
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
   const queue = [];
   const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });

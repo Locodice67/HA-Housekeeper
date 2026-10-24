@@ -41,6 +41,11 @@ class PickerMixin {
           return (o.config_entry_ids || []).some(id => (old.config_entry_ids || []).includes(id)) ? 2 : 3;
         },
       },
+      autopause: {
+        get: () => this.apPickText || "", set: v => { this.apPickText = v; }, min: 0, browse: true, types: ["config_entry"], limit: 40, sub: o => o.domain,
+        filter: o => (this.autoPause?.pausable || []).some(p => p.entry_id === o.object_id) && !this.apPausedItem(o.object_id),
+        pick: o => { this.apPickText = ""; this.apStart(o.object_id); },
+      },
       note: {
         get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
         pick: o => { this.noteDraft.target = this.objectKey(o); this.noteDraft.targetText = o.name; },
