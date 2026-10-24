@@ -1584,7 +1584,7 @@ class StylesMixin {
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
       .needgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:16px}.needtile{display:flex;flex-direction:column;justify-content:center;gap:4px;height:92px;padding:0 16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-soft);min-width:0}.needtile b{font-size:calc(28px*var(--hk-fs,1));line-height:1;font-variant-numeric:tabular-nums}.needtile span{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.needtile.miss{border-style:dashed}.needtile.miss b{color:var(--hk-amber)}.tablewrap.lt.batt .iconbtn{padding:3px 6px;margin-left:4px;--mdc-icon-size:16px}.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--hk-text);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hk-border)}.linkbtn:hover{text-decoration-color:currentColor}.tablewrap.lt.batt .lvl{display:flex;align-items:center;gap:8px;min-width:130px}.tablewrap.lt.batt .lvl .bar{flex:1;height:7px;border-radius:4px;background:var(--hk-border);overflow:hidden;min-width:48px}.tablewrap.lt.batt .lvl .bar i{display:block;height:100%}.lvl .lvlnum{min-width:4.2em;text-align:right;white-space:nowrap}.lvl .lvlnum small{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.tablewrap.lt.batt .red{color:var(--hk-red)}.tablewrap.lt.batt .amber{color:var(--hk-amber)}.tablewrap.lt.batt .green{color:var(--hk-green)}.tablewrap.lt.batt td .btedit{display:flex;flex-wrap:wrap;gap:6px;white-space:normal}.tablewrap.lt.batt .btedit label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.tablewrap.lt.batt .bkedit{padding:0;background:none;border:0}.tablewrap.lt.batt .bkedit .factnote{display:none}.tablewrap.lt.batt .btn.miss{border-style:dashed;color:var(--hk-amber)}.btn.miss ha-icon{--mdc-icon-size:14px;margin-left:6px}.tablewrap.lt.batt td:last-child{text-align:right}@media(max-width:700px){}.bkedit{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;background:var(--hk-soft);border-bottom:1px solid var(--hk-border)}.bkedit select,.bkrow select{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit;font-size:calc(13px*var(--hk-fs,1))}.bkcancel{border:0;background:none;padding:4px 2px;font:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);cursor:pointer;text-decoration:underline}.bkrow{gap:8px;padding-right:12px;flex-wrap:wrap}.rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.selcell{width:34px;padding-right:0}.selcell .selbox{margin:0}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.toast.bad{border-left:5px solid var(--hk-red);max-width:min(560px,calc(100vw - 32px))}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btct{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border)}.btct .factnote{flex:1;min-width:120px;margin:0}.btct input{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
-      .row.politem[data-pol-row],tr[data-pol-row]{cursor:pointer}.tablewrap.lt tr.poldetailrow td{white-space:normal;background:var(--hk-soft)}.poldetail{cursor:auto;display:grid;gap:12px;margin-top:10px}.poldetail h4{margin:0 0 4px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.poldetail p{margin:0}.poledit{display:grid;gap:6px}.poldetail .inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.poldetail .inline input,.poldetail .inline select{height:36px;min-width:0}.poldetail .acts{display:flex;flex-wrap:wrap;gap:8px}.poldetail .btn.on{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));color:var(--hk-blue-text);font-weight:700}.poldetail .btn small{font-weight:400;color:var(--hk-muted);margin-left:4px}.polcheck{font-size:calc(13px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.polcheck.ok{color:var(--hk-green)}.polcheck.bad{color:var(--hk-red,#b3392f)}.row.politem.open{background:var(--hk-soft)}
+      .row.politem[data-pol-row],tr[data-pol-row]{cursor:pointer}.tablewrap.lt tr.poldetailrow td{white-space:normal;background:var(--hk-soft)}.poldetail{cursor:auto;display:grid;gap:10px;margin-top:10px;padding-left:14px;border-left:2px solid var(--hk-border)}.tablewrap.lt tr.poldetailrow .poldetail{margin:2px 0 4px 52px}.poldetail p{margin:0}.poldetail .polwhy{color:var(--hk-muted)}.poldetail .factnote ha-icon{--mdc-icon-size:14px;vertical-align:-2px}.poledit{display:grid;gap:6px}.poldetail .inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.poldetail .inline input,.poldetail .inline select{height:36px;min-width:0}.poldetail .acts{display:flex;flex-wrap:wrap;gap:8px}.poldetail .btn.on{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));color:var(--hk-blue-text);font-weight:700}.poldetail .btn small{font-weight:400;color:var(--hk-muted);margin-left:4px}.polcheck:empty{display:none}.polcheck{font-size:calc(13px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.polcheck.ok{color:var(--hk-green)}.polcheck.bad{color:var(--hk-red,#b3392f)}.row.politem.open{background:var(--hk-soft)}
       .remform{display:grid;gap:14px;padding:16px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.remgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:start}.remfield{display:grid;grid-template-rows:auto 40px auto;gap:4px;font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);min-width:0}.remfield input{height:40px;min-width:0}.remfield.full{grid-column:1/-1;grid-template-rows:auto 40px}.remchips{display:flex;gap:6px;flex-wrap:wrap}.remchips .chip{padding:2px 10px;font-size:calc(12px*var(--hk-fs,1))}.remhint{color:var(--hk-blue-text);font-weight:600}.remactions{display:flex;gap:14px;align-items:center;justify-content:flex-end}
       .tablewrap.rem td:first-child{white-space:normal}.chevbtn{display:inline-flex;vertical-align:middle;padding:0;margin-right:4px;border:0;background:none;color:var(--hk-muted);cursor:pointer}.remnote{display:block;color:var(--hk-muted)}.remact{text-align:right;white-space:nowrap}.remact .btn{margin-left:6px}.remhist td{padding:10px 16px 14px 44px;background:var(--hk-soft)}.remhist h3{margin:0 0 6px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.remhist ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}.remhist li{display:flex;gap:12px;align-items:center}.remhist li .linkbtn{margin-left:auto;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.remhist p{margin:0}.bhgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;padding-left:28px}@media(max-width:760px){.bhgrid{grid-template-columns:minmax(0,1fr);padding-left:0}}.bhgrid small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.bhgrid .wide{grid-column:1/-1}.bh .statcell{align-items:center}.pill.bhfail{margin-left:6px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
       @media(max-width:700px){.remact{display:flex;flex-wrap:wrap;gap:8px;white-space:normal}.remact .btn{margin-left:0}.remgrid{grid-template-columns:1fr}.remfield.wide,.remfield.full{grid-column:auto}}
@@ -8328,15 +8328,26 @@ class PoliciesMixin {
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
     const open = this.polIsOpen(item), main = this.polMainAction(item);
     // A row with a fix offers it as its button (it folds the row open); the other rows keep their hide button; an opened row has it next to "open object".
-    const act = open ? "" : main ? `<button class="btn" data-pol-open="${this.esc(item.key)}">${this.t(main)}</button>` : button;
-    return { pill, due, button, decision, form, open, act };
+    const act = open ? this.polRowMenu(item) : main ? `<button class="btn" data-pol-open="${this.esc(item.key)}">${this.t(main)}</button>` : button;
+    return { pill, due, decision, form, open, act };
+  }
+
+  // The menu of an opened row: open the object, hide or show the violation.
+  polRowMenu(item) {
+    const entry = (attrs, icon, key) => `<button type="button" class="menuitem" ${attrs}><ha-icon icon="${icon}"></ha-icon>${this.t(key)}</button>`;
+    const key = this.esc(item.key);
+    const items = [
+      ["recorder", "system", "user"].includes(item.object_type) ? "" : entry(`data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`, "mdi:open-in-new", "polOpenObject"),
+      item.by === "label" || item.by === "rule" ? "" : item.ignored ? entry(`data-policy-ignore="${key}" data-policy-value="0"`, "mdi:eye-outline", "polShow") : entry(`data-decide-open="${key}"`, "mdi:eye-off-outline", "polHide"),
+    ].filter(Boolean);
+    return items.length ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("polRowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items.join("")}</div></details>` : "";
   }
 
   // The compact row of the object's own page: the violation with its note and fix, no table around it.
   polItemRow(item) {
-    const { pill, due, button, decision, form, open, act } = this.polItemParts(item);
+    const { pill, due, decision, form, open, act } = this.polItemParts(item);
     const chev = this.expandBtn("data-pol-open", item.key, open, this.t(open ? "polCloseRow" : "polOpenRow"));
-    const detail = open ? this.polDetail(item, button) : "";
+    const detail = open ? this.polDetail(item) : "";
     return `<div class="row politem${open ? " open" : ""}" data-pol-row="${this.esc(item.key)}">${chev}<span class="row-text"><strong>${this.esc(item.name)}</strong>${this.rowId(item.object_id, item.rule ? this.t(`polRule_${item.rule}`) : "")}${this.polItemNote(item)}${decision}${detail}</span>${due}${pill}${act}</div>${form}`;
   }
 
@@ -8404,8 +8415,8 @@ class PoliciesMixin {
       { key: "act", label: "btColAct", sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
-      const { open, button, form } = this.polItemParts(item);
-      return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item, button)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
+      const { open, form } = this.polItemParts(item);
+      return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
     };
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
     // Showing the hidden rows belongs to the list: the line below it counts them and switches them on and off.
@@ -16577,14 +16588,14 @@ class SystemMixin {
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  polOpenRow: "Details aufklappen", polCloseRow: "Details zuklappen", polWhy: "Warum", polActRename: "Umbenennen", polOpenObject: "Objekt öffnen", polToCleanup: "Zum Bereinigen",
-  polNameFree: "frei", polNameTaken: "vergeben von {name} ({id})", polNameTakenDead: "vergeben: {id} ist nicht mehr verfügbar. Bereinigen gibt den Namen frei.", polNameSame: "unverändert",
-  polSuggestHint: "Vorschläge:", polRecommended: "empfohlen", polPickHint: "Wähle einen Vorschlag oder tippe eine ID.", polNoSuggest: "Kein freier Vorschlag aus Name und Bereich. Tippe eine ID.", polSuggTaken: "{id} ist vergeben: {why}", polExpectedNote: "Die ID beginnt hier mit „{prefix}“.",
+  polOpenRow: "Details aufklappen", polCloseRow: "Details zuklappen", polWhy: "Warum", polActRename: "Umbenennen", polOpenObject: "Objekt öffnen", polRowMenu: "Weitere Aktionen", polToCleanup: "Zum Bereinigen",
+  polNameFree: "frei", polNameTaken: "vergeben von {name} ({id})", polNameTakenDead: "vergeben, {id} ist nicht mehr verfügbar. Bereinigen gibt den Namen frei.", polNameSame: "unverändert",
+  polSuggestHint: "Vorschläge:", polRecommended: "empfohlen", polPickHint: "Wähle einen Vorschlag oder tippe eine ID.", polNoSuggest: "Kein freier Vorschlag aus Name und Bereich. Tippe eine ID.", polSuggTaken: "{id}: {why}", polExpectedNote: "Die ID beginnt hier mit „{prefix}“.",
 });
 Object.assign(TEXT.en, {
-  polOpenRow: "Show details", polCloseRow: "Hide details", polWhy: "Why", polActRename: "Rename", polOpenObject: "Open object", polToCleanup: "To the clean-up",
-  polNameFree: "free", polNameTaken: "taken by {name} ({id})", polNameTakenDead: "taken: {id} is no longer available. Cleaning up frees the name.", polNameSame: "unchanged",
-  polSuggestHint: "Suggestions:", polRecommended: "recommended", polPickHint: "Pick a suggestion or type an ID.", polNoSuggest: "No free suggestion from the name and the area. Type an ID.", polSuggTaken: "{id} is taken: {why}", polExpectedNote: "Here the ID starts with “{prefix}”.",
+  polOpenRow: "Show details", polCloseRow: "Hide details", polWhy: "Why", polActRename: "Rename", polOpenObject: "Open object", polRowMenu: "More actions", polToCleanup: "To the clean-up",
+  polNameFree: "free", polNameTaken: "taken by {name} ({id})", polNameTakenDead: "taken, {id} is no longer available. Cleaning up frees the name.", polNameSame: "unchanged",
+  polSuggestHint: "Suggestions:", polRecommended: "recommended", polPickHint: "Pick a suggestion or type an ID.", polNoSuggest: "No free suggestion from the name and the area. Type an ID.", polSuggTaken: "{id}: {why}", polExpectedNote: "Here the ID starts with “{prefix}”.",
 });
 
 const POL_RENAME_RULES = ["entity_id_suffix", "entity_id_address", "naming_scheme"];
@@ -16606,10 +16617,15 @@ class PolicyRowMixin {
     return String(text || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
   }
 
-  // The draft of one row starts empty, so the person picks a suggestion or types an ID on purpose.
+  // The draft of one row starts empty; until the person picks or types, the field shows the recommended free name.
   polDraft(item) {
     const edits = (this.polEdits ||= {});
-    return edits[item.key] ||= { value: "", area: "" };
+    return edits[item.key] ||= { value: "", area: "", touched: false };
+  }
+
+  polValue(item) {
+    const d = this.polDraft(item);
+    return d.touched ? d.value : this.polSuggestions(item).list[0] || "";
   }
 
   // Whether the new ID can be used: "bad" (characters), "same" (no change), "taken" (by `other`) or "free".
@@ -16644,13 +16660,13 @@ class PolicyRowMixin {
   }
 
   polRenameBlock(item) {
-    const d = this.polDraft(item), c = this.polCheckText(item, d.value), key = this.esc(item.key);
-    const blocked = !["free"].includes(this.polNameCheck(item, d.value).state) || this.planBusy;
+    const value = this.polValue(item), c = this.polCheckText(item, value), key = this.esc(item.key);
+    const blocked = !["free"].includes(this.polNameCheck(item, value).state) || this.planBusy;
     const { list, taken } = this.polSuggestions(item);
     const hint = c.dead ? `<button type="button" class="btn small" data-jump="cleanup">${this.t("polToCleanup")}</button>` : "";
-    const chips = list.map((v, i) => `<button type="button" class="btn small mono${d.value === v ? " on" : ""}" data-pol-sugg="${key}|${this.esc(v)}" aria-pressed="${d.value === v}">${this.esc(v)}${i === 0 ? ` <small>${this.t("polRecommended")}</small>` : ""}</button>`).join("");
+    const chips = list.length > 1 ? list.map((v, i) => `<button type="button" class="btn small mono${value === v ? " on" : ""}" data-pol-sugg="${key}|${this.esc(v)}" aria-pressed="${value === v}">${this.esc(v)}${i === 0 ? ` <small>${this.t("polRecommended")}</small>` : ""}</button>`).join("") : "";
     const why = taken ? `<small class="factnote">${this.t("polSuggTaken", { id: taken, why: this.polCheckText(item, taken).text })}</small>` : "";
-    return `<div class="poledit"><label for="pol-id-${key}"><strong>${this.t("deNewId")}</strong></label><div class="inline"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="pol-id-${key}" data-pol-id="${key}" value="${this.esc(d.value)}" placeholder="${this.esc(this.t("deNewId"))}" autocomplete="off" spellcheck="false"><span class="polcheck ${c.tone}" data-pol-check="${key}" role="status">${this.esc(c.text)}</span><button type="button" class="btn primary small" data-pol-rename-go="${key}" ${blocked ? "disabled" : ""}>${this.t("deRename")}</button>${hint}</div>${chips ? `<div class="inline"><small class="factnote">${this.t("polSuggestHint")}</small>${chips}</div>` : ""}${why}<small class="factnote">${this.t("deRenameNote")}</small></div>`;
+    return `<div class="poledit"><div class="inline"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="pol-id-${key}" data-pol-id="${key}" value="${this.esc(value)}" aria-label="${this.esc(this.t("deNewId"))}" placeholder="${this.esc(this.t("deNewId"))}" autocomplete="off" spellcheck="false"><button type="button" class="btn primary small" data-pol-rename-go="${key}" ${blocked ? "disabled" : ""}>${this.t("deRename")}</button>${hint}</div><span class="polcheck bad" data-pol-check="${key}" role="status">${this.esc(c.tone === "bad" ? c.text : "")}</span>${chips ? `<div class="inline"><small class="factnote">${this.t("polSuggestHint")}</small>${chips}</div>` : ""}${why}<small class="factnote"><ha-icon icon="mdi:information-outline"></ha-icon> ${this.t("deRenameNote")}</small></div>`;
   }
 
   polAreaBlock(item) {
@@ -16660,13 +16676,12 @@ class PolicyRowMixin {
     return `<div class="poledit"><label for="pol-area-${key}"><strong>${this.t("deArea")}</strong></label><div class="inline"><select id="pol-area-${key}" data-pol-area="${key}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${d.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select><button type="button" class="btn primary small" data-pol-area-go="${key}" ${this.planBusy || !obj ? "disabled" : ""}>${this.t("deAssign")}</button></div><small class="factnote">${this.t("areaNote")}</small></div>`;
   }
 
-  // The folded-open part of a row: why, the fix that belongs to the rule, then open and hide (or show) side by side.
-  polDetail(item, hide) {
-    const why = `<div><h4>${this.t("polWhy")}</h4><p>${this.t(`polDesc_${item.rule}`)}${item.expected ? ` ${this.t("polExpectedNote", { prefix: item.expected })}` : ""}</p></div>`;
+  // The folded-open part of a row: why, then the fix that belongs to the rule. Open and hide sit in the row's menu.
+  polDetail(item) {
+    const why = `<p class="polwhy">${this.t(`polDesc_${item.rule}`)}${item.expected ? ` ${this.t("polExpectedNote", { prefix: item.expected })}` : ""}</p>`;
     const fix = item.ignored ? "" : item.object_type === "entity" && POL_RENAME_RULES.includes(item.rule) ? this.polRenameBlock(item)
       : ["entity", "device"].includes(item.object_type) && POL_AREA_RULES.includes(item.rule) ? this.polAreaBlock(item) : "";
-    const open = ["recorder", "system", "user"].includes(item.object_type) ? "" : `<button type="button" class="btn small" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}">${this.t("polOpenObject")}</button>`;
-    return `<div class="poldetail">${why}${fix}${open || hide ? `<div class="acts">${open}${hide}</div>` : ""}</div>`;
+    return `<div class="poldetail">${why}${fix}</div>`;
   }
 
   // The key of a row holds "|" itself, so a pick is cut at the last one.
@@ -16684,34 +16699,34 @@ class PolicyRowMixin {
     root.querySelectorAll("[data-pol-open]").forEach(el => el.addEventListener("click", () => toggle(el.dataset.polOpen)));
     // A click anywhere on the row folds it too; buttons, fields and the opened part keep their own clicks.
     root.querySelectorAll("[data-pol-row]").forEach(el => el.addEventListener("click", ev => {
-      if (ev.target.closest("button, a, input, select, label, textarea, .poldetail")) return;
+      if (ev.target.closest("button, a, input, select, label, textarea, .poldetail, .rowmenu")) return;
       toggle(el.dataset.polRow);
     }));
     const find = key => (this.policies?.rules || []).flatMap(r => r.items.map(i => ({ ...i, rule: r.id }))).find(i => i.key === key);
     const refresh = (key, item) => {
-      const d = this.polDraft(item), c = this.polCheckText(item, d.value);
+      const value = this.polValue(item), c = this.polCheckText(item, value);
       const span = root.querySelector(`[data-pol-check="${CSS.escape(key)}"]`), go = root.querySelector(`[data-pol-rename-go="${CSS.escape(key)}"]`);
-      if (span) { span.textContent = c.text; span.className = `polcheck ${c.tone}`; }
-      root.querySelectorAll(`[data-pol-sugg^="${CSS.escape(key)}|"]`).forEach(b => { const on = b.dataset.polSugg.slice(key.length + 1) === d.value; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
-      if (go) go.disabled = this.polNameCheck(item, d.value).state !== "free" || !!this.planBusy;
+      if (span) span.textContent = c.tone === "bad" ? c.text : "";
+      root.querySelectorAll(`[data-pol-sugg^="${CSS.escape(key)}|"]`).forEach(b => { const on = b.dataset.polSugg.slice(key.length + 1) === value; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+      if (go) go.disabled = this.polNameCheck(item, value).state !== "free" || !!this.planBusy;
     };
     root.querySelectorAll("[data-pol-id]").forEach(el => el.addEventListener("input", () => {
       const item = find(el.dataset.polId);
       if (!item) return;
-      this.polDraft(item).value = el.value.trim().toLowerCase();
+      Object.assign(this.polDraft(item), { value: el.value.trim().toLowerCase(), touched: true });
       refresh(el.dataset.polId, item);
     }));
     root.querySelectorAll("[data-pol-sugg]").forEach(el => el.addEventListener("click", () => {
       const { key, value } = this.polSuggSplit(el.dataset.polSugg), item = find(key);
       if (!item) return;
-      const draft = this.polDraft(item);
-      draft.value = draft.value === value ? "" : value;
+      Object.assign(this.polDraft(item), { value, touched: true });
       this.render();
     }));
     root.querySelectorAll("[data-pol-rename-go]").forEach(el => el.addEventListener("click", () => {
       const item = find(el.dataset.polRenameGo);
-      if (!item || this.polNameCheck(item, this.polDraft(item).value).state !== "free") return;
-      this.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `${item.object_id.split(".")[0]}.${this.polDraft(item).value}` });
+      const value = item && this.polValue(item);
+      if (!item || this.polNameCheck(item, value).state !== "free") return;
+      this.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `${item.object_id.split(".")[0]}.${value}` });
     }));
     root.querySelectorAll("[data-pol-area]").forEach(el => el.addEventListener("change", () => { const item = find(el.dataset.polArea); if (item) this.polDraft(item).area = el.value; }));
     root.querySelectorAll("[data-pol-area-go]").forEach(el => el.addEventListener("click", () => {

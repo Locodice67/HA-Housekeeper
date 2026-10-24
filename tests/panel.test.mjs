@@ -4952,9 +4952,10 @@ test("a violation row folds open to a rename that checks the name and plans one 
   assert.equal(el.polCheckText(item, "Bad Id").tone, "bad");
   assert.equal(el.polCheckText(item, "hall_wall").tone, "ok");
   el.polOpen = ["kb"];
-  const html = el.polDetail(item, '<button data-decide-open="k">Hide</button>');
+  const html = el.polDetail(item);
   assert.ok(html.includes("data-pol-id") && html.includes("data-pol-rename-go") && html.includes("disabled"), "taken: the plan button stays off");
-  assert.ok(/data-object=[^>]*>Open object<\/button><button data-decide-open/.test(html), "open object and hide side by side");
+  const menu = el.polRowMenu(item);
+  assert.ok(/data-object=[^>]*>.*Open object<\/button><button type="button" class="menuitem" data-decide-open/.test(menu), "open object and hide sit in the row menu");
   el.polDraft(item).value = "hall_wall";
   await el.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `light.${el.polDraft(item).value}` });
   assert.equal(calls[0].actions[0].target, "light.hall_wall");
