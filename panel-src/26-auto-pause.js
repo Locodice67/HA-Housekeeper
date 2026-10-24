@@ -69,6 +69,11 @@ class AutoPauseMixin {
     this.render();
   }
 
+  // The name of an integration, a link to its page where the inventory knows it.
+  apName(entryId, name) {
+    return this.findObject(`config_entry:${entryId}`) ? `<button type="button" class="linkbtn" data-object="${this.esc(`config_entry:${entryId}`)}">${this.esc(name)}</button>` : this.esc(name);
+  }
+
   apPausedItem(entryId) { return (this.autoPause?.paused || []).find(p => p.entry_id === entryId) || null; }
 
   // The rows of the overview's to-do card: a running pause is maintenance, a used-up schedule is open (never urgent).
@@ -163,18 +168,18 @@ class AutoPauseMixin {
       const due = p.next ? new Date(p.next).getTime() - now : null;
       const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
         p.reason === "manual" ? this.t("apReasonManual") : this.t("apReasonAuto", { n: this.formatNumber(p.failures || 0) })].filter(Boolean).join(" · ");
-      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.findObject(`config_entry:${p.entry_id}`) ? `<button type="button" class="linkbtn" data-object="${this.esc(`config_entry:${p.entry_id}`)}">${this.esc(p.title || p.domain)}</button>` : this.esc(p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
+      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(p.entry_id, p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
         <span class="apbtns"><button class="btn" data-ap-try="${this.esc(p.entry_id)}">${this.t("apTryNow")}</button>${menu(p.entry_id, ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
     }).join("");
     const failing = watched.filter(c => c.window > 0 || c.state !== "loaded").sort((x, y) => y.window - x.window || x.title.localeCompare(y.title));
     const watching = failing.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apWatching")} <span class="pill warn">${this.formatNumber(failing.length)}</span></h2><p>${this.t("apWatchingHint")}</p></div></div>${failing.map(c => {
       const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), s.enabled ? "" : this.t("apWindowOff", { limit: this.formatNumber(s.attempts) })].filter(Boolean).join(" · ");
-      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:cloud-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(c.title || c.domain)}</strong><small>${this.esc(sub)}</small><small>${this.esc(this.t("apWindow", { n: this.formatNumber(c.window), limit: this.formatNumber(s.attempts), hours: s.hours }))}</small><span class="bar evbar apbar"><i style="width:${Math.min(100, Math.round((c.window / s.attempts) * 100))}%"></i></span></span></div>`;
+      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:cloud-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(c.entry_id, c.title || c.domain)}</strong><small>${this.esc(sub)}</small><small>${this.esc(this.t("apWindow", { n: this.formatNumber(c.window), limit: this.formatNumber(s.attempts), hours: s.hours }))}</small><span class="bar evbar apbar"><i style="width:${Math.min(100, Math.round((c.window / s.attempts) * 100))}%"></i></span></span></div>`;
     }).join("")}</section>` : "";
     const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${pausedRows}</section>` : "";
     const rows = [...a.candidates].sort((x, y) => Number(x.excluded) - Number(y.excluded)).map(c => {
       const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), c.attempts ? this.t("apFailures", { n: this.formatNumber(c.attempts) }) : "", c.house_function ? this.t("apHouseFn") : ""].filter(Boolean).join(" · ");
-      return `<div class="row"><span class="tile ${c.excluded ? "mute" : c.state === "loaded" ? "ok" : "warn"}"><ha-icon icon="mdi:cloud-${c.state === "loaded" ? "check" : "alert"}-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(c.title || c.domain)}</strong><small>${this.esc(sub)}</small></span>${c.excluded ? `<span class="pill mute">${this.t("apNeverPill")}</span>${menu(c.entry_id, ["apAllow", "data-ap-allow", "mdi:undo"])}` : menu(c.entry_id, ["apNever", "data-ap-never", "mdi:cancel"])}</div>`;
+      return `<div class="row"><span class="tile ${c.excluded ? "mute" : c.state === "loaded" ? "ok" : "warn"}"><ha-icon icon="mdi:cloud-${c.state === "loaded" ? "check" : "alert"}-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(c.entry_id, c.title || c.domain)}</strong><small>${this.esc(sub)}</small></span>${c.excluded ? `<span class="pill mute">${this.t("apNeverPill")}</span>${menu(c.entry_id, ["apAllow", "data-ap-allow", "mdi:undo"])}` : menu(c.entry_id, ["apNever", "data-ap-never", "mdi:cancel"])}</div>`;
     }).join("");
     const watchedFold = this.fold("ap_watched", { tone: "mute", title: this.t("apWatched"), sub: this.t("apWatchedHint"), count: this.formatNumber(a.candidates.length) }, rows || `<p class="factnote">${this.t("apNoWatched")}</p>`, false);
     const num = (key, value, min, max, title, hint, unit, icon) => `<div class="row"><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><label class="row-text" for="ap-${key}"><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></label><span class="unitrow"><input id="ap-${key}" type="number" min="${min}" max="${max}" value="${value}" data-ap-num="${key}"><span>${this.t(unit)}</span></span></div>`;

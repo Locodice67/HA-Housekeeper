@@ -2642,6 +2642,11 @@ test("the manual pause is picked from the search field of the panel and asks bef
   el.data = { ...DATA, objects }; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || ""; el.autoPause = AUTO_PAUSE;
   el.apPickText = "Strom";
   assert.equal(el.pickerResults("autopause").map(o => o.object_id).join(), "e2");
+  el.data.objects.push({ object_type: "config_entry", object_id: "e1", name: "Ravensburg" });
+  el.autoPause = { ...AUTO_PAUSE, candidates: [{ ...AUTO_PAUSE.candidates[0], entry_id: "e1" }] };
+  el.folds = { ap_watched: true };
+  assert.ok(el.autoPauseView().split('data-object="config_entry:e1"').length >= 3);
+  el.autoPause = AUTO_PAUSE;
   el.folds = { ap_manual: true };
   assert.ok(el.autoPauseView().includes('data-picker="autopause"'));
 });
