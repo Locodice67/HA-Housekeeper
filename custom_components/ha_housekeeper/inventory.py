@@ -703,15 +703,35 @@ def _config_entry_findings(
     now: datetime,
     levels: Levels,
     counted_from: dict[str, datetime] | None = None,
+    auto_paused: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
     """Findings for active config entries that are not loaded, graded by how long that has lasted.
 
     ``counted_from`` holds, per entry with a mark window, when the window ended: what happened
-    before is expected, the outage counts from then on.
+    before is expected, the outage counts from then on. ``auto_paused`` holds, per entry that
+    auto-pause disabled, where its outage began: the pause handles it, but it stays a finding.
     """
     findings = []
     for item in integrations:
         since = item.get("status_since")
+        paused_since = (auto_paused or {}).get(item["object_id"])
+        if paused_since and item["status"] == "disabled":
+            counted, level = _graded_outage(
+                paused_since, now, levels, (counted_from or {}).get(item["object_id"])
+            )
+            if level is not None:
+                findings.append(
+                    {
+                        "rule_id": "config_entry.not_loaded",
+                        "object_id": item["object_id"],
+                        "classification": "problem",
+                        "confidence": 0.75,
+                        "first_detected_at": counted,
+                        "outage_level": level,
+                        "evidence": [{"kind": "paused", "source": "auto_pause"}],
+                    }
+                )
+            continue
         if item.get("reauth"):
             findings.append(
                 {
@@ -1687,7 +1707,11 @@ class InventoryScanner:
                 )
             )
             + _config_entry_findings(
-                integrations, observed_at, self.outage_levels, self._counts_from()
+                integrations,
+                observed_at,
+                self.outage_levels,
+                self._counts_from(),
+                self.auto_pause.outage_starts(),
             )
         )
         findings += device_down_findings(

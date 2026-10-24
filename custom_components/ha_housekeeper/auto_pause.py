@@ -325,6 +325,14 @@ class AutoPause:
             self._save()
             self._schedule()
 
+    def outage_starts(self) -> dict[str, str]:
+        """Where the outage of each entry that auto-pause paused began; a pause by hand is no finding."""
+        return {
+            entry_id: self.carry.get(entry_id) or rec["since"]
+            for entry_id, rec in self.paused.items()
+            if rec.get("reason") != "manual"
+        }
+
     def outage_start(self, entry_id: str, status: str, since: str | None) -> str | None:
         """The start of an entry's outage, from before its pause if it began earlier.
 

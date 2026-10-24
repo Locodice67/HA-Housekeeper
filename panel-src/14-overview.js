@@ -279,7 +279,7 @@ class OverviewMixin {
     };
     const groups = this.todoGroups(items);
     const pinned = new Set(this.reauthFindings().map(f => f.object_id));
-    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)));
+    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)) && !(e.finding?.rule_id === "config_entry.not_loaded" && this.apPausedItem(e.finding.object_id)));
     const entryRow = e => (e.cause ? this.overviewCause(e.cause) : this.overviewFinding(e.finding));
     const all = `<button class="link" data-jump="findingsNav">${this.t("allFindings")} (${this.formatNumber(this.findingTotal())}) <ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
     const head = (g, n) => `<h3 class="foldhd todogrp ${g}">${this.t(`group_${g}`)} <span class="pill ${g === "red" ? "red" : "warn"}">${this.formatNumber(n)}</span></h3>`;

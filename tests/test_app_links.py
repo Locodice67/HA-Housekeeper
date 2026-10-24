@@ -138,3 +138,20 @@ def test_an_entry_that_asks_for_a_new_login_is_a_finding_at_once_and_instead_of_
     objects = [{"object_type": "config_entry", "object_id": "loaded", "status": "problem"}]
     apply_impact(objects, [], found[:1])
     assert found[0]["impact"] == "medium", "it never starts quiet"
+
+
+def test_an_entry_that_auto_pause_disabled_stays_a_finding_from_where_its_outage_began() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.ha_housekeeper.inventory import _config_entry_findings
+
+    now = datetime(2026, 10, 24, 12, tzinfo=UTC)
+    off = {"object_id": "e1", "state": "not_loaded", "status": "disabled", "status_since": None}
+    began = (now - timedelta(hours=30)).isoformat()
+
+    found = _config_entry_findings([off], now, (15, 1, 24, 168), None, {"e1": began})
+
+    assert [(f["object_id"], f["first_detected_at"], f["outage_level"]) for f in found] == [
+        ("e1", began, "medium")
+    ]
+    assert _config_entry_findings([off], now, (15, 1, 24, 168), None, {}) == []
