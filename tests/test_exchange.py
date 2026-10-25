@@ -238,3 +238,13 @@ def test_followup_counts_error_runs_of_an_automation_the_plan_changed() -> None:
     assert followup.check([plan], snapshot, NOW + timedelta(hours=2), errors_since)
     assert plan["followup"]["state"] == "regression"
     assert plan["followup"]["new"][0]["classification"] == "run_error"
+
+
+def test_simulation_counts_actions_without_other_effects():
+    sim = simulate(
+        [
+            {"kind": "reload_integration", "object_id": "e1", "executable": True},
+            {"kind": "set_entity_state", "object_id": "a.b", "target": "hide", "executable": True},
+        ]
+    )
+    assert (sim["reloaded"], sim["hidden"], sim["removed"]) == (1, 1, 0)
