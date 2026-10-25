@@ -161,6 +161,14 @@ def test_a_failed_attempt_or_failed_target_is_a_problem() -> None:
     assert checks["last_run"]["level"] == "unknown"
 
 
+def test_a_running_backup_is_not_a_failed_attempt() -> None:
+    late = {"config": config(last_attempted=ago(minutes=5), last_completed=ago(hours=24))}
+    _, checks = judge({**state(), **late})
+    assert checks["last_run"]["values"]["failed_attempt"] is True  # unfinished and not running
+    _, checks = judge({**state(), **late, "running": True})
+    assert checks["last_run"]["level"] == "ok"
+
+
 def test_a_backup_only_on_the_local_target_is_a_note() -> None:
     _, checks = judge(state([backup(agents=("hassio.local",))]))
     assert checks["targets"]["level"] == "note"

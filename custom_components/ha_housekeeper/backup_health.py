@@ -86,6 +86,16 @@ async def collect(hass: HomeAssistant) -> dict[str, Any]:
         return {"available": False}
     state: dict[str, Any] = {"available": True, "backups": [], "agent_errors": []}
     try:
+        # A backup in progress has its start recorded but not yet its end; that is no failure.
+        manager_state = getattr(manager, "state", None)
+        state["running"] = (
+            None
+            if manager_state is None
+            else str(getattr(manager_state, "value", manager_state)) != "idle"
+        )
+    except Exception:  # noqa: BLE001 - without the figure an unfinished attempt counts as before
+        state["running"] = None
+    try:
         data = manager.config.data
         create = data.create_backup
         retention = data.retention
@@ -199,14 +209,19 @@ def _newest_check(
 
 
 def _last_run_check(
-    config: dict[str, Any] | None, newest: dict[str, Any] | None, agent_errors: list[str]
+    config: dict[str, Any] | None,
+    newest: dict[str, Any] | None,
+    agent_errors: list[str],
+    running: bool | None = None,
 ) -> dict[str, Any]:
     if config is None:
         return _check("last_run", "unknown")
     attempted, completed = _parse(config["last_attempted"]), _parse(config["last_completed"])
     failed_agents = sorted(set(newest["failed_agents"] if newest else []) | set(agent_errors))
-    failed_attempt = attempted is not None and (
-        completed is None or (attempted - completed).total_seconds() > ATTEMPT_GRACE_SECONDS
+    failed_attempt = (
+        not running
+        and attempted is not None
+        and (completed is None or (attempted - completed).total_seconds() > ATTEMPT_GRACE_SECONDS)
     )
     values = {
         "attempted": config["last_attempted"],
@@ -432,7 +447,9 @@ def evaluate(
         listing = [item for item in everything if not item.get("own")]
         newest = listing[0] if listing and listing[0]["date"] else None
         checks.append(_newest_check(config, listing, now))
-        checks.append(_last_run_check(config, newest, state.get("agent_errors") or []))
+        checks.append(
+            _last_run_check(config, newest, state.get("agent_errors") or [], state.get("running"))
+        )
         checks.append(_targets_check(newest, attest.get("targets")))
         checks.append(_size_check(listing))
         checks.append(_retention_check(config, listing, now))
