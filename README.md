@@ -30,10 +30,12 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 
 > Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan. Plans cover quarantine and removal, repairs, replacing references, renaming entities, assigning areas, deleting unused automations, trimming recorder history and other maintenance tasks. Depending on the action, Housekeeper requires a quarantine period, an additional confirmation and a successful backup. Reversible changes can be undone while their targets remain unchanged; irreversible recorder and backup deletions are clearly marked. Integrations and hubs are never modified, and Housekeeper changes only what a confirmed plan names.
 
+> **Beta of 2.0:** the pre-release [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
+
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/showcase-en/overview-desktop-light.png" alt="Housekeeping overview" width="100%">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeper/main/screenshots/showcase-en/overview-desktop-light.png" alt="Housekeeping overview" width="100%">
 </p>
 
 | Findings | Repair |
