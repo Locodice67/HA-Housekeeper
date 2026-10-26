@@ -1,5 +1,73 @@
 # Changelog
 
+## 1.13.0 - 2026-10-26
+
+### Neu
+
+- **Start-Zeiten:** Housekeeper hält fest, wie lange Home Assistant für einen Start brauchte.
+  - Unter Speicher & System zeigt der Reiter „Starts“ die Dauer der letzten Starts, je Integration und mit einer Kachel für den letzten Start.
+  - Eine Integration lässt sich aufklappen: wie viel langsamer oder schneller sie als üblich war, ihre Einträge, Herkunft und der Grund, warum sie nicht geladen wurde.
+  - Ein Start nach einem Absturz ist markiert, mit der Zeit, die Home Assistant ausgefallen war.
+  - Die Startmeldung zeigt, wie lange Home Assistant schon lädt, und klappt die noch ladenden Integrationen auf.
+- **Auto-Pause:** Eine Integration, die beim Einrichten immer wieder scheitert, wird pausiert und nach 1, 3 und 6 Stunden, danach täglich bis zu 7 Tage erneut versucht. Das gilt für jeden Datenlieferanten, der nicht ausgenommen ist.
+  - Die Seite zeigt den Schalter, was pausiert ist, was gerade Fehlversuche sammelt und den Rest eingeklappt; von Hand pausieren geht über die gewohnte Suche mit Rückfrage.
+  - Ein pausierter Dienst bleibt ein Befund ab dem Beginn des Ausfalls; die Übersicht zeigt ihn unter Wartung.
+- **Verlässlichkeit:** Die Zahl der Einrichtungsversuche einer Integration steht neben den Episoden.
+
+### Geändert
+
+- **Zeilenmenü:** Aktionen pro Zeile stehen im ⋮-Menü statt in mehreren Knöpfen (Markierungen, Updates, Plan-Journal, Inventar, Ohne Verweis, Regelverstöße, Objektlisten, Verlässlichkeit, Integrationen, Änderungen, wiederkehrende Probleme, Übersicht). Probleme stehen zuerst und haben eine rote Kante.
+- **Objektseite:** Der Kopf hat einen Hauptknopf, der zum Zustand passt, „In HA öffnen“ und ein Menü.
+- **GUI allgemein:**
+  - Einstellungen: Felder und Schalter stehen rechts, Felder gleich breit.
+  - Regelverstöße: Der Grund steht als ruhiger Absatz, die Umbenennung in einer Zeile mit dem empfohlenen Namen.
+  - Aufräumen: Die Kachel „Ohne Verweis“ zeigt die Zahl der Objekte mit Statistik.
+  - Speicher & System antwortet beim ersten Besuch sofort.
+  - Namen in den Listen der Auto-Pause-Seite öffnen die Integrationsseite.
+
+### Behoben
+
+- **Backup-Schutz:** Ein noch laufendes Backup gilt nicht als gescheiterter letzter Lauf.
+- **Plan:** Der erwartete Endzustand nennt Neuladen, Labels, Bereiche, Umbauten, Aktivieren, Ausblenden und gelöschte Backups oder Automationen.
+- **Schleifen:** Ein Befehl `turn_off` bei Mediaplayer, Licht, Schalter, Ventilator oder Klima kann nur „aus“ auslösen; eine Liste in `to` wird Wert für Wert gelesen.
+- **GUI allgemein:**
+  - Der Spaltenkopf einer Spalte mit Zeilenmenü ist leer statt ein Kästchen-Symbol.
+  - Die Statusauswahl eines Befunds ist wieder ein Block.
+
+### English
+
+#### New
+
+- **Start times:** Housekeeper records how long Home Assistant took to start.
+  - Under Storage & system the tab "Starts" shows the length of the last starts, per integration and with a tile for the last start.
+  - An integration can be unfolded: how much slower or faster it was than usual, its entries, origin and the reason it did not load.
+  - A start after a crash is marked, with the time Home Assistant had been down.
+  - The start notice shows how long Home Assistant has been loading and unfolds the integrations that still load.
+- **Auto-pause:** An integration that keeps failing to set up is paused and tried again after 1, 3 and 6 hours, then daily for up to 7 days. This applies to every data provider that is not excluded.
+  - The page shows the switch, what is paused, what is collecting failed attempts and the rest folded away; a pause by hand is picked from the usual search with a confirmation.
+  - A paused service stays a finding from where its outage began; the overview shows it under Maintenance.
+- **Reliability:** The number of set-up retries of an integration is shown next to the episodes.
+
+#### Changed
+
+- **Row menu:** Actions per row sit in the ⋮ menu instead of several buttons (marks, updates, plan journal, inventory, unreferenced, rule violations, object lists, reliability, integrations, changes, recurring problems, overview). Problems come first with a red edge.
+- **Object page:** The head has one main button that fits the state, "Open in HA" and a menu.
+- **General GUI:**
+  - Settings: fields and controls sit on the right, fields share one width.
+  - Rule violations: the reason is a quiet paragraph, the rename sits in one line with the recommended name.
+  - Clean up: the tile "Unreferenced" shows the number of objects with statistics.
+  - Storage & system answers at once on a first visit.
+  - Names in the lists of the auto-pause page open the integration page.
+
+#### Fixed
+
+- **Backup protection:** A backup that is still running is not reported as a failed last run.
+- **Plan:** The expected end state names reloads, labels, areas, rewrites, enabling, hiding and deleted backups or automations.
+- **Loops:** `turn_off` of a media player, light, switch, fan or climate can only make "off" fire; a list in `to` is read value by value.
+- **General GUI:**
+  - The head of a column with a row menu is empty instead of a tick-box symbol.
+  - The status form of a finding is one block again.
+
 ## 1.12.1 - 2026-10-23
 
 ### Neu
