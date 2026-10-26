@@ -1,5 +1,9 @@
 # Changelog
 
+> **Beta von 2.0:** Die Vorabversion [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) ist zum Ausprobieren da: Befunde nach Themen mit einer eigenen Seite „Beheben“, ein geführter Rundgang beim Aufräumen, die Ansicht „Einfach“ oder „Vollständig“ und neue Namen für die Ausgänge. In HACS (ab Home Assistant 2026.11: Marketplace) erscheint sie unter „Neu herunterladen“ mit eingeschalteten Beta-Versionen. Ein normales Update bleibt auf 1.x.
+>
+> **Beta of 2.0:** The pre-release [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
+
 ## 1.13.0 - 2026-10-26
 
 ### Neu
